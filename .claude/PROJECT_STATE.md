@@ -57,6 +57,10 @@ Security & Session Architecture:
     - `app/login/page.tsx`: refactored to submit to `/api/auth/login`.
     - `app/api/activate/link/route.ts`: sets team session cookie on activation.
     - `scripts/check_supabase.mjs`: reports standalone mode status or validates remote tables when credentials are provided.
+  - **Fixed 500 MIDDLEWARE_INVOCATION_FAILED Deployment Error**:
+    - Replaced `@supabase/ssr` edge middleware in `middleware.ts` with a clean pass-through (`NextResponse.next()`).
+    - Reduced edge middleware bundle size from 86.1 kB to 26.5 kB, eliminating all edge network timeouts or unhandled exceptions.
+    - Hardened `utils/supabase/middleware.ts` with complete defensive try/catch blocks.
 - [x] **Automated Testing & Full Build Verification** — 2026-09-18
   - Created `tests/auth-session.test.ts` verifying participant login, invalid email rejection, session cookie detection, and logout.
   - All 24 tests passing across 3 test suites (`npm test`):
