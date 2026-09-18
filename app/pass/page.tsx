@@ -9,8 +9,11 @@ import { Team, Member } from '@/types/database';
 import PassLookupForm from '@/components/Participant/PassLookupForm';
 import Link from 'next/link';
 import { ArrowLeft, Users, QrCode, LogIn, KeyRound } from 'lucide-react';
+import LiveRefresh from '@/components/Participant/LiveRefresh';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 interface PassPageProps {
   searchParams?: { token?: string };
@@ -91,9 +94,12 @@ export default async function PassPage({ searchParams }: PassPageProps) {
               BACK TO DASHBOARD
             </Link>
 
-            <span className="nirmaan-pill bg-white text-nirmaan-black border border-nirmaan-black/15 text-[11px] font-bold">
-              {team.team_name}
-            </span>
+            <div className="flex items-center gap-2">
+              <LiveRefresh intervalMs={5000} />
+              <span className="nirmaan-pill bg-white text-nirmaan-black border border-nirmaan-black/15 text-[11px] font-bold">
+                {team.team_name}
+              </span>
+            </div>
           </div>
 
           {/* Digital Pass Card */}

@@ -17,5 +17,13 @@ export function createAdminClient() {
       persistSession: false,
       autoRefreshToken: false,
     },
+    global: {
+      fetch: (url: RequestInfo | URL, init?: RequestInit) => {
+        return fetch(url, {
+          ...init,
+          cache: 'no-store',
+        });
+      },
+    },
   });
 }
