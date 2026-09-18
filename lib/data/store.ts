@@ -4,18 +4,7 @@ import { validateMealEligibility } from '@/lib/validation/rules';
 
 import seededDataset from './seeded_teams.json';
 
-export const DEFAULT_SCHEDULE: ScheduleItem[] = [
-  { id: 'sch-1', time: '09:00 AM', title: 'ON-DESK REGISTRATION & BADGE COLLECTION', tag: 'REGISTRATION', color: 'bg-nirmaan-amber', text_color: 'text-nirmaan-black', order_index: 1 },
-  { id: 'sch-2', time: '10:00 AM', title: 'OPENING CEREMONY & PROBLEM STATEMENT REVEAL', tag: 'KEYNOTE', color: 'bg-nirmaan-blue', text_color: 'text-white', order_index: 2 },
-  { id: 'sch-3', time: '11:00 AM', title: 'HACKING COMMENCES (25 HOURS NON-STOP)', tag: 'BUILD', color: 'bg-nirmaan-green-bright', text_color: 'text-nirmaan-black', order_index: 3 },
-  { id: 'sch-4', time: '01:00 PM', title: 'LUNCH SERVING', tag: 'MEALS', color: 'bg-nirmaan-orange', text_color: 'text-white', order_index: 4 },
-  { id: 'sch-5', time: '05:00 PM', title: 'MENTORSHIP ROUND 1', tag: 'MENTORING', color: 'bg-nirmaan-purple', text_color: 'text-white', order_index: 5 },
-  { id: 'sch-6', time: '08:30 PM', title: 'DINNER SERVING', tag: 'MEALS', color: 'bg-nirmaan-orange', text_color: 'text-white', order_index: 6 },
-  { id: 'sch-7', time: '12:00 AM', title: 'MIDNIGHT SNACKS & CHILL ZONE ACTIVATION', tag: 'SOCIAL', color: 'bg-nirmaan-blue', text_color: 'text-white', order_index: 7 },
-  { id: 'sch-8', time: '08:00 AM', title: 'BREAKFAST SERVING (DAY 2)', tag: 'MEALS', color: 'bg-nirmaan-amber', text_color: 'text-nirmaan-black', order_index: 8 },
-  { id: 'sch-9', time: '12:00 PM', title: 'FINAL CODE FREEZE & PPT SUBMISSION', tag: 'FINALE', color: 'bg-nirmaan-red', text_color: 'text-white', order_index: 9 },
-  { id: 'sch-10', time: '02:00 PM', title: 'PITCHING & CLOSING AWARDS CEREMONY', tag: 'AWARDS', color: 'bg-nirmaan-amber', text_color: 'text-nirmaan-black', order_index: 10 },
-];
+export const DEFAULT_SCHEDULE: ScheduleItem[] = [];
 
 // In-Memory store with real NIRMAAN 2026 teams (289 teams, 908 members)
 interface MockDatabase {
@@ -518,7 +507,9 @@ export async function resetSchedule(): Promise<ScheduleItem[]> {
       const { createAdminClient } = await import('../supabase/admin');
       const supabase = createAdminClient();
       await supabase.from('schedule').delete().neq('id', 'placeholder');
-      await supabase.from('schedule').insert(DEFAULT_SCHEDULE);
+      if (DEFAULT_SCHEDULE.length > 0) {
+        await supabase.from('schedule').insert(DEFAULT_SCHEDULE);
+      }
     } catch {
       // Fallback
     }

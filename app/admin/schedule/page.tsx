@@ -223,12 +223,8 @@ export default function AdminSchedulePage() {
     }
   };
 
-  const handleReset = async () => {
-    if (
-      !confirm(
-        'Reset schedule to official 25-Hour Hackathon defaults? This will overwrite custom events.'
-      )
-    ) {
+  const handleClear = async () => {
+    if (!confirm('Clear all schedule events? This will remove all timeline items from /event-info.')) {
       return;
     }
 
@@ -237,13 +233,13 @@ export default function AdminSchedulePage() {
       const res = await fetch('/api/admin/schedule/reset', { method: 'POST' });
       const data = await res.json();
       if (data.success) {
-        showFeedback('success', 'Schedule reset to official defaults.');
+        showFeedback('success', 'Schedule cleared successfully.');
         fetchSchedule();
       } else {
-        showFeedback('error', data.message || 'Failed to reset.');
+        showFeedback('error', data.message || 'Failed to clear schedule.');
       }
     } catch {
-      showFeedback('error', 'Network error while resetting.');
+      showFeedback('error', 'Network error while clearing schedule.');
     } finally {
       setActionLoading(false);
     }
@@ -283,13 +279,13 @@ export default function AdminSchedulePage() {
             ADD EVENT
           </button>
           <button
-            onClick={handleReset}
-            disabled={actionLoading}
-            className="nirmaan-btn bg-white hover:bg-nirmaan-cream text-nirmaan-black text-xs py-2.5 px-3.5 font-black border border-nirmaan-black/20 shadow-sm"
-            title="Reset to 25-Hour Hackathon Defaults"
+            onClick={handleClear}
+            disabled={actionLoading || schedule.length === 0}
+            className="nirmaan-btn bg-white hover:bg-nirmaan-cream text-nirmaan-black text-xs py-2.5 px-3.5 font-black border border-nirmaan-black/20 shadow-sm disabled:opacity-40"
+            title="Clear all events from schedule"
           >
             <RotateCcw className="w-4 h-4" />
-            <span className="hidden md:inline">RESET</span>
+            <span className="hidden md:inline">CLEAR ALL</span>
           </button>
         </div>
       </div>
@@ -333,13 +329,17 @@ export default function AdminSchedulePage() {
         ) : schedule.length === 0 ? (
           <div className="py-12 text-center space-y-3">
             <p className="text-sm font-bold text-nirmaan-black/60 uppercase">
-              No timeline events found.
+              Schedule is currently empty.
+            </p>
+            <p className="text-xs font-medium text-nirmaan-black/50 max-w-sm mx-auto">
+              Add your official event timeline milestones using the button below.
             </p>
             <button
-              onClick={handleReset}
-              className="nirmaan-btn nirmaan-btn-primary text-xs py-2 px-4 font-black"
+              onClick={openAddModal}
+              className="nirmaan-btn nirmaan-btn-primary text-xs py-2.5 px-5 font-black inline-flex items-center gap-2"
             >
-              Load Default 25-Hour Schedule
+              <Plus className="w-4 h-4" />
+              ADD FIRST EVENT
             </button>
           </div>
         ) : (

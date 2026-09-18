@@ -23,17 +23,10 @@ describe('Dynamic Event Timeline & Schedule Operations', () => {
     await resetSchedule();
   });
 
-  it('retrieves default 25-hour schedule ordered by order_index', async () => {
+  it('retrieves empty default schedule (managed via admin panel)', async () => {
     const schedule = await getSchedule();
-    expect(schedule.length).toBe(10);
-    expect(schedule[0].title).toBe('ON-DESK REGISTRATION & BADGE COLLECTION');
-    expect(schedule[2].title).toBe('HACKING COMMENCES (25 HOURS NON-STOP)');
-    expect(schedule[2].time).toBe('11:00 AM');
-
-    // Verify sorted ascending
-    for (let i = 0; i < schedule.length - 1; i++) {
-      expect(schedule[i].order_index).toBeLessThanOrEqual(schedule[i + 1].order_index);
-    }
+    expect(schedule.length).toBe(0);
+    expect(Array.isArray(schedule)).toBe(true);
   });
 
   it('creates, updates, and deletes schedule items in store', async () => {
@@ -49,7 +42,7 @@ describe('Dynamic Event Timeline & Schedule Operations', () => {
     expect(newItem.tag).toBe('SOCIAL');
 
     const scheduleAfterAdd = await getSchedule();
-    expect(scheduleAfterAdd.length).toBe(11);
+    expect(scheduleAfterAdd.length).toBe(1);
 
     // Update
     const updated = await updateScheduleItem(newItem.id, {
@@ -64,23 +57,23 @@ describe('Dynamic Event Timeline & Schedule Operations', () => {
     expect(deleted).toBe(true);
 
     const scheduleAfterDelete = await getSchedule();
-    expect(scheduleAfterDelete.length).toBe(10);
+    expect(scheduleAfterDelete.length).toBe(0);
   });
 
   it('reorders schedule items correctly', async () => {
-    const schedule = await getSchedule();
-    const firstId = schedule[0].id;
-    const secondId = schedule[1].id;
+    // Create two items to reorder (schedule starts empty)
+    const item1 = await createScheduleItem({ time: '09:00 AM', title: 'FIRST EVENT', tag: 'GENERAL', color: 'bg-nirmaan-blue' });
+    const item2 = await createScheduleItem({ time: '10:00 AM', title: 'SECOND EVENT', tag: 'GENERAL', color: 'bg-nirmaan-green-bright' });
 
     // Swap first and second
     await reorderSchedule([
-      { id: firstId, order_index: 2 },
-      { id: secondId, order_index: 1 },
+      { id: item1.id, order_index: 2 },
+      { id: item2.id, order_index: 1 },
     ]);
 
     const updated = await getSchedule();
-    expect(updated[0].id).toBe(secondId);
-    expect(updated[1].id).toBe(firstId);
+    expect(updated[0].id).toBe(item2.id);
+    expect(updated[1].id).toBe(item1.id);
   });
 
   it('GET /api/schedule returns public schedule successfully', async () => {
@@ -89,7 +82,7 @@ describe('Dynamic Event Timeline & Schedule Operations', () => {
     const data = await res.json();
     expect(data.success).toBe(true);
     expect(Array.isArray(data.schedule)).toBe(true);
-    expect(data.schedule.length).toBe(10);
+    expect(data.schedule.length).toBe(0);
   });
 
   it('rejects unauthorized modifications to /api/admin/schedule with 401', async () => {
@@ -153,6 +146,6 @@ describe('Dynamic Event Timeline & Schedule Operations', () => {
     expect(resetRes.status).toBe(200);
     const resetData = await resetRes.json();
     expect(resetData.success).toBe(true);
-    expect(resetData.schedule.length).toBe(10);
+    expect(resetData.schedule.length).toBe(0);
   });
 });

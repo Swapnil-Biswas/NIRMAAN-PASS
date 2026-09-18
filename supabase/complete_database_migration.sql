@@ -443,19 +443,8 @@ $$;
 -- NIRMAAN 2026 Seed Data: 289 Teams, 908 Members, Default Schedule
 BEGIN;
 
--- Schedule Seed (25-Hour Hackathon)
-INSERT INTO public.schedule (id, time, title, tag, color, text_color, order_index) VALUES
-('sch-1', '09:00 AM', 'ON-DESK REGISTRATION & BADGE COLLECTION', 'REGISTRATION', 'bg-nirmaan-amber', 'text-nirmaan-black', 1),
-('sch-2', '10:00 AM', 'OPENING CEREMONY & PROBLEM STATEMENT REVEAL', 'KEYNOTE', 'bg-nirmaan-blue', 'text-white', 2),
-('sch-3', '11:00 AM', 'HACKING COMMENCES (25 HOURS NON-STOP)', 'BUILD', 'bg-nirmaan-green-bright', 'text-nirmaan-black', 3),
-('sch-4', '01:00 PM', 'LUNCH SERVING', 'MEALS', 'bg-nirmaan-orange', 'text-white', 4),
-('sch-5', '05:00 PM', 'MENTORSHIP ROUND 1', 'MENTORING', 'bg-nirmaan-purple', 'text-white', 5),
-('sch-6', '08:30 PM', 'DINNER SERVING', 'MEALS', 'bg-nirmaan-orange', 'text-white', 6),
-('sch-7', '12:00 AM', 'MIDNIGHT SNACKS & CHILL ZONE ACTIVATION', 'SOCIAL', 'bg-nirmaan-blue', 'text-white', 7),
-('sch-8', '08:00 AM', 'BREAKFAST SERVING (DAY 2)', 'MEALS', 'bg-nirmaan-amber', 'text-nirmaan-black', 8),
-('sch-9', '12:00 PM', 'FINAL CODE FREEZE & PPT SUBMISSION', 'FINALE', 'bg-nirmaan-red', 'text-white', 9),
-('sch-10', '02:00 PM', 'PITCHING & CLOSING AWARDS CEREMONY', 'AWARDS', 'bg-nirmaan-amber', 'text-nirmaan-black', 10)
-ON CONFLICT (id) DO NOTHING;
+-- Schedule: No seed data. Schedule is managed dynamically via the admin panel (/admin/schedule).
+-- All event timeline & announcements are published through the Event Info section.
 
 INSERT INTO public.teams (id, team_name, college, qr_token, checked_in, breakfast_count, lunch_count, dinner_count, coffee_count) VALUES ('team-nir-001', '0xDEADEAD', 'Engineering Institution', 'nirmaan_0xdeadead_036aa8d8a426', false, 0, 0, 0, 0) ON CONFLICT (qr_token) DO NOTHING;
 INSERT INTO public.teams (id, team_name, college, qr_token, checked_in, breakfast_count, lunch_count, dinner_count, coffee_count) VALUES ('team-nir-002', '3 BHK', 'Engineering Institution', 'nirmaan_3_bhk_c4f57ff6e3d7', false, 0, 0, 0, 0) ON CONFLICT (qr_token) DO NOTHING;
