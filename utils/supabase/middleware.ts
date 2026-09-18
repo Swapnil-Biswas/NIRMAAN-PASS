@@ -11,9 +11,13 @@ export const updateSession = async (request: NextRequest) => {
     },
   });
 
+  if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('placeholder')) {
+    return supabaseResponse;
+  }
+
   const supabase = createServerClient(
-    supabaseUrl!,
-    supabaseKey!,
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() {

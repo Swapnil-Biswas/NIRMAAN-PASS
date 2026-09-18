@@ -1,6 +1,6 @@
 -- =============================================================================
 -- NIRMAAN 2026 FULL DATABASE MIGRATION & SEED SCRIPT
--- Project: tgpxcqazpifkifsnfmmz.supabase.co
+-- Ready for any new Supabase Project
 -- Tables: teams, members, announcements
 -- RLS Policies & Stored Procedures: process_meal_scan, process_coffee_scan, process_registration
 -- Initial Seed: 289 Verified Teams, 908 Participants (Clean 0 counts)

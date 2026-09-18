@@ -1,10 +1,26 @@
 import { createClient } from '@supabase/supabase-js';
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://tgpxcqazpifkifsnfmmz.supabase.co';
-const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_c2UWGV6nf9YMEUOD_VWrbQ_LqtY0EuD';
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-console.log('--- SUPABASE MIGRATION VERIFICATION ---');
-console.log('Target URL:', url);
+console.log('--- NIRMAAN-PASS DATABASE STATUS CHECK ---');
+
+if (!url || url.includes('placeholder') || url.includes('your-project')) {
+  console.log('ℹ️  No remote Supabase database URL configured in .env.local.');
+  console.log('✅ The application is running in STANDALONE LOCAL MODE using the verified 289-team dataset.');
+  console.log('\nTo connect a new Supabase database:');
+  console.log('1. Run supabase/complete_database_migration.sql in your Supabase SQL Editor.');
+  console.log('2. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local.');
+  console.log('3. Re-run this script: node scripts/check_supabase.mjs\n');
+  process.exit(0);
+}
+
+console.log('Connecting to Supabase at:', url);
+
+if (!key) {
+  console.error('❌ Error: NEXT_PUBLIC_SUPABASE_ANON_KEY is missing in .env.local.');
+  process.exit(1);
+}
 
 const supabase = createClient(url, key);
 
@@ -54,11 +70,10 @@ async function verify() {
   }
 
   if (allGood) {
-    console.log('\n🎉 ALL TABLES SUCCESSFULLY MIGRATED TO SUPABASE!');
+    console.log('\n🎉 ALL TABLES VERIFIED IN SUPABASE!');
   } else {
     console.log('\n⚠️ Tables not yet found in Supabase schema cache.');
-    console.log('Please execute supabase/complete_database_migration.sql in the Supabase SQL editor:');
-    console.log(`👉 https://supabase.com/dashboard/project/tgpxcqazpifkifsnfmmz/sql/new`);
+    console.log('Please execute supabase/complete_database_migration.sql in your Supabase SQL editor.');
   }
 }
 

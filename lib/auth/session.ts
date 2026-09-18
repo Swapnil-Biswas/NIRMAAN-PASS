@@ -5,19 +5,42 @@ import { Team, Member } from '@/types/database';
 
 /**
  * Get the current authenticated user, or null if not logged in.
+ * Supports both standalone local team session cookie and Supabase Auth.
  */
 export async function getSession() {
   try {
     const cookieStore = await cookies();
-    const supabase = createClient(cookieStore);
 
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
+    // 1. Check local team session cookie
+    const localSession = cookieStore.get('nirmaan_team_session')?.value;
+    if (localSession) {
+      try {
+        const parsed = JSON.parse(localSession);
+        return {
+          id: parsed.teamId,
+          email: parsed.email,
+          user_metadata: {
+            team_id: parsed.teamId,
+            team_name: parsed.team_name,
+            token: parsed.token,
+          },
+        } as any;
+      } catch {}
+    }
 
-    if (error || !user) return null;
-    return user;
+    // 2. Check Supabase session if configured
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (url && !url.includes('placeholder')) {
+      const supabase = createClient(cookieStore);
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
+      if (!error && user) return user;
+    }
+
+    return null;
   } catch {
     return null;
   }
@@ -29,32 +52,63 @@ export async function getSession() {
  */
 export async function getTeamForUser(): Promise<{ team: Team; members: Member[] } | null> {
   try {
+    const cookieStore = await cookies();
+
+    // 1. Check local team session cookie first
+    const localSession = cookieStore.get('nirmaan_team_session')?.value;
+    if (localSession) {
+      try {
+        const parsed = JSON.parse(localSession);
+        const { findTeamByToken, getAllTeams, getTeamMembers } = await import('@/lib/data/store');
+        if (parsed.token) {
+          const team = await findTeamByToken(parsed.token);
+          if (team) {
+            const members = await getTeamMembers(team.id);
+            return { team, members };
+          }
+        }
+        const allTeams = await getAllTeams();
+        const matched = allTeams.find(
+          (t) =>
+            t.id === parsed.teamId ||
+            (parsed.email && t.members.some((m) => m.email?.toLowerCase() === parsed.email.toLowerCase()))
+        );
+        if (matched) {
+          return { team: matched, members: matched.members };
+        }
+      } catch {}
+    }
+
+    // 2. Check Supabase session if configured
     const user = await getSession();
     if (!user) return null;
 
-    const cookieStore = await cookies();
-    const supabase = createClient(cookieStore);
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (url && !url.includes('placeholder')) {
+      try {
+        const supabase = createClient(cookieStore);
+        const { data: team, error } = await supabase
+          .from('teams')
+          .select('*')
+          .eq('auth_id', user.id)
+          .maybeSingle();
 
-    const { data: team, error } = await supabase
-      .from('teams')
-      .select('*')
-      .eq('auth_id', user.id)
-      .maybeSingle();
+        if (!error && team) {
+          const { data: members } = await supabase
+            .from('members')
+            .select('*')
+            .eq('team_id', team.id)
+            .order('created_at', { ascending: true });
 
-    if (!error && team) {
-      const { data: members } = await supabase
-        .from('members')
-        .select('*')
-        .eq('team_id', team.id)
-        .order('created_at', { ascending: true });
-
-      return {
-        team: team as Team,
-        members: (members || []) as Member[],
-      };
+          return {
+            team: team as Team,
+            members: (members || []) as Member[],
+          };
+        }
+      } catch {}
     }
 
-    // Fallback: check local/mock store by auth_id or leader/member email
+    // 3. Fallback: check local/mock store by auth_id or email
     const { getAllTeams } = await import('@/lib/data/store');
     const allTeams = await getAllTeams();
     const userEmail = user.email?.toLowerCase();
@@ -95,29 +149,11 @@ export async function requireAuth() {
  * or /activate if no team is linked.
  */
 export async function requireTeam(): Promise<{ team: Team; members: Member[] }> {
-  const user = await requireAuth();
-
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
-
-  const { data: team, error } = await supabase
-    .from('teams')
-    .select('*')
-    .eq('auth_id', user.id)
-    .maybeSingle();
-
-  if (error || !team) {
-    redirect('/activate');
+  const teamData = await getTeamForUser();
+  if (teamData) {
+    return teamData;
   }
 
-  const { data: members } = await supabase
-    .from('members')
-    .select('*')
-    .eq('team_id', team.id)
-    .order('created_at', { ascending: true });
-
-  return {
-    team: team as Team,
-    members: (members || []) as Member[],
-  };
+  await requireAuth();
+  redirect('/activate');
 }

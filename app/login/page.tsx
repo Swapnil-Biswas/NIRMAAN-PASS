@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, LogIn, Eye, EyeOff, ArrowRight, Zap, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -20,49 +19,25 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const supabase = createClient();
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+        }),
       });
 
-      if (authError) {
-        const msg = authError.message.toLowerCase();
-        if (msg.includes('fetch') || msg.includes('network')) {
-          // If Supabase server is offline/unreachable, verify if email belongs to a team
-          const cleanEmail = email.trim().toLowerCase();
-          try {
-            const res = await fetch('/api/activate/verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: cleanEmail }),
-            });
-            const data = await res.json();
-            if (data.success) {
-              const teamsRes = await fetch('/api/admin/teams');
-              const teamsData = await teamsRes.json();
-              const teamMatch = teamsData.teams?.find((t: any) =>
-                t.members?.some((m: any) => m.email.toLowerCase() === cleanEmail)
-              );
-              if (teamMatch) {
-                router.push(`/dashboard?token=${teamMatch.qr_token}`);
-                return;
-              }
-            }
-          } catch {}
-          setError('Authentication server is currently unavailable. Please try again in a moment or activate your team.');
-          return;
-        }
+      const data = await res.json();
 
-        setError(authError.message === 'Invalid login credentials'
-          ? 'Invalid email or password. Please try again.'
-          : authError.message
-        );
+      if (!res.ok || !data.success) {
+        setError(data.message || 'Invalid email or credentials. Please try again.');
         return;
       }
 
       // Successful login — redirect to dashboard
-      router.push('/dashboard');
+      const targetUrl = data.token ? `/dashboard?token=${encodeURIComponent(data.token)}` : '/dashboard';
+      router.push(targetUrl);
       router.refresh();
     } catch {
       setError('An unexpected error occurred. Please try again.');

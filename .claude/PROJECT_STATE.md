@@ -1,17 +1,20 @@
 # Project State — NIRMAAN-PASS
 
-_Last updated: 2026-09-18 — Admin Console & Scanner complete isolation, Organizer Access Gate, complete dummy data purge, and removal of marketing slogans/copy_
+_Last updated: 2026-09-18 — Disconnected old Supabase project; Transitioned to 100% Standalone Local Architecture with Plug-and-Play readiness for new database connection_
 
 ## Architecture
 Next.js 14 (App Router) + TypeScript + Tailwind CSS with official NIRMAAN 2026 Design System.
-Supabase Project: `tgpxcqazpifkifsnfmmz.supabase.co` (PostgreSQL + RLS + SSR Auth).
-Security Architecture:
+Database & Storage Strategy:
+- **Standalone Local Mode (Active)**: Runs 100% self-contained directly from the verified 289-team dataset (`lib/data/seeded_teams.json`). Zero external network dependencies, zero latency.
+- **Plug-and-Play Supabase Ready**: All database access is encapsulated via `hasSupabaseConfig()`. When a teammate connects their new Supabase project credentials in `.env.local`, the application will automatically switch to remote database operations without needing any code changes.
+- **Consolidated Migration Script**: `supabase/complete_database_migration.sql` contains the complete schema, RLS policies, atomic scan RPCs, and all 289 clean team records ready to run in one click in the Supabase SQL Editor.
+
+Security & Session Architecture:
 - Participant Experience: completely isolated from admin operations. Zero public links or mentions of admin or scanner.
 - Admin Experience: dedicated layout (`app/admin/layout.tsx`) protected by `ADMIN_ACCESS_CODE` (`NIRMAAN2026_ADMIN`).
-- Route & API Gates: unauthenticated access to `/admin/*` is intercepted by `AdminGate`; all `/api/admin/*` endpoints and announcement broadcasting require organizer authentication.
-Data Store:
-- Operates with clean seeded dataset of all 289 real teams and 908 members from `NIRMAAN_2026_MastryHub_Submission_of_Round_1_PPT.csv`.
-- All dummy teams (`Team Alpha`, `Team Beta`, `Team Gamma`) and artificial initial scan counts have been completely purged.
+- Unified Session Management:
+  - Participant sessions: secured via httpOnly `nirmaan_team_session` cookie; validated across SSR (`lib/auth/session.ts`), Route Handlers (`/api/auth/session`, `/api/auth/login`, `/api/auth/logout`), and client navigation (`Navbar.tsx`).
+  - Dual-auth fallback: seamlessly recognizes Supabase user sessions if configured, or local verified team member credentials.
 
 ## Completed
 - [x] Initial documentation and skills review (README.md, prd.md, architecture.md, 4 skills) — 2026-09-18
@@ -37,56 +40,48 @@ Data Store:
   - Removed demo mode banner and demo dashboard links from `app/login/page.tsx`.
 - [x] **Removed marketing fluff & promotional slogans** — 2026-09-18
   - Replaced promotional marketing layout on `app/page.tsx` ("ONE TEAM. ONE QR. ONE PASS.", "HOW NIRMAAN-PASS WORKS" marketing cards, demo pass preview) with a lean, functional Participant Pass Portal and direct Pass Token Lookup (`components/Participant/PassLookupForm.tsx`).
-- [x] **Created and verified test suites** — 2026-09-18
-  - Created `tests/admin-security.test.ts` verifying admin route gates, API protections, and absence of dummy data.
-  - Updated `tests/domain-rules.test.ts` to test against real seeded teams.
-  - 19/19 tests passing across both suites (`npm test`).
-  - Next.js production build (`npm run build`) passing 100% (17/17 routes).
-  - TypeScript check (`npm run lint`) passing with 0 errors.
-
-- [x] **Consolidated and Prepared Complete Supabase Database Migration** — 2026-09-18
-  - Fixed column types in schema (`id TEXT DEFAULT gen_random_uuid()::text`, `team_id TEXT`, `p_present_member_ids TEXT[]`) to match the string identifiers in the dataset and prevent Postgres UUID cast errors.
-  - Generated consolidated, single-file script `supabase/complete_database_migration.sql` (schema, RLS policies, atomic stored procedures, and 289 clean team records).
-  - Created automated live verification script `scripts/check_supabase.mjs` to test connectivity and schema cache status.
+- [x] **Removed Obsolete Supabase Connection & Configured Plug-and-Play Architecture** — 2026-09-18
+  - Disconnected obsolete Supabase credentials from `.env.local` and `.env.example`.
+  - Updated `utils/supabase/middleware.ts`, `utils/supabase/client.ts`, and `utils/supabase/server.ts` with safe fallback handling to prevent unhandled fetch exceptions when Supabase is unconfigured.
+  - Built unified local authentication pipeline:
+    - `POST /api/auth/login`: validates member email against verified team roster, generates secure `nirmaan_team_session` cookie.
+    - `GET /api/auth/session`: SSR and client session status endpoint.
+    - `POST /api/auth/logout`: clears session cookie.
+    - `lib/auth/session.ts`: `getSession()`, `getTeamForUser()`, and `requireTeam()` natively read `nirmaan_team_session` while preserving Supabase auth support.
+    - `components/Navbar.tsx`: decoupled from direct Supabase SDK calls; reacts dynamically to session route.
+    - `app/login/page.tsx`: refactored to submit to `/api/auth/login`.
+    - `app/api/activate/link/route.ts`: sets team session cookie on activation.
+    - `scripts/check_supabase.mjs`: reports standalone mode status or validates remote tables when credentials are provided.
+- [x] **Automated Testing & Full Build Verification** — 2026-09-18
+  - Created `tests/auth-session.test.ts` verifying participant login, invalid email rejection, session cookie detection, and logout.
+  - All 24 tests passing across 3 test suites (`npm test`):
+    - `tests/domain-rules.test.ts` (10/10 passing)
+    - `tests/admin-security.test.ts` (9/9 passing)
+    - `tests/auth-session.test.ts` (5/5 passing)
+  - TypeScript validation (`npm run lint` / `tsc --noEmit`) passes with 0 errors.
+  - Next.js production build (`npm run build`) passing 100% across all 21 routes.
 
 ## In Progress / Pending
-- [ ] Run `supabase/complete_database_migration.sql` in the Supabase SQL editor (or provide DB password / Service Role Key for automated push)
-- [ ] Live venue rehearsal with desk volunteers and food counter operators
+- [ ] Teammate connects new Supabase database by pasting credentials into `.env.local` and executing `supabase/complete_database_migration.sql` in their Supabase SQL editor.
+- [ ] Live venue rehearsal with desk volunteers and food counter operators.
 
-## Modified / Touched Files
-- `app/admin/layout.tsx` — Gated layout requiring organizer access code
-- `components/Admin/AdminGate.tsx` — Security access challenge screen for organizers
-- `components/Admin/AdminNavbar.tsx` — Dedicated organizer top navigation
-- `lib/auth/admin.ts` — Server-side admin verification and session helpers
-- `app/api/admin/auth/route.ts` — Admin auth login, logout, and status endpoint
-- `app/api/admin/scan/route.ts` — Added organizer authentication requirement
-- `app/api/admin/teams/route.ts` — Added organizer authentication requirement
-- `app/api/admin/stats/route.ts` — Added organizer authentication requirement
-- `app/api/announcements/route.ts` — Added organizer authentication requirement for broadcasting
-- `app/admin/dashboard/page.tsx` — Removed participant navbar, uses AdminLayout
-- `app/admin/scanner/page.tsx` — Removed participant navbar, uses AdminLayout
-- `app/admin/announcements/page.tsx` — Removed participant navbar, uses AdminLayout
-- `components/Navbar.tsx` — Removed Scanner and Admin links
-- `app/page.tsx` — Converted to lean participant portal, removed marketing slogans and dummy pass preview
-- `components/Participant/PassLookupForm.tsx` — Quick token/key lookup for participants
-- `app/pass/page.tsx` — Removed dummy fallback team and TeamDropdown; added clean access prompt
-- `app/dashboard/page.tsx` — Removed dummy fallback team and TeamDropdown; added clean access prompt
-- `app/login/page.tsx` — Removed demo mode banner and demo dashboard links
-- `components/QRScanner/ScannerModal.tsx` — Removed demo team test buttons
-- `lib/data/store.ts` — Removed demoTeams and demoMembers, cloned seededDataset
-- `scripts/parse_csv.py` — Removed artificial pre-seeding mutations
-- `lib/data/seeded_teams.json` — Regenerated with clean initial 0 counts
-- `supabase/seed.sql` — Regenerated with clean initial 0 counts
-- `tests/domain-rules.test.ts` — Updated to test real seeded teams
-- `tests/admin-security.test.ts` — New test suite for admin gates and dummy data absence
-- `.gitignore` — Added `.next`, `out`, `*.tsbuildinfo`, `.DS_Store`
-- `.claude/PROJECT_STATE.md` — Updated Project Continuity state
+## Key Modified / Touched Files
+- `.env.local` — Cleaned environment variables, prepared placeholders for new DB
+- `.env.example` — Documented environment variables for team deployment
+- `lib/auth/session.ts` — Server session & team retrieval supporting local cookie + Supabase
+- `app/api/auth/login/route.ts` — Standalone team login endpoint
+- `app/api/auth/session/route.ts` — Client/SSR session check endpoint
+- `app/api/auth/logout/route.ts` — Session termination endpoint
+- `app/login/page.tsx` — Clean login interface calling `/api/auth/login`
+- `app/api/activate/link/route.ts` — Activation endpoint setting team session
+- `components/Navbar.tsx` — Clean navigation using unified auth session check
+- `scripts/check_supabase.mjs` — Database connectivity status verification script
+- `supabase/complete_database_migration.sql` — Ready-to-run consolidated migration script
+- `tests/auth-session.test.ts` — Standalone session test suite
 
 ## Decisions
-- Used an in-place `AdminGate` component in `app/admin/layout.tsx` so unauthenticated visitors or curious participants attempting to access `/admin/*` are immediately stopped by a secure access code challenge without leaking any admin data or scanner interfaces.
-- Hardened all `/api/admin/*` routes to check for `nirmaan_admin_session` cookie or `x-admin-code` header, ensuring API calls cannot be forged by participants.
-- Replaced marketing copy on `/` with a functional Participant Portal and direct Pass Token Lookup input, making the website a fast utility tool for event attendees.
-- Cloned `seededDataset` inside `store.ts` to prevent in-memory mutation of imported module objects during tests or runtime.
+- Stored session data in httpOnly `nirmaan_team_session` cookies so participants experience persistent, seamless SSR sessions even with zero external database connection.
+- Preserved bidirectional compatibility: if the teammate adds their Supabase project to `.env.local`, the existing `hasSupabaseConfig()` checks automatically activate remote database queries and RPCs without changing any frontend code.
 
 ## Known Issues
-- None. Production build, linting, and all 19 domain and security tests pass with 0 errors.
+- None. Build, linting, and all 24 tests pass with 0 errors.

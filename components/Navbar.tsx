@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { QrCode, LayoutDashboard, Info, Share2, LogIn, LogOut, User } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -14,40 +13,30 @@ export default function Navbar() {
 
   useEffect(() => {
     let mounted = true;
-    try {
-      const supabase = createClient();
-      supabase.auth.getSession()
-        .then(({ data: { session } }) => {
-          if (!mounted) return;
-          setIsLoggedIn(!!session);
-          setUserEmail(session?.user?.email || null);
-        })
-        .catch(() => {
-          // Ignore offline/network failure in getSession
-        });
 
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    fetch('/api/auth/session')
+      .then((res) => res.json())
+      .then((data) => {
         if (!mounted) return;
-        setIsLoggedIn(!!session);
-        setUserEmail(session?.user?.email || null);
+        setIsLoggedIn(Boolean(data.loggedIn));
+        setUserEmail(data.email || null);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setIsLoggedIn(false);
       });
 
-      return () => {
-        mounted = false;
-        subscription?.unsubscribe();
-      };
-    } catch {
-      return () => {
-        mounted = false;
-      };
-    }
-  }, []);
+    return () => {
+      mounted = false;
+    };
+  }, [pathname]);
 
   const handleLogout = async () => {
     try {
-      const supabase = createClient();
-      await supabase.auth.signOut();
+      await fetch('/api/auth/logout', { method: 'POST' });
     } catch {}
+    setIsLoggedIn(false);
+    setUserEmail(null);
     router.push('/');
     router.refresh();
   };
