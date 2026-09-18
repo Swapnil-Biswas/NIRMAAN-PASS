@@ -34,6 +34,17 @@ export interface Announcement {
   created_at: string;
 }
 
+export interface ScheduleItem {
+  id: string;
+  time: string;
+  title: string;
+  tag: string;
+  color: string;
+  text_color?: string;
+  order_index: number;
+  created_at?: string;
+}
+
 export type ScanPurpose = 'registration' | 'breakfast' | 'lunch' | 'dinner' | 'coffee';
 export type MealType = 'breakfast' | 'lunch' | 'dinner';
 

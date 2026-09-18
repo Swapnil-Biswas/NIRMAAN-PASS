@@ -1,14 +1,28 @@
-import { Team, Member, Announcement, ScanResult, EventStatistics, MealType } from '@/types/database';
+import { Team, Member, Announcement, ScheduleItem, ScanResult, EventStatistics, MealType } from '@/types/database';
 import { sanitizeQRToken } from '@/lib/qr/token';
 import { validateMealEligibility } from '@/lib/validation/rules';
 
 import seededDataset from './seeded_teams.json';
+
+export const DEFAULT_SCHEDULE: ScheduleItem[] = [
+  { id: 'sch-1', time: '09:00 AM', title: 'ON-DESK REGISTRATION & BADGE COLLECTION', tag: 'REGISTRATION', color: 'bg-nirmaan-amber', text_color: 'text-nirmaan-black', order_index: 1 },
+  { id: 'sch-2', time: '10:00 AM', title: 'OPENING CEREMONY & PROBLEM STATEMENT REVEAL', tag: 'KEYNOTE', color: 'bg-nirmaan-blue', text_color: 'text-white', order_index: 2 },
+  { id: 'sch-3', time: '11:00 AM', title: 'HACKING COMMENCES (25 HOURS NON-STOP)', tag: 'BUILD', color: 'bg-nirmaan-green-bright', text_color: 'text-nirmaan-black', order_index: 3 },
+  { id: 'sch-4', time: '01:00 PM', title: 'LUNCH SERVING', tag: 'MEALS', color: 'bg-nirmaan-orange', text_color: 'text-white', order_index: 4 },
+  { id: 'sch-5', time: '05:00 PM', title: 'MENTORSHIP ROUND 1', tag: 'MENTORING', color: 'bg-nirmaan-purple', text_color: 'text-white', order_index: 5 },
+  { id: 'sch-6', time: '08:30 PM', title: 'DINNER SERVING', tag: 'MEALS', color: 'bg-nirmaan-orange', text_color: 'text-white', order_index: 6 },
+  { id: 'sch-7', time: '12:00 AM', title: 'MIDNIGHT SNACKS & CHILL ZONE ACTIVATION', tag: 'SOCIAL', color: 'bg-nirmaan-blue', text_color: 'text-white', order_index: 7 },
+  { id: 'sch-8', time: '08:00 AM', title: 'BREAKFAST SERVING (DAY 2)', tag: 'MEALS', color: 'bg-nirmaan-amber', text_color: 'text-nirmaan-black', order_index: 8 },
+  { id: 'sch-9', time: '12:00 PM', title: 'FINAL CODE FREEZE & PPT SUBMISSION', tag: 'FINALE', color: 'bg-nirmaan-red', text_color: 'text-white', order_index: 9 },
+  { id: 'sch-10', time: '02:00 PM', title: 'PITCHING & CLOSING AWARDS CEREMONY', tag: 'AWARDS', color: 'bg-nirmaan-amber', text_color: 'text-nirmaan-black', order_index: 10 },
+];
 
 // In-Memory store with real NIRMAAN 2026 teams (289 teams, 908 members)
 interface MockDatabase {
   teams: Team[];
   members: Member[];
   announcements: Announcement[];
+  schedule: ScheduleItem[];
 }
 
 const mockDb: MockDatabase = {
@@ -24,6 +38,7 @@ const mockDb: MockDatabase = {
       created_at: new Date().toISOString(),
     },
   ],
+  schedule: JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)) as ScheduleItem[],
 };
 
 function hasSupabaseConfig(): boolean {
@@ -366,4 +381,149 @@ export async function createAnnouncement(announcement: Omit<Announcement, 'id' |
 
   mockDb.announcements.unshift(newAnn);
   return newAnn;
+}
+
+// -----------------------------------------------------------------------------
+// Schedule Management
+// -----------------------------------------------------------------------------
+
+export async function getSchedule(): Promise<ScheduleItem[]> {
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { data, error } = await supabase
+        .from('schedule')
+        .select('*')
+        .order('order_index', { ascending: true });
+      if (!error && data && data.length > 0) return data as ScheduleItem[];
+    } catch {
+      // Fallback to local store
+    }
+  }
+
+  return [...mockDb.schedule].sort((a, b) => a.order_index - b.order_index);
+}
+
+export async function createScheduleItem(
+  item: Omit<ScheduleItem, 'id' | 'created_at' | 'order_index'> & { order_index?: number }
+): Promise<ScheduleItem> {
+  const newId = `sch-${Date.now()}`;
+  const maxOrder = mockDb.schedule.reduce((max, s) => Math.max(max, s.order_index), 0);
+  const newItem: ScheduleItem = {
+    id: newId,
+    time: item.time.trim(),
+    title: item.title.trim().toUpperCase(),
+    tag: item.tag.trim().toUpperCase(),
+    color: item.color || 'bg-nirmaan-blue',
+    text_color: item.text_color || (item.color?.includes('amber') || item.color?.includes('green-bright') ? 'text-nirmaan-black' : 'text-white'),
+    order_index: item.order_index ?? maxOrder + 1,
+    created_at: new Date().toISOString(),
+  };
+
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { data, error } = await supabase.from('schedule').insert(newItem).select().single();
+      if (!error && data) return data as ScheduleItem;
+    } catch {
+      // Fallback to local store
+    }
+  }
+
+  mockDb.schedule.push(newItem);
+  mockDb.schedule.sort((a, b) => a.order_index - b.order_index);
+  return newItem;
+}
+
+export async function updateScheduleItem(
+  id: string,
+  updates: Partial<ScheduleItem>
+): Promise<ScheduleItem | null> {
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { data, error } = await supabase
+        .from('schedule')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      if (!error && data) return data as ScheduleItem;
+    } catch {
+      // Fallback
+    }
+  }
+
+  const idx = mockDb.schedule.findIndex((s) => s.id === id);
+  if (idx === -1) return null;
+
+  mockDb.schedule[idx] = {
+    ...mockDb.schedule[idx],
+    ...updates,
+    ...(updates.title ? { title: updates.title.trim().toUpperCase() } : {}),
+    ...(updates.tag ? { tag: updates.tag.trim().toUpperCase() } : {}),
+    ...(updates.time ? { time: updates.time.trim() } : {}),
+  };
+  mockDb.schedule.sort((a, b) => a.order_index - b.order_index);
+  return mockDb.schedule[idx];
+}
+
+export async function deleteScheduleItem(id: string): Promise<boolean> {
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { error } = await supabase.from('schedule').delete().eq('id', id);
+      if (!error) return true;
+    } catch {
+      // Fallback
+    }
+  }
+
+  const initialLength = mockDb.schedule.length;
+  mockDb.schedule = mockDb.schedule.filter((s) => s.id !== id);
+  return mockDb.schedule.length < initialLength;
+}
+
+export async function reorderSchedule(orderList: { id: string; order_index: number }[]): Promise<boolean> {
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      for (const item of orderList) {
+        await supabase.from('schedule').update({ order_index: item.order_index }).eq('id', item.id);
+      }
+      return true;
+    } catch {
+      // Fallback
+    }
+  }
+
+  orderList.forEach(({ id, order_index }) => {
+    const item = mockDb.schedule.find((s) => s.id === id);
+    if (item) {
+      item.order_index = order_index;
+    }
+  });
+  mockDb.schedule.sort((a, b) => a.order_index - b.order_index);
+  return true;
+}
+
+export async function resetSchedule(): Promise<ScheduleItem[]> {
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      await supabase.from('schedule').delete().neq('id', 'placeholder');
+      await supabase.from('schedule').insert(DEFAULT_SCHEDULE);
+    } catch {
+      // Fallback
+    }
+  }
+
+  mockDb.schedule = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
+  return [...mockDb.schedule];
 }

@@ -68,11 +68,40 @@ CREATE TABLE IF NOT EXISTS public.announcements (
 CREATE INDEX IF NOT EXISTS idx_announcements_published ON public.announcements(published, created_at DESC);
 
 -- -----------------------------------------------------------------------------
+-- 4. Table: schedule
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.schedule (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    time TEXT NOT NULL,
+    title TEXT NOT NULL,
+    tag TEXT NOT NULL DEFAULT 'TIMELINE',
+    color TEXT NOT NULL DEFAULT 'bg-nirmaan-blue',
+    text_color TEXT DEFAULT 'text-white',
+    order_index INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_schedule_order ON public.schedule(order_index ASC);
+
+-- -----------------------------------------------------------------------------
 -- Row-Level Security (RLS)
 -- -----------------------------------------------------------------------------
 ALTER TABLE public.teams ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.schedule ENABLE ROW LEVEL SECURITY;
+
+-- SCHEDULE policies
+CREATE POLICY "Anyone can read schedule"
+    ON public.schedule FOR SELECT
+    TO public
+    USING (true);
+
+CREATE POLICY "Service role has full access to schedule"
+    ON public.schedule FOR ALL
+    TO service_role
+    USING (true)
+    WITH CHECK (true);
 
 -- TEAMS policies
 -- Participants: read own team record
@@ -411,8 +440,23 @@ $$;
 -- SEED DATA: 289 TEAMS, 908 MEMBERS
 -- =============================================================================
 
--- NIRMAAN 2026 Seed Data: 289 Teams, 908 Members
+-- NIRMAAN 2026 Seed Data: 289 Teams, 908 Members, Default Schedule
 BEGIN;
+
+-- Schedule Seed (25-Hour Hackathon)
+INSERT INTO public.schedule (id, time, title, tag, color, text_color, order_index) VALUES
+('sch-1', '09:00 AM', 'ON-DESK REGISTRATION & BADGE COLLECTION', 'REGISTRATION', 'bg-nirmaan-amber', 'text-nirmaan-black', 1),
+('sch-2', '10:00 AM', 'OPENING CEREMONY & PROBLEM STATEMENT REVEAL', 'KEYNOTE', 'bg-nirmaan-blue', 'text-white', 2),
+('sch-3', '11:00 AM', 'HACKING COMMENCES (25 HOURS NON-STOP)', 'BUILD', 'bg-nirmaan-green-bright', 'text-nirmaan-black', 3),
+('sch-4', '01:00 PM', 'LUNCH SERVING', 'MEALS', 'bg-nirmaan-orange', 'text-white', 4),
+('sch-5', '05:00 PM', 'MENTORSHIP ROUND 1', 'MENTORING', 'bg-nirmaan-purple', 'text-white', 5),
+('sch-6', '08:30 PM', 'DINNER SERVING', 'MEALS', 'bg-nirmaan-orange', 'text-white', 6),
+('sch-7', '12:00 AM', 'MIDNIGHT SNACKS & CHILL ZONE ACTIVATION', 'SOCIAL', 'bg-nirmaan-blue', 'text-white', 7),
+('sch-8', '08:00 AM', 'BREAKFAST SERVING (DAY 2)', 'MEALS', 'bg-nirmaan-amber', 'text-nirmaan-black', 8),
+('sch-9', '12:00 PM', 'FINAL CODE FREEZE & PPT SUBMISSION', 'FINALE', 'bg-nirmaan-red', 'text-white', 9),
+('sch-10', '02:00 PM', 'PITCHING & CLOSING AWARDS CEREMONY', 'AWARDS', 'bg-nirmaan-amber', 'text-nirmaan-black', 10)
+ON CONFLICT (id) DO NOTHING;
+
 INSERT INTO public.teams (id, team_name, college, qr_token, checked_in, breakfast_count, lunch_count, dinner_count, coffee_count) VALUES ('team-nir-001', '0xDEADEAD', 'Engineering Institution', 'nirmaan_0xdeadead_036aa8d8a426', false, 0, 0, 0, 0) ON CONFLICT (qr_token) DO NOTHING;
 INSERT INTO public.teams (id, team_name, college, qr_token, checked_in, breakfast_count, lunch_count, dinner_count, coffee_count) VALUES ('team-nir-002', '3 BHK', 'Engineering Institution', 'nirmaan_3_bhk_c4f57ff6e3d7', false, 0, 0, 0, 0) ON CONFLICT (qr_token) DO NOTHING;
 INSERT INTO public.teams (id, team_name, college, qr_token, checked_in, breakfast_count, lunch_count, dinner_count, coffee_count) VALUES ('team-nir-003', '3 byte builders', 'Engineering Institution', 'nirmaan_3_byte_bui_cec14bbe0f48', false, 0, 0, 0, 0) ON CONFLICT (qr_token) DO NOTHING;

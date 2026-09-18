@@ -3,7 +3,7 @@ import StatsOverview from '@/components/Admin/StatsOverview';
 import TeamsTable from '@/components/Admin/TeamsTable';
 import { getEventStatistics, getAllTeams } from '@/lib/data/store';
 import Link from 'next/link';
-import { QrCode, Megaphone } from 'lucide-react';
+import { QrCode, Megaphone, Calendar } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +29,7 @@ export default async function AdminDashboardPage() {
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           <Link
             href="/admin/scanner"
             className="nirmaan-btn nirmaan-btn-primary text-xs py-2.5 px-4 font-black shadow-sm"
@@ -43,6 +43,13 @@ export default async function AdminDashboardPage() {
           >
             <Megaphone className="w-4 h-4 text-nirmaan-amber" />
             BROADCAST
+          </Link>
+          <Link
+            href="/admin/schedule"
+            className="nirmaan-btn bg-white hover:bg-nirmaan-cream text-nirmaan-black border border-nirmaan-black/20 text-xs py-2.5 px-4 font-black shadow-sm"
+          >
+            <Calendar className="w-4 h-4 text-nirmaan-blue" />
+            SCHEDULE
           </Link>
         </div>
       </div>

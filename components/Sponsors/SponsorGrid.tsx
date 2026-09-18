@@ -43,7 +43,7 @@ export default function SponsorGrid() {
       textColor: 'text-nirmaan-black',
       logo: '/sponsors/monster-energy.png',
       url: 'https://www.monsterenergy.com/',
-      description: 'Fueling 36 hours of non-stop hacking with unlimited energy drinks and beverages.',
+      description: 'Fueling 25 hours of non-stop hacking with unlimited energy drinks and beverages.',
       darkBg: false,
     },
   ];

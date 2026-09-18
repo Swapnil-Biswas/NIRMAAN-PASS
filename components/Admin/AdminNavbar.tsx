@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { BarChart3, Zap, Megaphone, Lock, LogOut, Shield } from 'lucide-react';
+import { BarChart3, Zap, Megaphone, Calendar, Lock, LogOut, Shield } from 'lucide-react';
 
 export default function AdminNavbar() {
   const pathname = usePathname();
@@ -73,6 +73,18 @@ export default function AdminNavbar() {
           >
             <Megaphone className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Broadcast</span>
+          </Link>
+
+          <Link
+            href="/admin/schedule"
+            className={`nirmaan-pill text-xs transition-colors ${
+              isActive('/admin/schedule')
+                ? 'bg-nirmaan-blue text-white font-bold shadow-sm'
+                : 'text-white/80 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Schedule</span>
           </Link>
 
           <div className="h-5 w-px bg-white/20 mx-1 hidden sm:block"></div>

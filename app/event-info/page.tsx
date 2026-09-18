@@ -2,21 +2,14 @@ import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import SponsorGrid from '@/components/Sponsors/SponsorGrid';
-import { Calendar, HelpCircle } from 'lucide-react';
+import TimelineSection from '@/components/EventInfo/TimelineSection';
+import { getSchedule } from '@/lib/data/store';
+import { HelpCircle } from 'lucide-react';
 
-export default function EventInfoPage() {
-  const scheduleItems = [
-    { time: '09:00 AM', title: 'ON-DESK REGISTRATION & BADGE COLLECTION', tag: 'REGISTRATION', color: 'bg-nirmaan-amber', textColor: 'text-nirmaan-black' },
-    { time: '10:00 AM', title: 'OPENING CEREMONY & PROBLEM STATEMENT REVEAL', tag: 'KEYNOTE', color: 'bg-nirmaan-blue', textColor: 'text-white' },
-    { time: '11:00 AM', title: 'HACKING COMMENCES (36 HOURS NON-STOP)', tag: 'BUILD', color: 'bg-nirmaan-green-bright', textColor: 'text-nirmaan-black' },
-    { time: '01:00 PM', title: 'LUNCH SERVING', tag: 'MEALS', color: 'bg-nirmaan-orange', textColor: 'text-white' },
-    { time: '05:00 PM', title: 'MENTORSHIP ROUND 1', tag: 'MENTORING', color: 'bg-nirmaan-purple', textColor: 'text-white' },
-    { time: '08:30 PM', title: 'DINNER SERVING', tag: 'MEALS', color: 'bg-nirmaan-orange', textColor: 'text-white' },
-    { time: '12:00 AM', title: 'MIDNIGHT SNACKS & CHILL ZONE ACTIVATION', tag: 'SOCIAL', color: 'bg-nirmaan-blue', textColor: 'text-white' },
-    { time: '08:00 AM', title: 'BREAKFAST SERVING (DAY 2)', tag: 'MEALS', color: 'bg-nirmaan-amber', textColor: 'text-nirmaan-black' },
-    { time: '02:00 PM', title: 'FINAL CODE FREEZE & PPT SUBMISSION', tag: 'FINALE', color: 'bg-nirmaan-red', textColor: 'text-white' },
-    { time: '04:00 PM', title: 'PITCHING & CLOSING AWARDS CEREMONY', tag: 'AWARDS', color: 'bg-nirmaan-amber', textColor: 'text-nirmaan-black' },
-  ];
+export const dynamic = 'force-dynamic';
+
+export default async function EventInfoPage() {
+  const schedule = await getSchedule();
 
   const faqs = [
     {
@@ -55,42 +48,8 @@ export default function EventInfoPage() {
           </p>
         </div>
 
-        {/* Schedule */}
-        <div className="nirmaan-card p-6 sm:p-8 bg-white border border-nirmaan-black/15 shadow-sm">
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-nirmaan-black/10">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-nirmaan-orange" />
-              <h2 className="font-display text-xl font-black uppercase text-nirmaan-black">
-                EVENT TIMELINE & SCHEDULE
-              </h2>
-            </div>
-            <span className="text-xs font-bold text-nirmaan-black/50 uppercase">
-              36-HOUR RUNTIME
-            </span>
-          </div>
-
-          <div className="space-y-3">
-            {scheduleItems.map((item, idx) => (
-              <div
-                key={idx}
-                className="p-3.5 rounded-2xl bg-nirmaan-cream/40 border border-nirmaan-black/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs font-black text-nirmaan-black bg-white px-2.5 py-1 rounded-lg border border-nirmaan-black/10 shadow-xs">
-                    {item.time}
-                  </span>
-                  <span className="font-bold text-xs sm:text-sm text-nirmaan-black">
-                    {item.title}
-                  </span>
-                </div>
-
-                <span className={`nirmaan-pill ${item.color} ${item.textColor} text-[10px] self-start sm:self-auto font-black`}>
-                  {item.tag}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Dynamic Schedule */}
+        <TimelineSection initialSchedule={schedule} />
 
         {/* FAQ Section */}
         <div className="nirmaan-card p-6 sm:p-8 bg-white border border-nirmaan-black/15 shadow-sm">

@@ -72,18 +72,26 @@ Security & Session Architecture:
     - Replaced `@supabase/ssr` edge middleware in `middleware.ts` with a clean pass-through (`NextResponse.next()`).
     - Reduced edge middleware bundle size from 86.1 kB to 26.5 kB, eliminating all edge network timeouts or unhandled exceptions.
     - Hardened `utils/supabase/middleware.ts` with complete defensive try/catch blocks.
-  - **Event Info Page Cleanup**:
+  - **Event Info Page Cleanup & 25-Hour Runtime**:
     - Removed temporary "CAMPUS VENUE LOCATIONS" card and "HACKATHON RULES & GUIDELINES" card from `app/event-info/page.tsx` until officially confirmed.
-    - Simplified layout into a clean, centered 36-hour schedule timeline, FAQ accordion grid, and official sponsor showcase.
+    - Updated runtime from 36-hour to 25-hour runtime across the timeline badge, event entries, and sponsor descriptions.
+    - Simplified layout into a clean, centered 25-hour schedule timeline, FAQ accordion grid, and official sponsor showcase.
+  - **Dynamic Schedule Management via Admin Panel**:
+    - Built dynamic schedule management under `/admin/schedule` allowing organizers to add, edit, delete, reorder (↑/↓), and reset timeline events.
+    - Created `components/EventInfo/TimelineSection.tsx` with live background polling to reflect organizer updates in real-time.
+    - Added public API endpoint `GET /api/schedule` and organizer-protected endpoints `POST /api/admin/schedule`, `PUT /api/admin/schedule`, `DELETE /api/admin/schedule`, and `POST /api/admin/schedule/reset`.
+    - Added `Schedule` navigation link to `components/Admin/AdminNavbar.tsx` and quick action button to `app/admin/dashboard/page.tsx`.
+    - Updated `supabase/complete_database_migration.sql` with `public.schedule` table, RLS policies, and seed data.
 - [x] **Automated Testing & Full Build Verification** — 2026-09-18
-  - All 32 tests passing across 5 test suites (`npm test`):
+  - All 38 tests passing across 6 test suites (`npm test`):
     - `tests/domain-rules.test.ts` (10/10 passing)
     - `tests/admin-security.test.ts` (9/9 passing)
     - `tests/auth-session.test.ts` (5/5 passing)
     - `tests/middleware.test.ts` (5/5 passing)
     - `tests/schema-models.test.ts` (3/3 passing)
+    - `tests/schedule.test.ts` (6/6 passing)
   - TypeScript validation (`npm run lint` / `tsc --noEmit`) passes with 0 errors.
-  - Next.js production build (`npm run build`) passing 100% across all 20 routes.
+  - Next.js production build (`npm run build`) passing 100% across all 21 routes.
 
 ## In Progress / Pending
 - [ ] Teammate connects new Supabase database by pasting credentials into `.env.local` and executing `supabase/complete_database_migration.sql` in their Supabase SQL editor.
