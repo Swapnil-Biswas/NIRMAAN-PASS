@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllTeams, findTeamByToken, getTeamMembers } from '@/lib/data/store';
+import { verifyAdminSession } from '@/lib/auth/admin';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    if (!verifyAdminSession(req)) {
+      return NextResponse.json(
+        { success: false, message: 'Organizer authentication required' },
+        { status: 401 }
+      );
+    }
     const { searchParams } = new URL(req.url);
     const token = searchParams.get('token');
 

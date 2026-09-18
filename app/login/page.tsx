@@ -50,7 +50,7 @@ export default function LoginPage() {
               }
             }
           } catch {}
-          setError('Authentication server offline. You can test directly via the Demo Dashboard below.');
+          setError('Authentication server is currently unavailable. Please try again in a moment or activate your team.');
           return;
         }
 
@@ -198,19 +198,6 @@ export default function LoginPage() {
             ACTIVATE YOUR TEAM
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
-        </div>
-
-        {/* Demo Mode Notice */}
-        <div className="nirmaan-card bg-nirmaan-amber/10 border border-nirmaan-amber/30 p-4 text-center">
-          <p className="text-[10px] font-bold uppercase text-nirmaan-black/60 mb-1">
-            Demo Mode Available
-          </p>
-          <p className="text-xs text-nirmaan-black/50">
-            You can explore the app without logging in via the{' '}
-            <Link href="/dashboard" className="text-nirmaan-blue underline font-bold">
-              demo dashboard
-            </Link>
-          </p>
         </div>
       </div>
     </div>

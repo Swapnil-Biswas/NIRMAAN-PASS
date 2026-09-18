@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Navbar from '@/components/Navbar';
 import { Megaphone, Send, CheckCircle2, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { Announcement, PriorityLevel } from '@/types/database';
 import AnnouncementList from '@/components/AnnouncementCard/AnnouncementList';
@@ -66,10 +65,7 @@ export default function AdminAnnouncementsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-nirmaan-cream flex flex-col">
-      <Navbar />
-
-      <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 w-full space-y-8">
+    <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 w-full space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
@@ -190,6 +186,5 @@ export default function AdminAnnouncementsPage() {
           </div>
         </div>
       </main>
-    </div>
-  );
-}
+    );
+  }

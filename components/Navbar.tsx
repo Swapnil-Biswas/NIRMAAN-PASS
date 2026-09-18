@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { QrCode, LayoutDashboard, Info, ShieldAlert, Share2, LogIn, LogOut, User, Zap } from 'lucide-react';
+import { QrCode, LayoutDashboard, Info, Share2, LogIn, LogOut, User } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function Navbar() {
@@ -125,31 +125,7 @@ export default function Navbar() {
             <span className="hidden sm:inline">Socials</span>
           </Link>
 
-          <div className="h-6 w-px bg-nirmaan-black/15 mx-1 hidden sm:block"></div>
 
-          <Link
-            href="/admin/scanner"
-            className={`nirmaan-pill transition-colors ${
-              isLinkActive('/admin/scanner')
-                ? 'bg-nirmaan-red text-white shadow-sm'
-                : 'bg-nirmaan-black text-white hover:bg-nirmaan-black/80'
-            }`}
-          >
-            <Zap className="w-3.5 h-3.5 text-nirmaan-amber" />
-            <span className="hidden sm:inline">Scanner</span>
-          </Link>
-
-          <Link
-            href="/admin/dashboard"
-            className={`nirmaan-pill transition-colors ${
-              isLinkActive('/admin/dashboard') || isLinkActive('/admin/teams') || isLinkActive('/admin/announcements')
-                ? 'bg-nirmaan-green-dark text-white shadow-sm'
-                : 'bg-nirmaan-cream-card hover:bg-nirmaan-black/5 text-nirmaan-black border border-nirmaan-black/10'
-            }`}
-          >
-            <ShieldAlert className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Admin</span>
-          </Link>
 
           {/* Auth Button */}
           <div className="h-6 w-px bg-nirmaan-black/15 mx-0.5 hidden sm:block"></div>

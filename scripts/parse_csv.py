@@ -93,17 +93,7 @@ def main():
     for t in teams:
         t["college"] = infer_college(t["_members"])
         del t["_members"]
-
-    # Pre-seed first 3 demo teams with checked-in test data for demo convenience
-    teams[0]["checked_in"] = True
-    teams[0]["breakfast_count"] = 3
-    teams[0]["lunch_count"] = 2
-    teams[0]["coffee_count"] = 14
-    # Mark first 3 members of team 0 present
-    m_t0 = [m for m in members_list if m["team_id"] == teams[0]["id"]]
-    for i, m in enumerate(m_t0[:3]):
-        m["present"] = True
-
+    # All teams and members start in clean, un-scanned initial state
     # SQL seed file for Supabase
     sql_lines = [
         "-- NIRMAAN 2026 Seed Data: 289 Teams, 908 Members",

@@ -369,7 +369,7 @@ export default function QRScanner() {
         >
           <input
             type="text"
-            placeholder="Enter token (e.g. nirmaan_alpha_9281a)"
+            placeholder="Enter team QR token..."
             value={manualToken}
             onChange={(e) => setManualToken(e.target.value)}
             className="flex-1 px-4 py-2.5 rounded-full border-2 border-nirmaan-black/20 focus:border-nirmaan-black outline-none font-mono text-xs"
@@ -382,33 +382,6 @@ export default function QRScanner() {
             {loading ? 'LOOKUP...' : 'SCAN'}
           </button>
         </form>
-
-        {/* Quick Test Presets */}
-        <div>
-          <p className="text-[11px] font-bold uppercase text-nirmaan-black/50 mb-2">
-            Click to test with pre-seeded teams:
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => handleTokenScanned('nirmaan_alpha_9281a')}
-              className="nirmaan-pill bg-white hover:bg-nirmaan-cream text-nirmaan-black border border-nirmaan-black/15 text-[11px]"
-            >
-              Alpha (Checked In, 3 Present)
-            </button>
-            <button
-              onClick={() => handleTokenScanned('nirmaan_beta_4812b')}
-              className="nirmaan-pill bg-white hover:bg-nirmaan-cream text-nirmaan-black border border-nirmaan-black/15 text-[11px]"
-            >
-              Beta (Unregistered)
-            </button>
-            <button
-              onClick={() => handleTokenScanned('nirmaan_gamma_7723c')}
-              className="nirmaan-pill bg-white hover:bg-nirmaan-cream text-nirmaan-black border border-nirmaan-black/15 text-[11px]"
-            >
-              Gamma (Full Meals)
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Render Popups based on purpose and scanned team */}

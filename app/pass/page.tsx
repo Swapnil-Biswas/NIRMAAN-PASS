@@ -2,11 +2,12 @@ import React from 'react';
 import Navbar from '@/components/Navbar';
 import PassCard from '@/components/TeamQR/PassCard';
 import SponsorGrid from '@/components/Sponsors/SponsorGrid';
-import { findTeamByToken, getTeamMembers, getAllTeams } from '@/lib/data/store';
+import { findTeamByToken, getTeamMembers } from '@/lib/data/store';
 import { getTeamForUser } from '@/lib/auth/session';
-import TeamDropdown from '@/components/TeamSelector/TeamDropdown';
+import { Team, Member } from '@/types/database';
+import PassLookupForm from '@/components/Participant/PassLookupForm';
 import Link from 'next/link';
-import { ArrowLeft, Users, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Users, QrCode, LogIn, KeyRound } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,8 +16,8 @@ interface PassPageProps {
 }
 
 export default async function PassPage({ searchParams }: PassPageProps) {
-  let team = null;
-  let members = [];
+  let team: Team | null = null;
+  let members: Member[] = [];
 
   if (searchParams?.token) {
     team = await findTeamByToken(searchParams.token);
@@ -26,29 +27,44 @@ export default async function PassPage({ searchParams }: PassPageProps) {
     if (userTeam) {
       team = userTeam.team;
       members = userTeam.members;
-    } else {
-      team = await findTeamByToken('nirmaan_alpha_9281a');
-      members = team ? await getTeamMembers(team.id) : [];
     }
   }
 
-  const allTeams = await getAllTeams();
-
+  // If no team loaded (unauthenticated and no token provided, or invalid token)
   if (!team) {
     return (
       <div className="min-h-screen bg-nirmaan-cream flex flex-col">
         <Navbar />
         <main className="flex-1 flex items-center justify-center p-4">
-          <div className="nirmaan-card p-8 text-center max-w-md bg-white border border-nirmaan-black">
-            <h1 className="font-display text-2xl font-black uppercase text-nirmaan-red mb-2">
-              PASS NOT FOUND
-            </h1>
-            <p className="text-xs font-semibold text-nirmaan-black/70 mb-4">
-              Unable to locate team pass with the provided token.
-            </p>
-            <Link href="/" className="nirmaan-btn nirmaan-btn-primary text-xs py-2.5 px-4 font-bold">
-              Return Home
-            </Link>
+          <div className="nirmaan-card p-8 text-center max-w-md w-full bg-white border border-nirmaan-black shadow-sm space-y-6">
+            <div className="w-12 h-12 rounded-full bg-nirmaan-amber/20 flex items-center justify-center mx-auto text-nirmaan-black">
+              <QrCode className="w-6 h-6" />
+            </div>
+
+            <div>
+              <h1 className="font-display text-2xl font-black uppercase text-nirmaan-black mb-1">
+                ACCESS YOUR TEAM PASS
+              </h1>
+              <p className="text-xs font-medium text-nirmaan-black/70">
+                Log in with your team credentials or enter your team pass token to view your digital pass.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <PassLookupForm />
+            </div>
+
+            <div className="pt-4 border-t border-nirmaan-black/10 flex items-center justify-center gap-4 text-xs font-bold">
+              <Link href="/login?redirect=/pass" className="text-nirmaan-blue hover:underline flex items-center gap-1">
+                <LogIn className="w-3.5 h-3.5" />
+                Team Login
+              </Link>
+              <span className="text-nirmaan-black/20">•</span>
+              <Link href="/activate" className="text-nirmaan-black/70 hover:underline flex items-center gap-1">
+                <KeyRound className="w-3.5 h-3.5" />
+                Activate Account
+              </Link>
+            </div>
           </div>
         </main>
       </div>
@@ -63,17 +79,18 @@ export default async function PassPage({ searchParams }: PassPageProps) {
 
       <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-8 w-full">
         {/* Top Header Controls */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <div className="flex items-center justify-between gap-4 mb-6">
           <Link
-            href="/dashboard"
+            href={`/dashboard${searchParams?.token ? `?token=${encodeURIComponent(searchParams.token)}` : ''}`}
             className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-nirmaan-black/70 hover:text-nirmaan-black transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             BACK TO DASHBOARD
           </Link>
 
-          {/* Quick Team Switcher for Testing / Multi-team View */}
-          <TeamDropdown teams={allTeams} currentQrToken={team.qr_token} basePath="/pass" />
+          <span className="nirmaan-pill bg-white text-nirmaan-black border border-nirmaan-black/15 text-[11px] font-bold">
+            {team.team_name}
+          </span>
         </div>
 
         {/* Digital Pass Card */}

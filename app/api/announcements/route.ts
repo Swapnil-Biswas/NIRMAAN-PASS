@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAnnouncements, createAnnouncement } from '@/lib/data/store';
+import { verifyAdminSession } from '@/lib/auth/admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +20,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    if (!verifyAdminSession(req)) {
+      return NextResponse.json(
+        { success: false, message: 'Organizer authentication required to broadcast' },
+        { status: 401 }
+      );
+    }
     const body = await req.json();
     const { title, message, priority, published } = body;
 

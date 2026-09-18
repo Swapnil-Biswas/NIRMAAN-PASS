@@ -7,11 +7,11 @@
       "college": "Engineering Institution",
       "auth_id": null,
       "qr_token": "nirmaan_0xdeadead_036aa8d8a426",
-      "checked_in": true,
-      "breakfast_count": 3,
-      "lunch_count": 2,
+      "checked_in": false,
+      "breakfast_count": 0,
+      "lunch_count": 0,
       "dinner_count": 0,
-      "coffee_count": 14,
+      "coffee_count": 0,
       "created_at": "2026-09-18T00:00:00.000Z",
       "updated_at": "2026-09-18T00:00:00.000Z"
     },
@@ -4343,7 +4343,7 @@
       "name": "Chetan Kulkarni",
       "phone": "+91 90000 00000",
       "email": "chetankulkarni47@gmail.com",
-      "present": true,
+      "present": false,
       "created_at": "2026-09-18T00:00:00.000Z"
     },
     {
@@ -4352,7 +4352,7 @@
       "name": "Joel John Alex",
       "phone": "+91 90000 00000",
       "email": "joelalex0601@gmail.com",
-      "present": true,
+      "present": false,
       "created_at": "2026-09-18T00:00:00.000Z"
     },
     {
@@ -4361,7 +4361,7 @@
       "name": "Eshan Shukla",
       "phone": "+91 90000 00000",
       "email": "eshanshukla2005@gmail.com",
-      "present": true,
+      "present": false,
       "created_at": "2026-09-18T00:00:00.000Z"
     },
     {

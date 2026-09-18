@@ -2,9 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { processMealScan, processCoffeeScan, processRegistration, findTeamByToken, getTeamMembers } from '@/lib/data/store';
 import { sanitizeQRToken } from '@/lib/qr/token';
 import { ScanPurpose, MealType } from '@/types/database';
+import { verifyAdminSession } from '@/lib/auth/admin';
 
 export async function POST(req: NextRequest) {
   try {
+    if (!verifyAdminSession(req)) {
+      return NextResponse.json(
+        { success: false, error_code: 'UNAUTHORIZED', message: 'Organizer authentication required' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { qr_token, purpose, present_member_ids, action } = body;
 

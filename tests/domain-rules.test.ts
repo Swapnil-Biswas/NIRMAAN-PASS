@@ -75,30 +75,33 @@ describe('Domain Rules & Meal Entitlement', () => {
 });
 
 describe('Store Operations (Meals, Coffee, Registration)', () => {
-  it('processes meal scans sequentially up to present count', async () => {
-    // Team Alpha has 3 present members, initial breakfast_count is 3
-    const token = 'nirmaan_alpha_9281a';
-    const initialTeam = await findTeamByToken(token);
-    expect(initialTeam).toBeDefined();
+  it('on-desk registration sets checked_in and updates present members', async () => {
+    // Team 1 is initially not checked in
+    const token = 'nirmaan_0xdeadead_036aa8d8a426';
+    const regRes = await processRegistration(token, ['m-nir-0001', 'm-nir-0002']);
+    expect(regRes.success).toBe(true);
+    expect(regRes.checked_in).toBe(true);
+    expect(regRes.present_count).toBe(2);
 
-    // Breakfast is already 3/3 -> should reject
-    const scanRes = await processMealScan(token, 'breakfast');
-    expect(scanRes.success).toBe(false);
-    expect(scanRes.error_code).toBe('MEAL_LIMIT_REACHED');
+    // Now lunch scan should work for up to 2 servings
+    const lunchRes1 = await processMealScan(token, 'lunch');
+    expect(lunchRes1.success).toBe(true);
+    expect(lunchRes1.new_count).toBe(1);
+    expect(lunchRes1.remaining_count).toBe(1);
 
-    // Dinner is 0/3 -> should succeed
-    const dinnerRes1 = await processMealScan(token, 'dinner');
-    expect(dinnerRes1.success).toBe(true);
-    expect(dinnerRes1.new_count).toBe(1);
-    expect(dinnerRes1.remaining_count).toBe(2);
+    const lunchRes2 = await processMealScan(token, 'lunch');
+    expect(lunchRes2.success).toBe(true);
+    expect(lunchRes2.new_count).toBe(2);
+    expect(lunchRes2.remaining_count).toBe(0);
 
-    const dinnerRes2 = await processMealScan(token, 'dinner');
-    expect(dinnerRes2.success).toBe(true);
-    expect(dinnerRes2.new_count).toBe(2);
+    // 3rd scan should be rejected
+    const lunchRes3 = await processMealScan(token, 'lunch');
+    expect(lunchRes3.success).toBe(false);
+    expect(lunchRes3.error_code).toBe('MEAL_LIMIT_REACHED');
   });
 
   it('coffee scans are unlimited and increment every time', async () => {
-    const token = 'nirmaan_alpha_9281a';
+    const token = 'nirmaan_0xdeadead_036aa8d8a426';
     const res1 = await processCoffeeScan(token);
     expect(res1.success).toBe(true);
     const count1 = res1.new_count!;
@@ -108,19 +111,12 @@ describe('Store Operations (Meals, Coffee, Registration)', () => {
     expect(res2.new_count).toBe(count1 + 1);
   });
 
-  it('on-desk registration sets checked_in and updates present members', async () => {
-    // Team Beta is initially not checked in
-    const token = 'nirmaan_beta_4812b';
-    const regRes = await processRegistration(token, ['m-beta-1', 'm-beta-2']);
-    expect(regRes.success).toBe(true);
-    expect(regRes.checked_in).toBe(true);
-    expect(regRes.present_count).toBe(2);
-    expect(regRes.total_members).toBe(3);
-
-    // Now lunch scan should work for up to 2 servings
-    const lunchRes = await processMealScan(token, 'lunch');
-    expect(lunchRes.success).toBe(true);
-    expect(lunchRes.new_count).toBe(1);
+  it('rejects meal scan when team is not checked in', async () => {
+    // Team 2 is not checked in
+    const token = 'nirmaan_3_bhk_c4f57ff6e3d7';
+    const scanRes = await processMealScan(token, 'breakfast');
+    expect(scanRes.success).toBe(false);
+    expect(scanRes.error_code).toBe('NOT_CHECKED_IN');
   });
 
   it('rejects scans with invalid or unknown QR tokens', async () => {

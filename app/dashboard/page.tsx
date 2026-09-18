@@ -4,11 +4,12 @@ import PassCard from '@/components/TeamQR/PassCard';
 import FoodStatusGrid from '@/components/FoodStatus/FoodStatusGrid';
 import AnnouncementList from '@/components/AnnouncementCard/AnnouncementList';
 import SponsorGrid from '@/components/Sponsors/SponsorGrid';
-import { findTeamByToken, getTeamMembers, getAnnouncements, getAllTeams } from '@/lib/data/store';
+import PassLookupForm from '@/components/Participant/PassLookupForm';
+import { findTeamByToken, getTeamMembers, getAnnouncements } from '@/lib/data/store';
 import { getTeamForUser } from '@/lib/auth/session';
-import TeamDropdown from '@/components/TeamSelector/TeamDropdown';
+import { Team, Member } from '@/types/database';
 import Link from 'next/link';
-import { Users, LayoutDashboard, ShieldCheck, QrCode, ArrowRight, ExternalLink } from 'lucide-react';
+import { Users, LayoutDashboard, ExternalLink, LogIn, KeyRound } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,8 +18,8 @@ interface DashboardPageProps {
 }
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
-  let team = null;
-  let members = [];
+  let team: Team | null = null;
+  let members: Member[] = [];
 
   if (searchParams?.token) {
     team = await findTeamByToken(searchParams.token);
@@ -28,30 +29,45 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     if (userTeam) {
       team = userTeam.team;
       members = userTeam.members;
-    } else {
-      team = await findTeamByToken('nirmaan_alpha_9281a');
-      members = team ? await getTeamMembers(team.id) : [];
     }
   }
 
   const announcements = await getAnnouncements(true);
-  const allTeams = await getAllTeams();
 
   if (!team) {
     return (
       <div className="min-h-screen bg-nirmaan-cream flex flex-col">
         <Navbar />
         <main className="flex-1 flex items-center justify-center p-4">
-          <div className="nirmaan-card p-8 text-center max-w-md bg-white border border-nirmaan-black">
-            <h1 className="font-display text-2xl font-black uppercase text-nirmaan-red mb-2">
-              TEAM NOT FOUND
-            </h1>
-            <p className="text-xs font-semibold text-nirmaan-black/70 mb-4">
-              Unable to load dashboard for this team token.
-            </p>
-            <Link href="/" className="nirmaan-btn nirmaan-btn-primary text-xs py-2.5 px-4 font-bold">
-              Return Home
-            </Link>
+          <div className="nirmaan-card p-8 text-center max-w-md w-full bg-white border border-nirmaan-black shadow-sm space-y-6">
+            <div className="w-12 h-12 rounded-full bg-nirmaan-blue/20 flex items-center justify-center mx-auto text-nirmaan-blue">
+              <LayoutDashboard className="w-6 h-6" />
+            </div>
+
+            <div>
+              <h1 className="font-display text-2xl font-black uppercase text-nirmaan-black mb-1">
+                TEAM DASHBOARD
+              </h1>
+              <p className="text-xs font-medium text-nirmaan-black/70">
+                Log in to view your team meal allowances, attendance, and live status.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <PassLookupForm />
+            </div>
+
+            <div className="pt-4 border-t border-nirmaan-black/10 flex items-center justify-center gap-4 text-xs font-bold">
+              <Link href="/login?redirect=/dashboard" className="text-nirmaan-blue hover:underline flex items-center gap-1">
+                <LogIn className="w-3.5 h-3.5" />
+                Team Login
+              </Link>
+              <span className="text-nirmaan-black/20">•</span>
+              <Link href="/activate" className="text-nirmaan-black/70 hover:underline flex items-center gap-1">
+                <KeyRound className="w-3.5 h-3.5" />
+                Activate Team
+              </Link>
+            </div>
           </div>
         </main>
       </div>
@@ -86,8 +102,13 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </p>
           </div>
 
-          {/* Quick Switch Team Context */}
-          <TeamDropdown teams={allTeams} currentQrToken={team.qr_token} basePath="/dashboard" />
+          <Link
+            href={`/pass?token=${team.qr_token}`}
+            className="nirmaan-btn nirmaan-btn-primary text-xs py-2.5 px-5 font-bold shadow-xs flex items-center gap-2"
+          >
+            <span>VIEW FULL PASS</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
         </div>
 
         {/* Food & Beverage Entitlement Grid */}
@@ -140,7 +161,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                   >
                     <div>
                       <p className="font-bold text-xs text-nirmaan-black">{member.name}</p>
-                      <p className="text-[11px] text-nirmaan-black/60">{member.phone}</p>
+                      <p className="text-[11px] text-nirmaan-black/60">{member.phone || 'Phone registered'}</p>
                       <p className="text-[10px] text-nirmaan-black/40">{member.email}</p>
                     </div>
                     {member.present ? (
