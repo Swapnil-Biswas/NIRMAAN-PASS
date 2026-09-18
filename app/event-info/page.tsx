@@ -4,12 +4,28 @@ import Footer from '@/components/Footer';
 import SponsorGrid from '@/components/Sponsors/SponsorGrid';
 import TimelineSection from '@/components/EventInfo/TimelineSection';
 import { getSchedule } from '@/lib/data/store';
-import { HelpCircle } from 'lucide-react';
+import { MapPin, ShieldAlert, HelpCircle, CheckCircle2 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
 export default async function EventInfoPage() {
   const schedule = await getSchedule();
+
+  const venues = [
+    { name: 'Main Auditorium', desc: 'Registration & Ceremonies' },
+    { name: 'Hack Bay A & B', desc: 'Team Workstations & Power Stations' },
+    { name: 'Food Hall B', desc: 'Breakfast, Lunch & Dinner Counters' },
+    { name: 'Lobby Counter', desc: '24×7 Unlimited Coffee & Tea' },
+  ];
+
+  const rules = [
+    'One Team = One QR. All team members must use the same team pass for meals and entry.',
+    'On-Desk Registration determines physical attendance and your team food entitlement.',
+    'Food scans record actual servings (1 scan = 1 meal). Members may collect meals at different times.',
+    'Coffee and Tea counters are unlimited throughout the hackathon.',
+    'All code, design, and assets must be developed during the hackathon period.',
+    'Maintain respectful conduct across hack bays and event halls at all times.',
+  ];
 
   const faqs = [
     {
@@ -43,13 +59,59 @@ export default async function EventInfoPage() {
           <h1 className="font-display text-4xl sm:text-5xl font-black uppercase text-nirmaan-black leading-tight">
             NIRMAAN 2026 INFO
           </h1>
-          <p className="text-sm sm:text-base font-semibold text-nirmaan-black/70 mt-2">
-            Complete schedule, event details, and FAQs
+          <p className="text-sm sm:text-base font-semibold text-nirmaan-black/75 mt-2">
+            Complete schedule, venue map, hackathon guidelines, and FAQs
           </p>
         </div>
 
         {/* Dynamic Schedule */}
         <TimelineSection initialSchedule={schedule} />
+
+        {/* 2-Column Grid: Venue & Rules */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          {/* Venue Card */}
+          <div className="nirmaan-card p-6 bg-white border border-nirmaan-black/15 shadow-sm">
+            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-nirmaan-black/10">
+              <MapPin className="w-5 h-5 text-nirmaan-green-dark" />
+              <h3 className="font-display text-lg font-black uppercase text-nirmaan-black">
+                CAMPUS VENUE LOCATIONS
+              </h3>
+            </div>
+            <div className="space-y-2.5">
+              {venues.map((venue, idx) => (
+                <div
+                  key={idx}
+                  className="p-3 rounded-xl bg-nirmaan-cream/40 border border-nirmaan-black/10 flex items-start gap-2.5"
+                >
+                  <span className="text-sm select-none flex-shrink-0 mt-0.5">📍</span>
+                  <div className="text-xs leading-relaxed">
+                    <strong className="font-bold text-nirmaan-black">{venue.name}: </strong>
+                    <span className="font-medium text-nirmaan-black/80">{venue.desc}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Rules Card */}
+          <div className="nirmaan-card p-6 bg-white border border-nirmaan-black/15 shadow-sm">
+            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-nirmaan-black/10">
+              <ShieldAlert className="w-5 h-5 text-nirmaan-red" />
+              <h3 className="font-display text-lg font-black uppercase text-nirmaan-black">
+                EVENT RULES
+              </h3>
+            </div>
+
+            <ul className="space-y-2.5">
+              {rules.map((rule, idx) => (
+                <li key={idx} className="flex items-start gap-2.5 text-xs font-medium text-nirmaan-black/85 leading-relaxed">
+                  <CheckCircle2 className="w-4 h-4 text-nirmaan-green-dark flex-shrink-0 mt-0.5" />
+                  <span>{rule}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
 
         {/* FAQ Section */}
         <div className="nirmaan-card p-6 sm:p-8 bg-white border border-nirmaan-black/15 shadow-sm">
@@ -66,7 +128,7 @@ export default async function EventInfoPage() {
                 <h4 className="font-display text-sm font-black uppercase text-nirmaan-black mb-1.5">
                   {faq.q}
                 </h4>
-                <p className="text-xs font-medium text-nirmaan-black/75 leading-relaxed">
+                <p className="text-xs font-medium text-nirmaan-black/85 leading-relaxed">
                   {faq.a}
                 </p>
               </div>

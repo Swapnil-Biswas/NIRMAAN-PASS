@@ -44,7 +44,7 @@ export default function TimelineSection({ initialSchedule }: TimelineSectionProp
             EVENT TIMELINE & SCHEDULE
           </h2>
         </div>
-        <span className="text-xs font-bold text-nirmaan-black/50 uppercase tracking-wider">
+        <span className="text-xs font-black text-nirmaan-black/75 uppercase tracking-wider">
           25-HOUR RUNTIME
         </span>
       </div>
