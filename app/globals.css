@@ -137,6 +137,35 @@ h1, h2, h3, .font-display {
   scrollbar-width: none;
 }
 
+/* Infinite Sponsor Marquee Animation */
+@keyframes marquee-scroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee-mobile {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 24s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-mobile:hover,
+.animate-marquee-mobile:active {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-mobile {
+    animation: none;
+    overflow-x: auto;
+  }
+}
+
 /* ======================================================================
    PRINT-FRIENDLY STYLES — Digital Pass Page
    ====================================================================== */
