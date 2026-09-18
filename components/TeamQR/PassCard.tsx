@@ -5,6 +5,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Download, Share2, Check, Copy, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { Team, Member } from '@/types/database';
 import { formatQRPayload } from '@/lib/qr/token';
+import { NIRMAAN_QR_LOGO } from '@/lib/brand/qrLogo';
 
 interface PassCardProps {
   team: Team;
@@ -46,12 +47,25 @@ export default function PassCard({ team, members = [] }: PassCardProps) {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 100, 100, 800, 800);
 
-      const pngFile = canvas.toDataURL('image/png');
-      const downloadLink = document.createElement('a');
-      downloadLink.download = `${team.team_name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_nirmaan_pass.png`;
-      downloadLink.href = pngFile;
-      downloadLink.click();
-      URL.revokeObjectURL(blobUrl);
+      // Explicitly overlay the high-res emblem in center to ensure crystal-clear export
+      const logoImg = new Image();
+      const saveFile = () => {
+        const pngFile = canvas.toDataURL('image/png');
+        const downloadLink = document.createElement('a');
+        downloadLink.download = `${team.team_name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_nirmaan_pass.png`;
+        downloadLink.href = pngFile;
+        downloadLink.click();
+        URL.revokeObjectURL(blobUrl);
+      };
+
+      logoImg.onload = () => {
+        const logoSize = Math.round(800 * (52 / 220));
+        const logoOffset = 500 - Math.round(logoSize / 2);
+        ctx.drawImage(logoImg, logoOffset, logoOffset, logoSize, logoSize);
+        saveFile();
+      };
+      logoImg.onerror = saveFile;
+      logoImg.src = NIRMAAN_QR_LOGO;
     };
 
     img.onerror = () => {
@@ -145,6 +159,12 @@ export default function PassCard({ team, members = [] }: PassCardProps) {
               includeMargin={false}
               fgColor="#141414"
               bgColor="#FFFFFF"
+              imageSettings={{
+                src: NIRMAAN_QR_LOGO,
+                height: 52,
+                width: 52,
+                excavate: true,
+              }}
             />
           </div>
 

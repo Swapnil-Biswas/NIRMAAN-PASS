@@ -81,7 +81,10 @@ Security & Session Architecture:
     - Created `components/EventInfo/TimelineSection.tsx` with live background polling to reflect organizer updates in real-time.
     - Added public API endpoint `GET /api/schedule` and organizer-protected endpoints `POST /api/admin/schedule`, `PUT /api/admin/schedule`, `DELETE /api/admin/schedule`, and `POST /api/admin/schedule/reset`.
     - Added `Schedule` navigation link to `components/Admin/AdminNavbar.tsx` and quick action button to `app/admin/dashboard/page.tsx`.
-    - Updated `supabase/complete_database_migration.sql` with `public.schedule` table, RLS policies, and seed data.
+  - **Official NIRMAAN 2026 QR Center Logo**:
+    - Embedded official NIRMAAN 2026 emblem into the exact center of all generated team QR passes in `components/TeamQR/PassCard.tsx`.
+    - Configured `QRCodeSVG` with `level="H"` error correction (up to 30% restoration capability) and `excavate: true` module excavation.
+    - Embedded high-res Base64 data URI in `lib/brand/qrLogo.ts` ensuring 100% offline reliability, zero network delay, and zero canvas taint during high-res PNG pass export (`handleDownload`).
 - [x] **Automated Testing & Full Build Verification** — 2026-09-18
   - All 38 tests passing across 6 test suites (`npm test`):
     - `tests/domain-rules.test.ts` (10/10 passing)
