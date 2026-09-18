@@ -43,6 +43,11 @@ Security & Session Architecture:
 - [x] **Removed Obsolete Supabase Connection & Configured Plug-and-Play Architecture** — 2026-09-18
   - Disconnected obsolete Supabase credentials from `.env.local` and `.env.example`.
   - Updated `utils/supabase/middleware.ts`, `utils/supabase/client.ts`, and `utils/supabase/server.ts` with safe fallback handling to prevent unhandled fetch exceptions when Supabase is unconfigured.
+- [x] **Fixed Vercel 500 MIDDLEWARE_INVOCATION_FAILED Error** — 2026-09-18
+  - Added global try/catch error boundary in [middleware.ts](file:///c:/Users/swapn/OneDrive/Desktop/NIRMAAN-PASS/middleware.ts) preventing unhandled middleware crashes on Vercel Edge Runtime.
+  - Hardened [utils/supabase/middleware.ts](file:///c:/Users/swapn/OneDrive/Desktop/NIRMAAN-PASS/utils/supabase/middleware.ts) with `isValidHttpUrl` validation, placeholder bypass, cookie manipulation error guards, and safe fallback credentials.
+  - Added [tests/middleware.test.ts](file:///c:/Users/swapn/OneDrive/Desktop/NIRMAAN-PASS/tests/middleware.test.ts) covering all edge conditions (missing env vars, invalid URLs, placeholder configs) — 29/29 tests passing.
+  - Added default [.env](file:///c:/Users/swapn/OneDrive/Desktop/NIRMAAN-PASS/.env) file ensuring Vercel production environments have baseline environment configurations.
   - Built unified local authentication pipeline:
     - `POST /api/auth/login`: validates member email against verified team roster, generates secure `nirmaan_team_session` cookie.
     - `GET /api/auth/session`: SSR and client session status endpoint.
