@@ -78,3 +78,76 @@ export interface TeamWithMembers extends Team {
   present_members_count: number;
   total_members_count: number;
 }
+
+// =============================================================================
+// Event & Multi-Session Attendance Schema
+// =============================================================================
+
+export type RegistrationStatus = 'APPROVED' | 'PENDING' | 'REJECTED' | 'WAITLISTED';
+export type UserType = 'STUDENT' | 'PROFESSIONAL' | 'FACULTY' | 'OTHER';
+export type EventStatus = 'UPCOMING' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
+
+export interface Event {
+  id: string;
+  title: string;
+  date: string | Date;
+  status: EventStatus | string;
+  registrations?: Registration[];
+  attendanceInstances?: AttendanceInstance[];
+}
+
+export interface RegistrationTeamMember {
+  name: string;
+  email: string;
+  phone?: string;
+  usn?: string;
+  role?: string;
+}
+
+export interface Registration {
+  id: string;
+  status: RegistrationStatus | string;
+  userType: UserType | string;
+  fullName: string;
+  email: string;
+  phone?: string | null;
+  usn?: string | null;
+  semester?: number | null;
+  department?: string | null;
+  section?: string | null;
+  customFieldResponse?: string | null;
+  teamName?: string | null;
+  teamMembers?: RegistrationTeamMember[] | Record<string, any> | null;
+  paymentScreenshot?: string | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  attendanceCode?: string | null;
+  attended: boolean;
+  eventId: string;
+  event?: Event;
+  attendanceRecords?: AttendanceRecord[];
+}
+
+export interface AttendanceInstance {
+  id: string;
+  eventId: string;
+  name: string;
+  time?: string | Date | null;
+  createdAt: string | Date;
+  prerequisiteInstanceId?: string | null;
+  event?: Event;
+  prerequisite?: AttendanceInstance | null;
+  dependents?: AttendanceInstance[];
+  records?: AttendanceRecord[];
+}
+
+export interface AttendanceRecord {
+  id: string;
+  attendanceInstanceId: string;
+  registrationId: string;
+  memberEmail: string;
+  attendedAt: string | Date;
+  instance?: AttendanceInstance;
+  registration?: Registration;
+}
+

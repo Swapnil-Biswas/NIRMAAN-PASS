@@ -1,0 +1,102 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Registration {
+  id                  String   @id @default(uuid())
+
+  status              String   @default("APPROVED")
+
+  // Solo fields
+  userType            String   @default("STUDENT")
+  fullName            String
+  email               String
+  phone               String?
+  usn                 String?
+  semester            Int?
+  department          String?
+  section             String?
+  customFieldResponse String?
+
+  // Team fields
+  teamName            String?
+  teamMembers         Json?
+
+  // Payment
+  paymentScreenshot   String?
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Attendance tracking
+  attendanceCode      String?  @unique
+  attended            Boolean  @default(false)
+
+  eventId             String
+  event               Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  attendanceRecords   AttendanceRecord[]
+
+  @@unique([email, eventId])
+}
+
+model AttendanceInstance {
+  id                     String             @id @default(uuid())
+  eventId                String
+  name                   String
+  time                   DateTime?
+
+  event                  Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  records                AttendanceRecord[]
+
+  createdAt              DateTime           @default(now())
+
+  // Prerequisite session
+  prerequisiteInstanceId String?            @map("prerequisite_instance_id")
+
+  prerequisite           AttendanceInstance? @relation(
+    "AttendancePrerequisite",
+    fields: [prerequisiteInstanceId],
+    references: [id],
+    onDelete: SetNull
+  )
+
+  dependents             AttendanceInstance[] @relation("AttendancePrerequisite")
+}
+
+model AttendanceRecord {
+  id                   String             @id @default(uuid())
+  attendanceInstanceId String
+  registrationId       String
+  memberEmail          String             @default("")
+  attendedAt           DateTime           @default(now())
+
+  instance             AttendanceInstance @relation(
+    fields: [attendanceInstanceId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  registration         Registration       @relation(
+    fields: [registrationId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@unique([attendanceInstanceId, registrationId, memberEmail])
+}
+
+model Event {
+  id                  String               @id @default(uuid())
+  title               String
+  date                DateTime
+  status              String               @default("UPCOMING")
+
+  registrations       Registration[]
+  attendanceInstances AttendanceInstance[]
+}
