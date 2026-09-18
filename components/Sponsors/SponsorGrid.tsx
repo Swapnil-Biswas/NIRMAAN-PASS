@@ -66,24 +66,27 @@ export default function SponsorGrid() {
         <span className="text-xs font-bold text-nirmaan-black/60 hidden sm:inline">
           Special thanks to our sponsors
         </span>
+        <span className="text-[11px] font-bold text-nirmaan-black/50 sm:hidden flex items-center gap-1">
+          Swipe ➔
+        </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+      <div className="flex md:grid md:grid-cols-3 gap-4 sm:gap-6 overflow-x-auto no-scrollbar pb-3 pt-1 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory scroll-smooth">
         {sponsors.map((sponsor, idx) => (
           <a
             key={idx}
             href={sponsor.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="group nirmaan-card p-6 bg-white border-2 border-nirmaan-black/10 hover:border-nirmaan-black flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-lg shadow-sm"
+            className="group nirmaan-card p-5 sm:p-6 bg-white border-2 border-nirmaan-black/10 hover:border-nirmaan-black flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-lg shadow-sm w-[78vw] max-w-[310px] min-w-[260px] md:w-auto md:min-w-0 md:max-w-none shrink-0 md:shrink snap-start"
           >
             <div>
               {/* Category Pill Tag */}
               <div className="flex items-center justify-between gap-2 mb-4">
-                <span className={`nirmaan-pill ${sponsor.tagColor} ${sponsor.textColor} text-[10px] font-black`}>
+                <span className={`nirmaan-pill ${sponsor.tagColor} ${sponsor.textColor} text-[10px] font-black whitespace-nowrap`}>
                   {sponsor.category}
                 </span>
-                <ExternalLink className="w-3.5 h-3.5 text-nirmaan-black/40 group-hover:text-nirmaan-black transition-colors" />
+                <ExternalLink className="w-3.5 h-3.5 text-nirmaan-black/40 group-hover:text-nirmaan-black transition-colors shrink-0" />
               </div>
 
               {/* Logo Presentation Box */}
@@ -114,6 +117,16 @@ export default function SponsorGrid() {
               <span>➔</span>
             </div>
           </a>
+        ))}
+      </div>
+
+      {/* Mobile Swipe Indicators */}
+      <div className="flex justify-center items-center gap-1.5 mt-1 sm:hidden">
+        {sponsors.map((_, i) => (
+          <span
+            key={i}
+            className="w-1.5 h-1.5 rounded-full bg-nirmaan-black/20"
+          />
         ))}
       </div>
     </div>

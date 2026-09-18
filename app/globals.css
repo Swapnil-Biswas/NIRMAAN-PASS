@@ -128,6 +128,15 @@ h1, h2, h3, .font-display {
   animation: pulse-dot 1.8s infinite ease-in-out;
 }
 
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* ======================================================================
    PRINT-FRIENDLY STYLES — Digital Pass Page
    ====================================================================== */
