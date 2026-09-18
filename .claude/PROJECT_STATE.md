@@ -72,14 +72,18 @@ Security & Session Architecture:
     - Replaced `@supabase/ssr` edge middleware in `middleware.ts` with a clean pass-through (`NextResponse.next()`).
     - Reduced edge middleware bundle size from 86.1 kB to 26.5 kB, eliminating all edge network timeouts or unhandled exceptions.
     - Hardened `utils/supabase/middleware.ts` with complete defensive try/catch blocks.
+  - **Event Info Page Cleanup**:
+    - Removed temporary "CAMPUS VENUE LOCATIONS" card and "HACKATHON RULES & GUIDELINES" card from `app/event-info/page.tsx` until officially confirmed.
+    - Simplified layout into a clean, centered 36-hour schedule timeline, FAQ accordion grid, and official sponsor showcase.
 - [x] **Automated Testing & Full Build Verification** — 2026-09-18
-  - Created `tests/auth-session.test.ts` verifying participant login, invalid email rejection, session cookie detection, and logout.
-  - All 24 tests passing across 3 test suites (`npm test`):
+  - All 32 tests passing across 5 test suites (`npm test`):
     - `tests/domain-rules.test.ts` (10/10 passing)
     - `tests/admin-security.test.ts` (9/9 passing)
     - `tests/auth-session.test.ts` (5/5 passing)
+    - `tests/middleware.test.ts` (5/5 passing)
+    - `tests/schema-models.test.ts` (3/3 passing)
   - TypeScript validation (`npm run lint` / `tsc --noEmit`) passes with 0 errors.
-  - Next.js production build (`npm run build`) passing 100% across all 21 routes.
+  - Next.js production build (`npm run build`) passing 100% across all 20 routes.
 
 ## In Progress / Pending
 - [ ] Teammate connects new Supabase database by pasting credentials into `.env.local` and executing `supabase/complete_database_migration.sql` in their Supabase SQL editor.
