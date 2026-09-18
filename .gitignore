@@ -7,3 +7,5 @@ out
 # Environment secrets — never commit these
 .env.local
 .env.*.local
+.vercel
+.env*
