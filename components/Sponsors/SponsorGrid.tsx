@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ExternalLink, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 interface SponsorItem {
   name: string;
@@ -9,7 +9,6 @@ interface SponsorItem {
   tagColor: string;
   textColor: string;
   logo: string;
-  url: string;
   description: string;
   darkBg?: boolean;
 }
@@ -22,7 +21,6 @@ export default function SponsorGrid() {
       tagColor: 'bg-nirmaan-amber',
       textColor: 'text-nirmaan-black',
       logo: '/sponsors/mastryhub.png',
-      url: 'https://mastryhub.com/event/nirmaan-2026',
       description: 'Official hackathon hosting platform, team submissions, and problem statements.',
       darkBg: false,
     },
@@ -32,7 +30,6 @@ export default function SponsorGrid() {
       tagColor: 'bg-nirmaan-purple',
       textColor: 'text-white',
       logo: '/sponsors/reskilll.png',
-      url: 'https://reskilll.com/',
       description: 'Empowering student developers with mentorship, developer communities, and hackathon workshops.',
       darkBg: true,
     },
@@ -42,7 +39,6 @@ export default function SponsorGrid() {
       tagColor: 'bg-nirmaan-green-bright',
       textColor: 'text-nirmaan-black',
       logo: '/sponsors/monster-energy.png',
-      url: 'https://www.monsterenergy.com/',
       description: 'Fueling 25 hours of non-stop hacking with unlimited energy drinks and beverages.',
       darkBg: false,
     },
@@ -82,19 +78,15 @@ export default function SponsorGrid() {
           style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
         >
           {marqueeSponsors.map((sponsor, idx) => (
-            <a
+            <div
               key={idx}
-              href={sponsor.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group nirmaan-card p-5 bg-white border-2 border-nirmaan-black/10 flex flex-col justify-between w-[78vw] max-w-[300px] min-w-[260px] shrink-0 shadow-sm"
+              className="nirmaan-card p-5 bg-white border-2 border-nirmaan-black/10 flex flex-col justify-between w-[78vw] max-w-[300px] min-w-[260px] shrink-0 shadow-sm"
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-3">
                   <span className={`nirmaan-pill ${sponsor.tagColor} ${sponsor.textColor} text-[10px] font-black whitespace-nowrap`}>
                     {sponsor.category}
                   </span>
-                  <ExternalLink className="w-3.5 h-3.5 text-nirmaan-black/40" />
                 </div>
 
                 <div
@@ -117,11 +109,7 @@ export default function SponsorGrid() {
                 </p>
               </div>
 
-              <div className="mt-3 pt-2.5 border-t border-nirmaan-black/10 flex items-center justify-between text-xs font-bold text-nirmaan-black">
-                <span>VISIT PARTNER</span>
-                <span>➔</span>
-              </div>
-            </a>
+            </div>
           ))}
         </div>
       </div>
@@ -129,12 +117,9 @@ export default function SponsorGrid() {
       {/* DESKTOP / MONITOR ONLY (md+): WIDER & BROADER CARDS */}
       <div className="hidden md:grid md:grid-cols-3 gap-6 lg:gap-8 w-full">
         {sponsors.map((sponsor, idx) => (
-          <a
+          <div
             key={idx}
-            href={sponsor.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group nirmaan-card p-6 lg:p-8 bg-white border-2 border-nirmaan-black/10 hover:border-nirmaan-black flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-lg shadow-sm w-full"
+            className="nirmaan-card p-6 lg:p-8 bg-white border-2 border-nirmaan-black/10 flex flex-col justify-between w-full"
           >
             <div>
               {/* Category Pill Tag */}
@@ -142,7 +127,6 @@ export default function SponsorGrid() {
                 <span className={`nirmaan-pill ${sponsor.tagColor} ${sponsor.textColor} text-xs font-black`}>
                   {sponsor.category}
                 </span>
-                <ExternalLink className="w-4 h-4 text-nirmaan-black/40 group-hover:text-nirmaan-black transition-colors" />
               </div>
 
               {/* Logo Presentation Box */}
@@ -159,7 +143,7 @@ export default function SponsorGrid() {
               </div>
 
               {/* Title & Description */}
-              <h4 className="font-display text-xl lg:text-2xl font-black uppercase text-nirmaan-black group-hover:text-nirmaan-blue transition-colors">
+              <h4 className="font-display text-xl lg:text-2xl font-black uppercase text-nirmaan-black">
                 {sponsor.name}
               </h4>
               <p className="text-xs lg:text-sm font-medium text-nirmaan-black/70 leading-relaxed mt-2">
@@ -167,12 +151,7 @@ export default function SponsorGrid() {
               </p>
             </div>
 
-            {/* Visit link */}
-            <div className="mt-6 pt-4 border-t border-nirmaan-black/10 flex items-center justify-between text-xs lg:text-sm font-bold text-nirmaan-black group-hover:text-nirmaan-amber transition-colors">
-              <span>VISIT PARTNER</span>
-              <span>➔</span>
-            </div>
-          </a>
+          </div>
         ))}
       </div>
     </div>
