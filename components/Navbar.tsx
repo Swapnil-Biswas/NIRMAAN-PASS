@@ -56,13 +56,6 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Live Hackathon Pill */}
-        <div className="hidden md:flex items-center gap-2 bg-nirmaan-cream-card px-3.5 py-1.5 rounded-full border border-nirmaan-black/10 shadow-sm">
-          <span className="live-dot"></span>
-          <span className="text-xs font-bold uppercase tracking-wider text-nirmaan-black">
-            NIRMAAN 2026 LIVE
-          </span>
-        </div>
 
         {/* Navigation items */}
         <nav className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto py-1">
