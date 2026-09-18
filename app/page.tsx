@@ -5,6 +5,7 @@ import PassCard from '@/components/TeamQR/PassCard';
 import { findTeamByToken, getTeamMembers, getAnnouncements, getEventStatistics } from '@/lib/data/store';
 import { QrCode, LayoutDashboard, Info, ShieldCheck, ArrowRight, Sparkles, Utensils, Coffee, Zap } from 'lucide-react';
 import AnnouncementList from '@/components/AnnouncementCard/AnnouncementList';
+import SponsorGrid from '@/components/Sponsors/SponsorGrid';
 
 export const dynamic = 'force-dynamic';
 
@@ -167,6 +168,11 @@ export default async function HomePage() {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Official Sponsors Section */}
+        <div className="mt-16 pt-12 border-t border-nirmaan-black/15">
+          <SponsorGrid />
         </div>
       </main>
 

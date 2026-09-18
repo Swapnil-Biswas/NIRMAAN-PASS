@@ -1,6 +1,7 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import PassCard from '@/components/TeamQR/PassCard';
+import SponsorGrid from '@/components/Sponsors/SponsorGrid';
 import { findTeamByToken, getTeamMembers, getAllTeams } from '@/lib/data/store';
 import Link from 'next/link';
 import { ArrowLeft, Users, ShieldCheck, AlertTriangle } from 'lucide-react';
@@ -115,6 +116,11 @@ export default async function PassPage({ searchParams }: PassPageProps) {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Official Sponsors Section */}
+        <div className="mt-12 pt-10 border-t border-nirmaan-black/15">
+          <SponsorGrid />
         </div>
       </main>
     </div>

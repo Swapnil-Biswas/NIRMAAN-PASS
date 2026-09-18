@@ -3,6 +3,7 @@ import Navbar from '@/components/Navbar';
 import PassCard from '@/components/TeamQR/PassCard';
 import FoodStatusGrid from '@/components/FoodStatus/FoodStatusGrid';
 import AnnouncementList from '@/components/AnnouncementCard/AnnouncementList';
+import SponsorGrid from '@/components/Sponsors/SponsorGrid';
 import { findTeamByToken, getTeamMembers, getAnnouncements, getAllTeams } from '@/lib/data/store';
 import Link from 'next/link';
 import { Users, LayoutDashboard, ShieldCheck, QrCode, ArrowRight, ExternalLink } from 'lucide-react';
@@ -168,6 +169,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               <AnnouncementList announcements={announcements} />
             </div>
           </div>
+        </div>
+
+        {/* Official Sponsors Section */}
+        <div className="mt-12 pt-10 border-t border-nirmaan-black/15">
+          <SponsorGrid />
         </div>
       </main>
     </div>

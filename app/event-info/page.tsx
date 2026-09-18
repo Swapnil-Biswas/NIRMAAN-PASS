@@ -1,5 +1,6 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
+import SponsorGrid from '@/components/Sponsors/SponsorGrid';
 import { Calendar, MapPin, ShieldAlert, HelpCircle, CheckCircle2, Clock, Sparkles } from 'lucide-react';
 
 export default function EventInfoPage() {
@@ -163,6 +164,11 @@ export default function EventInfoPage() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Official Sponsors Section */}
+        <div className="mt-12 pt-10 border-t border-nirmaan-black/15">
+          <SponsorGrid />
         </div>
       </main>
     </div>
