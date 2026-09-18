@@ -59,6 +59,9 @@ Security & Session Architecture:
     - `scripts/check_supabase.mjs`: reports standalone mode status or validates remote tables when credentials are provided.
   - **Removed "NIRMAAN 2026 LIVE" Pill Badge**:
     - Removed the hackathon live badge pill from `components/Navbar.tsx` for a cleaner, leaner header.
+  - **Browser Tab Bar Icon (Favicon)**:
+    - Converted user-uploaded NIRMAAN 2026 emblem into multi-resolution icons (`favicon.ico`, `icon.png`, `apple-icon.png`, `apple-touch-icon.png`, `favicon-32x32.png`, `favicon-16x16.png`) for all browser tabs and mobile home screen bookmarks.
+    - Preserved the clean `nirmaan.` stylized text logo on-site in the Navbar and Footer without replacing it with the image.
   - **Navbar & Footer Re-alignment**:
     - Restored `Event Info` (`/event-info`) to `components/Navbar.tsx`.
     - Removed `Socials` from the Navbar.
