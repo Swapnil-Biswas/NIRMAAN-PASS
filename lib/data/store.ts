@@ -2,76 +2,78 @@ import { Team, Member, Announcement, ScanResult, EventStatistics, MealType } fro
 import { sanitizeQRToken } from '@/lib/qr/token';
 import { validateMealEligibility } from '@/lib/validation/rules';
 
-// In-Memory fallback store with pre-seeded demo teams for NIRMAAN 2026
+import seededDataset from './seeded_teams.json';
+
+// In-Memory fallback store with real NIRMAAN 2026 teams + demo presets
 interface MockDatabase {
   teams: Team[];
   members: Member[];
   announcements: Announcement[];
 }
 
+// Preset demo teams for quick testing
+const demoTeams: Team[] = [
+  {
+    id: 'team-alpha-001',
+    team_name: 'Team Alpha (ByteCrafters)',
+    college: 'IIT Bombay',
+    auth_id: null,
+    qr_token: 'nirmaan_alpha_9281a',
+    checked_in: true,
+    breakfast_count: 3,
+    lunch_count: 2,
+    dinner_count: 0,
+    coffee_count: 14,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'team-beta-002',
+    team_name: 'Team Beta (NeuralKnights)',
+    college: 'BITS Pilani',
+    auth_id: null,
+    qr_token: 'nirmaan_beta_4812b',
+    checked_in: false,
+    breakfast_count: 0,
+    lunch_count: 0,
+    dinner_count: 0,
+    coffee_count: 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'team-gamma-003',
+    team_name: 'Team Gamma (CyberVanguard)',
+    college: 'IIIT Hyderabad',
+    auth_id: null,
+    qr_token: 'nirmaan_gamma_7723c',
+    checked_in: true,
+    breakfast_count: 4,
+    lunch_count: 4,
+    dinner_count: 3,
+    coffee_count: 21,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+];
+
+const demoMembers: Member[] = [
+  { id: 'm-alpha-1', team_id: 'team-alpha-001', name: 'Aarav Sharma', phone: '+91 98765 43210', email: 'aarav@alpha.edu', present: true, created_at: new Date().toISOString() },
+  { id: 'm-alpha-2', team_id: 'team-alpha-001', name: 'Riya Patel', phone: '+91 98765 43211', email: 'riya@alpha.edu', present: true, created_at: new Date().toISOString() },
+  { id: 'm-alpha-3', team_id: 'team-alpha-001', name: 'Vikram Joshi', phone: '+91 98765 43212', email: 'vikram@alpha.edu', present: true, created_at: new Date().toISOString() },
+  { id: 'm-alpha-4', team_id: 'team-alpha-001', name: 'Ananya Rao', phone: '+91 98765 43213', email: 'ananya@alpha.edu', present: false, created_at: new Date().toISOString() },
+  { id: 'm-beta-1', team_id: 'team-beta-002', name: 'Dev Mehta', phone: '+91 91234 56780', email: 'dev@beta.edu', present: false, created_at: new Date().toISOString() },
+  { id: 'm-beta-2', team_id: 'team-beta-002', name: 'Neha Gupta', phone: '+91 91234 56781', email: 'neha@beta.edu', present: false, created_at: new Date().toISOString() },
+  { id: 'm-beta-3', team_id: 'team-beta-002', name: 'Kabir Singh', phone: '+91 91234 56782', email: 'kabir@beta.edu', present: false, created_at: new Date().toISOString() },
+  { id: 'm-gamma-1', team_id: 'team-gamma-003', name: 'Siddharth Roy', phone: '+91 99887 76650', email: 'siddharth@gamma.edu', present: true, created_at: new Date().toISOString() },
+  { id: 'm-gamma-2', team_id: 'team-gamma-003', name: 'Pooja Nair', phone: '+91 99887 76651', email: 'pooja@gamma.edu', present: true, created_at: new Date().toISOString() },
+  { id: 'm-gamma-3', team_id: 'team-gamma-003', name: 'Tanmay Saxena', phone: '+91 99887 76652', email: 'tanmay@gamma.edu', present: true, created_at: new Date().toISOString() },
+  { id: 'm-gamma-4', team_id: 'team-gamma-003', name: 'Ishita Sen', phone: '+91 99887 76653', email: 'ishita@gamma.edu', present: true, created_at: new Date().toISOString() },
+];
+
 const mockDb: MockDatabase = {
-  teams: [
-    {
-      id: 'team-alpha-001',
-      team_name: 'Team Alpha (ByteCrafters)',
-      college: 'IIT Bombay',
-      auth_id: null,
-      qr_token: 'nirmaan_alpha_9281a',
-      checked_in: true,
-      breakfast_count: 3,
-      lunch_count: 2,
-      dinner_count: 0,
-      coffee_count: 14,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: 'team-beta-002',
-      team_name: 'Team Beta (NeuralKnights)',
-      college: 'BITS Pilani',
-      auth_id: null,
-      qr_token: 'nirmaan_beta_4812b',
-      checked_in: false,
-      breakfast_count: 0,
-      lunch_count: 0,
-      dinner_count: 0,
-      coffee_count: 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: 'team-gamma-003',
-      team_name: 'Team Gamma (CyberVanguard)',
-      college: 'IIIT Hyderabad',
-      auth_id: null,
-      qr_token: 'nirmaan_gamma_7723c',
-      checked_in: true,
-      breakfast_count: 4,
-      lunch_count: 4,
-      dinner_count: 3,
-      coffee_count: 21,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-  ],
-  members: [
-    // Team Alpha
-    { id: 'm-alpha-1', team_id: 'team-alpha-001', name: 'Aarav Sharma', phone: '+91 98765 43210', email: 'aarav@alpha.edu', present: true, created_at: new Date().toISOString() },
-    { id: 'm-alpha-2', team_id: 'team-alpha-001', name: 'Riya Patel', phone: '+91 98765 43211', email: 'riya@alpha.edu', present: true, created_at: new Date().toISOString() },
-    { id: 'm-alpha-3', team_id: 'team-alpha-001', name: 'Vikram Joshi', phone: '+91 98765 43212', email: 'vikram@alpha.edu', present: true, created_at: new Date().toISOString() },
-    { id: 'm-alpha-4', team_id: 'team-alpha-001', name: 'Ananya Rao', phone: '+91 98765 43213', email: 'ananya@alpha.edu', present: false, created_at: new Date().toISOString() },
-    
-    // Team Beta
-    { id: 'm-beta-1', team_id: 'team-beta-002', name: 'Dev Mehta', phone: '+91 91234 56780', email: 'dev@beta.edu', present: false, created_at: new Date().toISOString() },
-    { id: 'm-beta-2', team_id: 'team-beta-002', name: 'Neha Gupta', phone: '+91 91234 56781', email: 'neha@beta.edu', present: false, created_at: new Date().toISOString() },
-    { id: 'm-beta-3', team_id: 'team-beta-002', name: 'Kabir Singh', phone: '+91 91234 56782', email: 'kabir@beta.edu', present: false, created_at: new Date().toISOString() },
-    
-    // Team Gamma
-    { id: 'm-gamma-1', team_id: 'team-gamma-003', name: 'Siddharth Roy', phone: '+91 99887 76650', email: 'siddharth@gamma.edu', present: true, created_at: new Date().toISOString() },
-    { id: 'm-gamma-2', team_id: 'team-gamma-003', name: 'Pooja Nair', phone: '+91 99887 76651', email: 'pooja@gamma.edu', present: true, created_at: new Date().toISOString() },
-    { id: 'm-gamma-3', team_id: 'team-gamma-003', name: 'Tanmay Saxena', phone: '+91 99887 76652', email: 'tanmay@gamma.edu', present: true, created_at: new Date().toISOString() },
-    { id: 'm-gamma-4', team_id: 'team-gamma-003', name: 'Ishita Sen', phone: '+91 99887 76653', email: 'ishita@gamma.edu', present: true, created_at: new Date().toISOString() },
-  ],
+  teams: [...demoTeams, ...(seededDataset.teams as Team[])],
+  members: [...demoMembers, ...(seededDataset.members as Member[])],
   announcements: [
     {
       id: 'ann-1',

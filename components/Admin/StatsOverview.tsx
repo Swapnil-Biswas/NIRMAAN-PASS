@@ -86,9 +86,8 @@ export default function StatsOverview({ stats }: StatsOverviewProps) {
         return (
           <div
             key={idx}
-            className={`nirmaan-card p-4 sm:p-5 flex flex-col justify-between ${card.bg} ${card.textColor} ${
-              card.border ? 'border border-nirmaan-black/10' : 'shadow-md'
-            }`}
+            className={`nirmaan-card p-4 sm:p-5 flex flex-col justify-between ${card.bg} ${card.textColor} ${card.border ? 'border border-nirmaan-black/10' : 'shadow-md'
+              }`}
           >
             <div className="flex items-center justify-between gap-2 mb-2">
               <span className="text-[11px] font-display font-black tracking-wider uppercase opacity-80">
