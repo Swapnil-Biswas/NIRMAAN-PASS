@@ -59,6 +59,9 @@ Security & Session Architecture:
     - `scripts/check_supabase.mjs`: reports standalone mode status or validates remote tables when credentials are provided.
   - **Removed "NIRMAAN 2026 LIVE" Pill Badge**:
     - Removed the hackathon live badge pill from `components/Navbar.tsx` for a cleaner, leaner header.
+  - **Cleaned Navigation & Removed External Website Link**:
+    - Removed the external "LIVE SITE SOCIALS" button linking to `https://nirmaan-2026-tau.vercel.app/socials` from `app/socials/page.tsx`.
+    - Removed the duplicate `Event Info` link from `components/Navbar.tsx`, `app/page.tsx`, and footer, keeping `Socials` as the community tab in the navbar.
   - **Fixed 500 MIDDLEWARE_INVOCATION_FAILED Deployment Error**:
     - Replaced `@supabase/ssr` edge middleware in `middleware.ts` with a clean pass-through (`NextResponse.next()`).
     - Reduced edge middleware bundle size from 86.1 kB to 26.5 kB, eliminating all edge network timeouts or unhandled exceptions.
