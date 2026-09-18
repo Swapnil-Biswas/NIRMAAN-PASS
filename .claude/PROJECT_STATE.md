@@ -57,6 +57,8 @@ Security & Session Architecture:
     - `app/login/page.tsx`: refactored to submit to `/api/auth/login`.
     - `app/api/activate/link/route.ts`: sets team session cookie on activation.
     - `scripts/check_supabase.mjs`: reports standalone mode status or validates remote tables when credentials are provided.
+  - **Removed "NIRMAAN 2026 LIVE" Pill Badge**:
+    - Removed the hackathon live badge pill from `components/Navbar.tsx` for a cleaner, leaner header.
   - **Fixed 500 MIDDLEWARE_INVOCATION_FAILED Deployment Error**:
     - Replaced `@supabase/ssr` edge middleware in `middleware.ts` with a clean pass-through (`NextResponse.next()`).
     - Reduced edge middleware bundle size from 86.1 kB to 26.5 kB, eliminating all edge network timeouts or unhandled exceptions.
