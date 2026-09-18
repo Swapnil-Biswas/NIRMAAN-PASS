@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { QrCode, LayoutDashboard, Info, ShieldAlert, Share2, LogIn, LogOut, User } from 'lucide-react';
+import { QrCode, LayoutDashboard, Info, ShieldAlert, Share2, LogIn, LogOut, User, Zap } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function Navbar() {
@@ -13,23 +13,41 @@ export default function Navbar() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsLoggedIn(!!session);
-      setUserEmail(session?.user?.email || null);
-    });
+    let mounted = true;
+    try {
+      const supabase = createClient();
+      supabase.auth.getSession()
+        .then(({ data: { session } }) => {
+          if (!mounted) return;
+          setIsLoggedIn(!!session);
+          setUserEmail(session?.user?.email || null);
+        })
+        .catch(() => {
+          // Ignore offline/network failure in getSession
+        });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsLoggedIn(!!session);
-      setUserEmail(session?.user?.email || null);
-    });
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (!mounted) return;
+        setIsLoggedIn(!!session);
+        setUserEmail(session?.user?.email || null);
+      });
 
-    return () => subscription.unsubscribe();
+      return () => {
+        mounted = false;
+        subscription?.unsubscribe();
+      };
+    } catch {
+      return () => {
+        mounted = false;
+      };
+    }
   }, []);
 
   const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch {}
     router.push('/');
     router.refresh();
   };
@@ -58,7 +76,7 @@ export default function Navbar() {
         </div>
 
         {/* Navigation items */}
-        <nav className="flex items-center gap-1.5 sm:gap-2">
+        <nav className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto py-1">
           <Link
             href="/pass"
             className={`nirmaan-pill transition-colors ${
@@ -117,8 +135,8 @@ export default function Navbar() {
                 : 'bg-nirmaan-black text-white hover:bg-nirmaan-black/80'
             }`}
           >
-            <QrCode className="w-3.5 h-3.5" />
-            <span>Scanner</span>
+            <Zap className="w-3.5 h-3.5 text-nirmaan-amber" />
+            <span className="hidden sm:inline">Scanner</span>
           </Link>
 
           <Link

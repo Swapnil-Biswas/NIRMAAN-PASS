@@ -34,8 +34,12 @@ export default function QRScanner() {
       
       if (html5QrCodeRef.current) {
         try {
-          await html5QrCodeRef.current.stop();
+          if (html5QrCodeRef.current.isScanning) {
+            await html5QrCodeRef.current.stop();
+          }
+          await html5QrCodeRef.current.clear();
         } catch {}
+        html5QrCodeRef.current = null;
       }
 
       const scanner = new Html5Qrcode('qr-reader');
@@ -44,9 +48,14 @@ export default function QRScanner() {
       await scanner.start(
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
+        async (decodedText) => {
           handleTokenScanned(decodedText);
-          scanner.stop().catch(() => {});
+          try {
+            if (scanner.isScanning) {
+              await scanner.stop();
+            }
+            await scanner.clear();
+          } catch {}
           setScanning(false);
         },
         () => {}
@@ -61,7 +70,10 @@ export default function QRScanner() {
   const stopCamera = async () => {
     if (html5QrCodeRef.current) {
       try {
-        await html5QrCodeRef.current.stop();
+        if (html5QrCodeRef.current.isScanning) {
+          await html5QrCodeRef.current.stop();
+        }
+        await html5QrCodeRef.current.clear();
       } catch {}
       html5QrCodeRef.current = null;
     }
@@ -72,7 +84,10 @@ export default function QRScanner() {
     return () => {
       if (html5QrCodeRef.current) {
         try {
-          html5QrCodeRef.current.stop();
+          if (html5QrCodeRef.current.isScanning) {
+            html5QrCodeRef.current.stop().catch(() => {});
+          }
+          html5QrCodeRef.current.clear().catch(() => {});
         } catch {}
       }
     };

@@ -5,6 +5,8 @@ import FoodStatusGrid from '@/components/FoodStatus/FoodStatusGrid';
 import AnnouncementList from '@/components/AnnouncementCard/AnnouncementList';
 import SponsorGrid from '@/components/Sponsors/SponsorGrid';
 import { findTeamByToken, getTeamMembers, getAnnouncements, getAllTeams } from '@/lib/data/store';
+import { getTeamForUser } from '@/lib/auth/session';
+import TeamDropdown from '@/components/TeamSelector/TeamDropdown';
 import Link from 'next/link';
 import { Users, LayoutDashboard, ShieldCheck, QrCode, ArrowRight, ExternalLink } from 'lucide-react';
 
@@ -15,9 +17,23 @@ interface DashboardPageProps {
 }
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
-  const token = searchParams?.token || 'nirmaan_alpha_9281a';
-  const team = (await findTeamByToken(token)) || (await findTeamByToken('nirmaan_alpha_9281a'));
-  const members = team ? await getTeamMembers(team.id) : [];
+  let team = null;
+  let members = [];
+
+  if (searchParams?.token) {
+    team = await findTeamByToken(searchParams.token);
+    members = team ? await getTeamMembers(team.id) : [];
+  } else {
+    const userTeam = await getTeamForUser();
+    if (userTeam) {
+      team = userTeam.team;
+      members = userTeam.members;
+    } else {
+      team = await findTeamByToken('nirmaan_alpha_9281a');
+      members = team ? await getTeamMembers(team.id) : [];
+    }
+  }
+
   const announcements = await getAnnouncements(true);
   const allTeams = await getAllTeams();
 
@@ -71,24 +87,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           </div>
 
           {/* Quick Switch Team Context */}
-          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-nirmaan-black/15 shadow-sm text-xs font-semibold">
-            <span className="text-nirmaan-black/50 uppercase font-bold text-[10px]">TEAM:</span>
-            <div className="flex gap-1">
-              {allTeams.map((t) => (
-                <Link
-                  key={t.id}
-                  href={`/dashboard?token=${t.qr_token}`}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase transition-colors ${
-                    t.qr_token === team.qr_token
-                      ? 'bg-nirmaan-black text-white'
-                      : 'hover:bg-nirmaan-cream text-nirmaan-black'
-                  }`}
-                >
-                  {t.team_name.split(' ')[1] || t.team_name}
-                </Link>
-              ))}
-            </div>
-          </div>
+          <TeamDropdown teams={allTeams} currentQrToken={team.qr_token} basePath="/dashboard" />
         </div>
 
         {/* Food & Beverage Entitlement Grid */}

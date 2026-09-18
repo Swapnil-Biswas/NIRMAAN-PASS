@@ -122,4 +122,17 @@ describe('Store Operations (Meals, Coffee, Registration)', () => {
     expect(lunchRes.success).toBe(true);
     expect(lunchRes.new_count).toBe(1);
   });
+
+  it('rejects scans with invalid or unknown QR tokens', async () => {
+    const invalidScan = await processMealScan('invalid_nonexistent_token', 'lunch');
+    expect(invalidScan.success).toBe(false);
+    expect(invalidScan.error_code).toBe('INVALID_QR');
+
+    const invalidCoffee = await processCoffeeScan('unknown_token_xyz');
+    expect(invalidCoffee.success).toBe(false);
+    expect(invalidCoffee.error_code).toBe('INVALID_QR');
+
+    const invalidTeam = await findTeamByToken('non_existent_token_123');
+    expect(invalidTeam).toBeNull();
+  });
 });

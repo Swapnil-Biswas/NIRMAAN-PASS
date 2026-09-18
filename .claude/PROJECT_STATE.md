@@ -1,6 +1,6 @@
 # Project State — NIRMAAN-PASS
 
-_Last updated: 2026-09-18 — Added Socials page and global navigation for Coding Club and Alterino_
+_Last updated: 2026-09-18 — Resolved website breakages across pass download, team selector layout, auth fallback, navbar responsiveness, and scanner lifecycle_
 
 ## Architecture
 Next.js 14 (App Router) + TypeScript + Tailwind CSS with official NIRMAAN 2026 Design System.
@@ -19,22 +19,42 @@ Dual-mode Data Store: operates directly with live Supabase client / RPC procedur
 - [x] Create Supabase client helpers and session refresh middleware — 2026-09-18
 - [x] Added official NIRMAAN 2026 Sponsors (`MastryHub`, `Reskilll`, `Monster Energy`) with logos, badges, and links — 2026-09-18
 - [x] Created Socials page (`/socials`) with direct links for BMSIT Coding Club (Instagram, LinkedIn, WhatsApp Community) and Alterino (Instagram, LinkedIn) + Live Site Link — 2026-09-18
-- [x] Updated Navbar (`components/Navbar.tsx`) and Footer (`app/page.tsx`) with Socials navigation item — 2026-09-18
-- [x] Verified Next.js production build (`npm run build`) and test suite (`npm test`) with 100% success — 2026-09-18
+- [x] Fixed PassCard PNG download crash by switching from `btoa(svgData)` to Blob object URL — 2026-09-18
+- [x] Fixed 289-team horizontal layout blow-up on `/dashboard` and `/pass` with responsive `TeamDropdown` — 2026-09-18
+- [x] Connected authenticated session to `/dashboard` and `/pass` so logged-in users view their team pass automatically — 2026-09-18
+- [x] Added fallback handling to `/api/activate/link`, `lib/auth/session.ts`, and `lib/data/store.ts` for offline/demo reliability — 2026-09-18
+- [x] Fixed Navbar unhandled promise rejection and mobile viewport overflow (<375px) — 2026-09-18
+- [x] Fixed `Html5Qrcode` scanner lifecycle with explicit `clear()` calls — 2026-09-18
+- [x] Added pagination and direct Pass links to `TeamsTable` in Admin Console — 2026-09-18
+- [x] Added error display banner to Admin Broadcast Announcements form — 2026-09-18
+- [x] Verified Next.js production build (`npm run build`), TypeScript (`tsc --noEmit`), and vitest suite (10/10 tests pass) — 2026-09-18
 
 ## In Progress / Pending
 - [ ] Execute database schema (`supabase/migrations/20260101000000_nirmaan_pass_schema.sql`) and seed (`supabase/seed.sql`) in Supabase SQL editor
-- [ ] Team Activation and Login auth flows with Supabase Auth session wiring
-- [ ] Live end-to-end browser walkthrough and validation
+- [ ] End-to-end event day rehearsal with multiple scanner operators
 
 ## Modified / Touched Files
-- `app/socials/page.tsx` — Socials and community links page
-- `components/Navbar.tsx` — Added Socials navigation link
-- `app/page.tsx` — Added Socials link to footer
+- `components/TeamSelector/TeamDropdown.tsx` — Responsive team selector for demo pills + full team dropdown
+- `components/TeamQR/PassCard.tsx` — Fixed SVG to PNG download with Blob URL
+- `components/Navbar.tsx` — Fixed getSession promise rejection and mobile responsive nav items
+- `components/QRScanner/ScannerModal.tsx` — Added camera instance clearance and lifecycle cleanup
+- `components/Admin/TeamsTable.tsx` — Added pagination and direct Pass links
+- `app/dashboard/page.tsx` — Authenticated session lookup, clean 404 for invalid tokens, and TeamDropdown
+- `app/pass/page.tsx` — Authenticated session lookup, clean 404 for invalid tokens, and TeamDropdown
+- `app/admin/announcements/page.tsx` — Added broadcast failure error banner
+- `app/api/activate/link/route.ts` — Added local store fallback for offline/demo activation
+- `app/activate/page.tsx` — Resilient credential activation with offline demo fallback
+- `app/login/page.tsx` — Resilient login routing for offline/demo team accounts
+- `lib/data/store.ts` — Clean query parameter safety and unseeded Supabase fallback
+- `lib/auth/session.ts` — Safe try/catch and email roster fallback in `getTeamForUser`
+- `package.json` — Updated lint script to `tsc --noEmit`
+- `tests/domain-rules.test.ts` — Added test coverage for invalid token rejections
 - `.claude/PROJECT_STATE.md` — Project Continuity state
 
 ## Decisions
-- Matched exact community structure from live NIRMAAN site: Coding Club and Alterino with Instagram, LinkedIn, and WhatsApp Community channels.
+- Replaced 289 individual non-wrapping buttons with a hybrid TeamDropdown (3 demo pill switches + dropdown selector) to preserve fast demo testing while avoiding layout breaking.
+- Used Blob object URL instead of `btoa` in PassCard to guarantee Latin1 and Unicode safety across all browsers.
+- Allowed `/api/activate/link` and `/login` to fall back to the mock dataset when the remote database is unreachable, ensuring local testing and demoing never block on network.
 
 ## Known Issues
-- None. Build and tests passing.
+- None. Production build, linting, and all 10 domain rule test suites pass with 0 errors.

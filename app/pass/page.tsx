@@ -3,6 +3,8 @@ import Navbar from '@/components/Navbar';
 import PassCard from '@/components/TeamQR/PassCard';
 import SponsorGrid from '@/components/Sponsors/SponsorGrid';
 import { findTeamByToken, getTeamMembers, getAllTeams } from '@/lib/data/store';
+import { getTeamForUser } from '@/lib/auth/session';
+import TeamDropdown from '@/components/TeamSelector/TeamDropdown';
 import Link from 'next/link';
 import { ArrowLeft, Users, ShieldCheck, AlertTriangle } from 'lucide-react';
 
@@ -13,9 +15,23 @@ interface PassPageProps {
 }
 
 export default async function PassPage({ searchParams }: PassPageProps) {
-  const token = searchParams?.token || 'nirmaan_alpha_9281a';
-  const team = (await findTeamByToken(token)) || (await findTeamByToken('nirmaan_alpha_9281a'));
-  const members = team ? await getTeamMembers(team.id) : [];
+  let team = null;
+  let members = [];
+
+  if (searchParams?.token) {
+    team = await findTeamByToken(searchParams.token);
+    members = team ? await getTeamMembers(team.id) : [];
+  } else {
+    const userTeam = await getTeamForUser();
+    if (userTeam) {
+      team = userTeam.team;
+      members = userTeam.members;
+    } else {
+      team = await findTeamByToken('nirmaan_alpha_9281a');
+      members = team ? await getTeamMembers(team.id) : [];
+    }
+  }
+
   const allTeams = await getAllTeams();
 
   if (!team) {
@@ -57,24 +73,7 @@ export default async function PassPage({ searchParams }: PassPageProps) {
           </Link>
 
           {/* Quick Team Switcher for Testing / Multi-team View */}
-          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-nirmaan-black/15 shadow-sm text-xs font-semibold">
-            <span className="text-nirmaan-black/50 uppercase font-bold text-[10px]">PASS:</span>
-            <div className="flex gap-1">
-              {allTeams.map((t) => (
-                <Link
-                  key={t.id}
-                  href={`/pass?token=${t.qr_token}`}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase transition-colors ${
-                    t.qr_token === team.qr_token
-                      ? 'bg-nirmaan-black text-white'
-                      : 'hover:bg-nirmaan-cream text-nirmaan-black'
-                  }`}
-                >
-                  {t.team_name.split(' ')[1] || t.team_name}
-                </Link>
-              ))}
-            </div>
-          </div>
+          <TeamDropdown teams={allTeams} currentQrToken={team.qr_token} basePath="/pass" />
         </div>
 
         {/* Digital Pass Card */}

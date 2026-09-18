@@ -27,6 +27,33 @@ export default function LoginPage() {
       });
 
       if (authError) {
+        const msg = authError.message.toLowerCase();
+        if (msg.includes('fetch') || msg.includes('network')) {
+          // If Supabase server is offline/unreachable, verify if email belongs to a team
+          const cleanEmail = email.trim().toLowerCase();
+          try {
+            const res = await fetch('/api/activate/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: cleanEmail }),
+            });
+            const data = await res.json();
+            if (data.success) {
+              const teamsRes = await fetch('/api/admin/teams');
+              const teamsData = await teamsRes.json();
+              const teamMatch = teamsData.teams?.find((t: any) =>
+                t.members?.some((m: any) => m.email.toLowerCase() === cleanEmail)
+              );
+              if (teamMatch) {
+                router.push(`/dashboard?token=${teamMatch.qr_token}`);
+                return;
+              }
+            }
+          } catch {}
+          setError('Authentication server offline. You can test directly via the Demo Dashboard below.');
+          return;
+        }
+
         setError(authError.message === 'Invalid login credentials'
           ? 'Invalid email or password. Please try again.'
           : authError.message

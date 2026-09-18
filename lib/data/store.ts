@@ -123,7 +123,7 @@ export async function findTeamByToken(rawToken: string): Promise<Team | null> {
       const { data, error } = await supabase
         .from('teams')
         .select('*')
-        .or(`qr_token.eq.${token},qr_token.eq.${rawToken.trim()}`)
+        .eq('qr_token', token)
         .maybeSingle();
 
       if (!error && data) return data as Team;
@@ -147,7 +147,7 @@ export async function getTeamMembers(teamId: string): Promise<Member[]> {
         .eq('team_id', teamId)
         .order('created_at', { ascending: true });
 
-      if (!error && data) return data as Member[];
+      if (!error && data && data.length > 0) return data as Member[];
     } catch {
       // Fallback
     }
@@ -161,10 +161,10 @@ export async function getAllTeams(): Promise<(Team & { members: Member[]; presen
     try {
       const { createAdminClient } = await import('../supabase/admin');
       const supabase = createAdminClient();
-      const { data: teams } = await supabase.from('teams').select('*').order('created_at', { ascending: true });
+      const { data: teams, error: teamsError } = await supabase.from('teams').select('*').order('created_at', { ascending: true });
       const { data: members } = await supabase.from('members').select('*');
 
-      if (teams) {
+      if (!teamsError && teams && teams.length > 0) {
         return teams.map((team: Team) => {
           const teamMembers = (members || []).filter((m: Member) => m.team_id === team.id);
           const present = teamMembers.filter((m: Member) => m.present).length;
@@ -372,7 +372,7 @@ export async function getEventStatistics(): Promise<EventStatistics> {
       const supabase = createAdminClient();
       const { data, error } = await supabase.rpc('get_event_statistics');
 
-      if (!error && data) {
+      if (!error && data && (data as EventStatistics).total_teams > 0) {
         return data as EventStatistics;
       }
     } catch {
@@ -409,7 +409,7 @@ export async function getAnnouncements(onlyPublished = true): Promise<Announceme
       let query = supabase.from('announcements').select('*').order('created_at', { ascending: false });
       if (onlyPublished) query = query.eq('published', true);
       const { data, error } = await query;
-      if (!error && data) return data as Announcement[];
+      if (!error && data && data.length > 0) return data as Announcement[];
     } catch {
       // Fallback
     }

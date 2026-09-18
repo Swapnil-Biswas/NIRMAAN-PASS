@@ -42,32 +42,53 @@ export async function POST(req: NextRequest) {
       .limit(1)
       .maybeSingle();
 
-    if (!member || memberError) {
-      return NextResponse.json(
-        { success: false, message: 'Team not found for this email.' },
-        { status: 404 }
-      );
+    if (member && !memberError) {
+      // Update the team's auth_id in Supabase
+      const { error: updateError } = await supabase
+        .from('teams')
+        .update({ auth_id: auth_id, updated_at: new Date().toISOString() })
+        .eq('id', member.team_id)
+        .is('auth_id', null); // Only link if not already linked
+
+      if (updateError) {
+        console.error('Link error:', updateError);
+        return NextResponse.json(
+          { success: false, message: 'Failed to link account. The team may already be activated.' },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: 'Team account activated and linked.',
+      });
     }
 
-    // Update the team's auth_id
-    const { error: updateError } = await supabase
-      .from('teams')
-      .update({ auth_id: auth_id, updated_at: new Date().toISOString() })
-      .eq('id', member.team_id)
-      .is('auth_id', null); // Only link if not already linked
+    // Fallback: check and link in local/mock store
+    const { getAllTeams } = await import('@/lib/data/store');
+    const allTeams = await getAllTeams();
+    const mockTeam = allTeams.find((t) =>
+      t.members.some((m) => m.email.toLowerCase() === cleanEmail)
+    );
 
-    if (updateError) {
-      console.error('Link error:', updateError);
-      return NextResponse.json(
-        { success: false, message: 'Failed to link account. The team may already be activated.' },
-        { status: 500 }
-      );
+    if (mockTeam) {
+      if (mockTeam.auth_id && mockTeam.auth_id !== auth_id) {
+        return NextResponse.json(
+          { success: false, message: 'This team has already been activated. Please log in instead.' },
+          { status: 409 }
+        );
+      }
+      mockTeam.auth_id = auth_id;
+      return NextResponse.json({
+        success: true,
+        message: 'Team account activated and linked.',
+      });
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Team account activated and linked.',
-    });
+    return NextResponse.json(
+      { success: false, message: 'Team not found for this email.' },
+      { status: 404 }
+    );
   } catch (error: any) {
     console.error('Activate link error:', error);
     return NextResponse.json(

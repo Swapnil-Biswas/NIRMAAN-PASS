@@ -33,8 +33,14 @@ export default function PassCard({ team, members = [] }: PassCardProps) {
     canvas.width = 1000;
     canvas.height = 1000;
 
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const blobUrl = URL.createObjectURL(svgBlob);
+
     img.onload = () => {
-      if (!ctx) return;
+      if (!ctx) {
+        URL.revokeObjectURL(blobUrl);
+        return;
+      }
       // White background with border
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -45,9 +51,14 @@ export default function PassCard({ team, members = [] }: PassCardProps) {
       downloadLink.download = `${team.team_name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_nirmaan_pass.png`;
       downloadLink.href = pngFile;
       downloadLink.click();
+      URL.revokeObjectURL(blobUrl);
     };
 
-    img.src = `data:image/svg+xml;base64,${btoa(svgData)}`;
+    img.onerror = () => {
+      URL.revokeObjectURL(blobUrl);
+    };
+
+    img.src = blobUrl;
   };
 
   const handleShare = async () => {

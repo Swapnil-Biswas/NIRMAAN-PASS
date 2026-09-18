@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { ShieldCheck, AlertTriangle, Eye, QrCode, Utensils, Coffee, Sun, Moon } from 'lucide-react';
 import { Team, Member } from '@/types/database';
 
+import Link from 'next/link';
+
 interface TeamRowData extends Team {
   members: Member[];
   present_count: number;
@@ -17,6 +19,8 @@ interface TeamsTableProps {
 
 export default function TeamsTable({ teams, onSelectTeam }: TeamsTableProps) {
   const [search, setSearch] = useState('');
+  const [pageSize, setPageSize] = useState<number>(25);
+  const [page, setPage] = useState<number>(1);
 
   const filteredTeams = teams.filter(
     (t) =>
@@ -25,20 +29,76 @@ export default function TeamsTable({ teams, onSelectTeam }: TeamsTableProps) {
       t.qr_token.toLowerCase().includes(search.toLowerCase())
   );
 
+  const totalPages = pageSize === 0 ? 1 : Math.max(1, Math.ceil(filteredTeams.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginatedTeams =
+    pageSize === 0
+      ? filteredTeams
+      : filteredTeams.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    setPage(1);
+  };
+
   return (
     <div className="w-full space-y-4">
-      {/* Search Input */}
-      <div className="flex items-center justify-between gap-4">
+      {/* Search & Pagination Controls */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <input
           type="text"
           placeholder="Search team by name, college, or token..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={handleSearchChange}
           className="w-full max-w-md px-4 py-2 rounded-full border border-nirmaan-black/20 bg-white font-medium text-xs outline-none focus:border-nirmaan-black"
         />
-        <span className="text-xs font-bold text-nirmaan-black/60 hidden sm:inline">
-          Showing {filteredTeams.length} of {teams.length} teams
-        </span>
+
+        <div className="flex items-center justify-between sm:justify-end gap-3 text-xs font-bold text-nirmaan-black/70">
+          <span className="hidden md:inline">
+            {filteredTeams.length} of {teams.length} teams
+          </span>
+
+          <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-full border border-nirmaan-black/15 shadow-xs">
+            <span className="text-[10px] uppercase text-nirmaan-black/50">Rows:</span>
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPage(1);
+              }}
+              className="bg-transparent font-bold text-xs outline-none cursor-pointer"
+            >
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+              <option value={0}>All</option>
+            </select>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                disabled={currentPage <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="px-2.5 py-1 rounded-full bg-white border border-nirmaan-black/15 disabled:opacity-30 hover:bg-nirmaan-cream"
+              >
+                ◀
+              </button>
+              <span className="px-1 text-[11px]">
+                {currentPage} / {totalPages}
+              </span>
+              <button
+                type="button"
+                disabled={currentPage >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                className="px-2.5 py-1 rounded-full bg-white border border-nirmaan-black/15 disabled:opacity-30 hover:bg-nirmaan-cream"
+              >
+                ▶
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Table Box */}
@@ -65,7 +125,7 @@ export default function TeamsTable({ teams, onSelectTeam }: TeamsTableProps) {
                   </td>
                 </tr>
               ) : (
-                filteredTeams.map((team) => (
+                paginatedTeams.map((team) => (
                   <tr key={team.id} className="hover:bg-nirmaan-cream/40 transition-colors">
                     <td className="p-3.5">
                       <div className="font-bold text-sm text-nirmaan-black">
@@ -127,8 +187,17 @@ export default function TeamsTable({ teams, onSelectTeam }: TeamsTableProps) {
                       {team.coffee_count} cups
                     </td>
 
-                    <td className="p-3.5 text-right font-mono text-[11px] text-nirmaan-black/60 select-all">
-                      {team.qr_token}
+                    <td className="p-3.5 text-right font-mono text-[11px] text-nirmaan-black/60">
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="select-all hidden sm:inline">{team.qr_token}</span>
+                        <Link
+                          href={`/pass?token=${team.qr_token}`}
+                          className="nirmaan-pill bg-nirmaan-cream hover:bg-nirmaan-black hover:text-white text-nirmaan-black text-[10px] py-1 px-2.5 border border-nirmaan-black/15 transition-colors shadow-xs"
+                          title="View Digital Pass"
+                        >
+                          Pass ➔
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))

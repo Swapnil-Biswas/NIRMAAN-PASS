@@ -14,6 +14,7 @@ export default function AdminAnnouncementsPage() {
   const [priority, setPriority] = useState<PriorityLevel>('normal');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchAnnouncements = async () => {
     try {
@@ -34,6 +35,7 @@ export default function AdminAnnouncementsPage() {
     if (!title.trim() || !message.trim()) return;
 
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch('/api/announcements', {
         method: 'POST',
@@ -53,8 +55,12 @@ export default function AdminAnnouncementsPage() {
         setMessage('');
         fetchAnnouncements();
         setTimeout(() => setSuccess(false), 3000);
+      } else {
+        setError(data.message || 'Failed to publish announcement.');
       }
-    } catch {} finally {
+    } catch {
+      setError('Network error while broadcasting announcement.');
+    } finally {
       setLoading(false);
     }
   };
@@ -96,6 +102,13 @@ export default function AdminAnnouncementsPage() {
                 <div className="bg-nirmaan-green-bright text-nirmaan-black p-3.5 rounded-xl font-bold text-xs mb-4 flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4" />
                   Announcement published live to all participant dashboards!
+                </div>
+              )}
+
+              {error && (
+                <div className="bg-nirmaan-red text-white p-3.5 rounded-xl font-bold text-xs mb-4 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  {error}
                 </div>
               )}
 

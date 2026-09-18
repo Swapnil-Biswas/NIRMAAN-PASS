@@ -7,16 +7,20 @@ import { Team, Member } from '@/types/database';
  * Get the current authenticated user, or null if not logged in.
  */
 export async function getSession() {
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
+  try {
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
-  if (error || !user) return null;
-  return user;
+    if (error || !user) return null;
+    return user;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -24,30 +28,53 @@ export async function getSession() {
  * Returns null if not logged in or no team found.
  */
 export async function getTeamForUser(): Promise<{ team: Team; members: Member[] } | null> {
-  const user = await getSession();
-  if (!user) return null;
+  try {
+    const user = await getSession();
+    if (!user) return null;
 
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
 
-  const { data: team, error } = await supabase
-    .from('teams')
-    .select('*')
-    .eq('auth_id', user.id)
-    .maybeSingle();
+    const { data: team, error } = await supabase
+      .from('teams')
+      .select('*')
+      .eq('auth_id', user.id)
+      .maybeSingle();
 
-  if (error || !team) return null;
+    if (!error && team) {
+      const { data: members } = await supabase
+        .from('members')
+        .select('*')
+        .eq('team_id', team.id)
+        .order('created_at', { ascending: true });
 
-  const { data: members } = await supabase
-    .from('members')
-    .select('*')
-    .eq('team_id', team.id)
-    .order('created_at', { ascending: true });
+      return {
+        team: team as Team,
+        members: (members || []) as Member[],
+      };
+    }
 
-  return {
-    team: team as Team,
-    members: (members || []) as Member[],
-  };
+    // Fallback: check local/mock store by auth_id or leader/member email
+    const { getAllTeams } = await import('@/lib/data/store');
+    const allTeams = await getAllTeams();
+    const userEmail = user.email?.toLowerCase();
+    const matchedTeam = allTeams.find(
+      (t) =>
+        t.auth_id === user.id ||
+        (userEmail && t.members.some((m) => m.email?.toLowerCase() === userEmail))
+    );
+
+    if (matchedTeam) {
+      return {
+        team: matchedTeam,
+        members: matchedTeam.members,
+      };
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
 }
 
 /**
