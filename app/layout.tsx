@@ -4,6 +4,14 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'NIRMAAN-PASS — Digital Participant Pass & Event Operations',
   description: 'Digital Participant Pass, Attendance, Meal Serving & Event Operations System for NIRMAAN 2026',
+  icons: {
+    icon: [
+      { url: '/assets/favicon.ico' },
+      { url: '/favicon.ico' },
+    ],
+    shortcut: '/assets/favicon.ico',
+    apple: '/assets/favicon.ico',
+  },
 };
 
 export default function RootLayout({
