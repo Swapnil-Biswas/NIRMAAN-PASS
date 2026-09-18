@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { getAnnouncements } from '@/lib/data/store';
-import { QrCode, LogIn, ArrowRight, ShieldCheck, Sparkles, CheckCircle2 } from 'lucide-react';
+import { QrCode, LogIn } from 'lucide-react';
 import AnnouncementList from '@/components/AnnouncementCard/AnnouncementList';
 import SponsorGrid from '@/components/Sponsors/SponsorGrid';
 import PassLookupForm from '@/components/Participant/PassLookupForm';
@@ -43,11 +43,11 @@ export default async function HomePage() {
             </Link>
 
             <Link
-              href="/activate"
+              href="/register"
               className="nirmaan-btn nirmaan-btn-dark text-xs px-6 py-3 font-bold shadow-sm"
             >
               <LogIn className="w-4 h-4 text-nirmaan-amber" />
-              ACTIVATE TEAM
+              REGISTER TEAM
             </Link>
           </div>
         </div>
@@ -55,15 +55,11 @@ export default async function HomePage() {
         {/* Quick Pass Lookup Card */}
         <div className="nirmaan-card p-6 bg-white border border-nirmaan-black/15 max-w-xl mx-auto text-center space-y-3 shadow-xs">
           <p className="text-[11px] font-bold uppercase text-nirmaan-black/60 tracking-wider">
-            HAVE A PASS TOKEN? JUMP DIRECTLY TO YOUR PASS:
+            ENTER YOUR TEAM LEADER EMAIL TO ACCESS YOUR PASS:
           </p>
           <PassLookupForm />
           <p className="text-[11px] text-nirmaan-black/50">
-            Or{' '}
-            <Link href="/login" className="text-nirmaan-blue font-bold hover:underline">
-              log in with your team credentials
-            </Link>{' '}
-            to load your pass automatically.
+            Your access is remembered on this device so you do not need to log in again when you return.
           </p>
         </div>
 

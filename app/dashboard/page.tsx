@@ -6,7 +6,7 @@ import FoodStatusGrid from '@/components/FoodStatus/FoodStatusGrid';
 import AnnouncementList from '@/components/AnnouncementCard/AnnouncementList';
 import SponsorGrid from '@/components/Sponsors/SponsorGrid';
 import PassLookupForm from '@/components/Participant/PassLookupForm';
-import { findTeamByToken, getTeamMembers, getAnnouncements } from '@/lib/data/store';
+import { findTeamByToken, getAnnouncements, getTeamMembers } from '@/lib/data/store';
 import { getTeamForUser } from '@/lib/auth/session';
 import { Team, Member } from '@/types/database';
 import Link from 'next/link';
@@ -64,9 +64,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 Team Login
               </Link>
               <span className="text-nirmaan-black/20">•</span>
-              <Link href="/activate" className="text-nirmaan-black/70 hover:underline flex items-center gap-1">
+              <Link href="/register" className="text-nirmaan-black/70 hover:underline flex items-center gap-1">
                 <KeyRound className="w-3.5 h-3.5" />
-                Activate Team
+                Register Team
               </Link>
             </div>
           </div>
@@ -101,10 +101,13 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             <p className="text-xs sm:text-sm font-semibold text-nirmaan-black/70">
               {team.college}
             </p>
+            {team.track && (
+              <p className="text-xs font-bold text-nirmaan-blue mt-1">{team.track}</p>
+            )}
           </div>
 
           <Link
-            href={`/pass?token=${team.qr_token}`}
+            href="/pass"
             className="nirmaan-btn nirmaan-btn-primary text-xs py-2.5 px-5 font-bold shadow-xs flex items-center gap-2"
           >
             <span>VIEW FULL PASS</span>
@@ -126,7 +129,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 DIGITAL TEAM PASS
               </span>
               <Link
-                href={`/pass?token=${team.qr_token}`}
+                href="/pass"
                 className="text-xs font-bold text-nirmaan-blue hover:underline flex items-center gap-1"
               >
                 Expand Pass <ExternalLink className="w-3.5 h-3.5" />

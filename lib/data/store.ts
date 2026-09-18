@@ -1,10 +1,21 @@
 import { Team, Member, Announcement, ScheduleItem, ScanResult, EventStatistics, MealType } from '@/types/database';
 import { sanitizeQRToken } from '@/lib/qr/token';
 import { validateMealEligibility } from '@/lib/validation/rules';
+import { generateQRToken } from '@/lib/qr/token';
+import { normalizeEmail, type Track } from '@/lib/registration';
+import { randomUUID } from 'crypto';
 
 import seededDataset from './seeded_teams.json';
 
 export const DEFAULT_SCHEDULE: ScheduleItem[] = [];
+
+export interface NewTeamInput {
+  teamName: string;
+  college: string;
+  track: Track;
+  leader: { name: string; email: string; phone: string };
+  members: { name: string; email: string; phone: string }[];
+}
 
 // In-Memory store with real NIRMAAN 2026 teams (289 teams, 908 members)
 interface MockDatabase {
@@ -29,6 +40,72 @@ const mockDb: MockDatabase = {
   ],
   schedule: JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)) as ScheduleItem[],
 };
+
+export async function createTeam(input: NewTeamInput): Promise<Team> {
+  const now = new Date().toISOString();
+  const teamId = `team-${randomUUID()}`;
+  const team: Team = {
+    id: teamId,
+    team_name: input.teamName,
+    college: input.college,
+    auth_id: null,
+    qr_token: generateQRToken(),
+    checked_in: false,
+    breakfast_count: 0,
+    lunch_count: 0,
+    dinner_count: 0,
+    coffee_count: 0,
+    created_at: now,
+    updated_at: now,
+    track: input.track,
+  };
+  const allMembers = [input.leader, ...input.members];
+  const members: Member[] = allMembers.map((member, index) => ({
+    id: `${teamId}-member-${index + 1}`,
+    team_id: teamId,
+    name: member.name,
+    phone: member.phone,
+    email: normalizeEmail(member.email),
+    present: false,
+    created_at: now,
+  }));
+
+  if (hasSupabaseConfig()) {
+    const { createAdminClient } = await import('../supabase/admin');
+    const supabase = createAdminClient();
+    const { data: created, error: teamError } = await supabase
+      .from('teams')
+      .insert({
+        team_name: team.team_name,
+        college: team.college,
+        track: team.track,
+        qr_token: team.qr_token,
+      })
+      .select('*')
+      .single();
+    if (teamError || !created) {
+      throw new Error(teamError?.message || 'Unable to create team.');
+    }
+    const { error: membersError } = await supabase.from('members').insert(
+      members.map(({ id, team_id, name, phone, email }) => ({
+        id,
+        team_id: created.id,
+        name,
+        phone,
+        email,
+      }))
+    );
+    if (membersError) {
+      await supabase.from('teams').delete().eq('id', created.id);
+      throw new Error(membersError.message);
+    }
+    return created as Team;
+  }
+
+  mockDb.teams.push(team);
+  mockDb.members.push(...members);
+  return team;
+}
 
 function hasSupabaseConfig(): boolean {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -97,7 +174,10 @@ export async function getAllTeams(): Promise<(Team & { members: Member[]; presen
       const { createAdminClient } = await import('../supabase/admin');
       const supabase = createAdminClient();
       const { data: teams, error: teamsError } = await supabase.from('teams').select('*').order('created_at', { ascending: true });
-      const { data: members } = await supabase.from('members').select('*');
+      const { data: members } = await supabase
+        .from('members')
+        .select('*')
+        .order('created_at', { ascending: true });
 
       if (!teamsError && teams && teams.length > 0) {
         return teams.map((team: Team) => {

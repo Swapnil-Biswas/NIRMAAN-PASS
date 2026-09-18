@@ -47,7 +47,7 @@ export default async function PassPage({ searchParams }: PassPageProps) {
                 ACCESS YOUR TEAM PASS
               </h1>
               <p className="text-xs font-medium text-nirmaan-black/70">
-                Log in with your team credentials or enter your team pass token to view your digital pass.
+                Enter your team leader email to view your digital pass.
               </p>
             </div>
 
@@ -61,9 +61,9 @@ export default async function PassPage({ searchParams }: PassPageProps) {
                 Team Login
               </Link>
               <span className="text-nirmaan-black/20">•</span>
-              <Link href="/activate" className="text-nirmaan-black/70 hover:underline flex items-center gap-1">
+              <Link href="/register" className="text-nirmaan-black/70 hover:underline flex items-center gap-1">
                 <KeyRound className="w-3.5 h-3.5" />
-                Activate Account
+                Register Team
               </Link>
             </div>
           </div>
@@ -84,7 +84,7 @@ export default async function PassPage({ searchParams }: PassPageProps) {
           {/* Top Header Controls */}
           <div className="flex items-center justify-between gap-4 mb-6">
             <Link
-              href={`/dashboard${searchParams?.token ? `?token=${encodeURIComponent(searchParams.token)}` : ''}`}
+              href="/dashboard"
               className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-nirmaan-black/70 hover:text-nirmaan-black transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />

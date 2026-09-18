@@ -13,6 +13,7 @@ export interface Team {
   coffee_count: number;
   created_at: string;
   updated_at: string;
+  track?: string | null;
 }
 
 export interface Member {
@@ -161,4 +162,3 @@ export interface AttendanceRecord {
   instance?: AttendanceInstance;
   registration?: Registration;
 }
-

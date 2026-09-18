@@ -1,15 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Mail, Lock, LogIn, Eye, EyeOff, ArrowRight, Zap, AlertCircle } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Mail, LogIn, ArrowRight, Zap, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const searchParams = useSearchParams();
+  const [email, setEmail] = useState(searchParams.get('email') || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +23,6 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: email.trim(),
-          password,
         }),
       });
 
@@ -36,8 +34,7 @@ export default function LoginPage() {
       }
 
       // Successful login — redirect to dashboard
-      const targetUrl = data.token ? `/dashboard?token=${encodeURIComponent(data.token)}` : '/dashboard';
-      router.push(targetUrl);
+      router.push(searchParams.get('redirect') || '/dashboard');
       router.refresh();
     } catch {
       setError('An unexpected error occurred. Please try again.');
@@ -66,10 +63,10 @@ export default function LoginPage() {
             </div>
           </Link>
           <h1 className="font-display text-3xl sm:text-4xl font-black uppercase text-nirmaan-black">
-            TEAM LOGIN
+            ACCESS TEAM PASS
           </h1>
           <p className="text-sm text-nirmaan-black/60 font-medium">
-            Sign in with your team credentials to access your digital pass
+            Enter the team leader email used during registration
           </p>
         </div>
 
@@ -106,37 +103,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Password Field */}
-            <div>
-              <label
-                htmlFor="login-password"
-                className="block text-xs font-bold uppercase text-nirmaan-black/70 mb-1.5"
-              >
-                PASSWORD
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-nirmaan-black/40" />
-                <input
-                  id="login-password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  autoComplete="current-password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-12 py-3 rounded-xl border border-nirmaan-black/20 focus:border-nirmaan-black focus:ring-2 focus:ring-nirmaan-amber/30 outline-none font-medium text-sm transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-nirmaan-black/40 hover:text-nirmaan-black transition-colors"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
             {/* Submit Button */}
             <button
               type="submit"
@@ -164,13 +130,13 @@ export default function LoginPage() {
         {/* Footer Links */}
         <div className="text-center space-y-3">
           <p className="text-xs text-nirmaan-black/50 font-medium">
-            Haven&apos;t activated your team yet?
+            Haven&apos;t registered your team yet?
           </p>
           <Link
-            href="/activate"
+            href="/register"
             className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-nirmaan-blue hover:text-nirmaan-blue/80 transition-colors"
           >
-            ACTIVATE YOUR TEAM
+            REGISTER YOUR TEAM
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>

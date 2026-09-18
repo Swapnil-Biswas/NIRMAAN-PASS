@@ -140,6 +140,9 @@ export default function PassCard({ team, members = [] }: PassCardProps) {
           <p className="text-sm font-semibold text-nirmaan-black/70">
             {team.college}
           </p>
+          {team.track && (
+            <p className="text-xs font-bold text-nirmaan-blue mt-1">{team.track}</p>
+          )}
           {members.length > 0 && (
             <div className="mt-3 flex items-center gap-2">
               <span className="text-xs font-bold uppercase bg-nirmaan-black/5 px-2.5 py-1 rounded-full text-nirmaan-black">
