@@ -50,7 +50,7 @@ export default async function EventInfoPage() {
     <div className="min-h-screen bg-nirmaan-cream flex flex-col">
       <Navbar />
 
-      <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full space-y-10">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full space-y-10">
         {/* Page Header */}
         <div className="text-center max-w-3xl mx-auto">
           <span className="nirmaan-pill bg-nirmaan-purple text-white text-xs mb-3 font-black">

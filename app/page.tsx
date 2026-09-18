@@ -17,7 +17,7 @@ export default async function HomePage() {
     <div className="min-h-screen flex flex-col bg-nirmaan-cream">
       <Navbar />
 
-      <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full space-y-10">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full space-y-10">
         {/* Main Portal Header */}
         <div className="text-center max-w-2xl mx-auto space-y-3">
           <div className="inline-flex items-center gap-2 bg-nirmaan-black text-white px-3.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider">
@@ -81,8 +81,8 @@ export default async function HomePage() {
           <AnnouncementList announcements={announcements} />
         </div>
 
-        {/* Sponsor Section */}
-        <div className="pt-8 sm:pt-12 border-t border-nirmaan-black/15 max-w-6xl mx-auto w-full">
+        {/* Official Sponsors Section */}
+        <div className="pt-6 border-t border-nirmaan-black/15">
           <SponsorGrid />
         </div>
       </main>
