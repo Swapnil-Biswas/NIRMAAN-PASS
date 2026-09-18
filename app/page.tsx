@@ -82,7 +82,7 @@ export default async function HomePage() {
         </div>
 
         {/* Sponsor Section */}
-        <div className="pt-6 border-t border-nirmaan-black/15 max-w-3xl mx-auto">
+        <div className="pt-8 sm:pt-12 border-t border-nirmaan-black/15 max-w-6xl mx-auto w-full">
           <SponsorGrid />
         </div>
       </main>

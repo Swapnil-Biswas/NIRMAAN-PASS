@@ -78,65 +78,68 @@ export default async function PassPage({ searchParams }: PassPageProps) {
     <div className="min-h-screen bg-nirmaan-cream flex flex-col">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-8 w-full">
-        {/* Top Header Controls */}
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <Link
-            href={`/dashboard${searchParams?.token ? `?token=${encodeURIComponent(searchParams.token)}` : ''}`}
-            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-nirmaan-black/70 hover:text-nirmaan-black transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            BACK TO DASHBOARD
-          </Link>
+      <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        {/* Pass Section (Centered) */}
+        <div className="max-w-xl mx-auto">
+          {/* Top Header Controls */}
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <Link
+              href={`/dashboard${searchParams?.token ? `?token=${encodeURIComponent(searchParams.token)}` : ''}`}
+              className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-nirmaan-black/70 hover:text-nirmaan-black transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              BACK TO DASHBOARD
+            </Link>
 
-          <span className="nirmaan-pill bg-white text-nirmaan-black border border-nirmaan-black/15 text-[11px] font-bold">
-            {team.team_name}
-          </span>
-        </div>
-
-        {/* Digital Pass Card */}
-        <div className="mb-8">
-          <PassCard team={team} members={members} />
-        </div>
-
-        {/* Team Members Attendance Card */}
-        <div className="nirmaan-card p-6 bg-white border border-nirmaan-black/15 max-w-md mx-auto">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-display text-sm font-black uppercase text-nirmaan-black flex items-center gap-2">
-              <Users className="w-4 h-4 text-nirmaan-blue" />
-              TEAM ROSTER & ATTENDANCE
-            </h3>
-            <span className="text-xs font-bold uppercase text-nirmaan-black/70 bg-nirmaan-cream px-2.5 py-1 rounded-full">
-              {presentCount} / {members.length} PRESENT
+            <span className="nirmaan-pill bg-white text-nirmaan-black border border-nirmaan-black/15 text-[11px] font-bold">
+              {team.team_name}
             </span>
           </div>
 
-          <div className="space-y-2">
-            {members.map((member) => (
-              <div
-                key={member.id}
-                className="p-3 rounded-xl bg-nirmaan-cream/40 border border-nirmaan-black/10 flex items-center justify-between"
-              >
-                <div>
-                  <p className="font-bold text-xs text-nirmaan-black">{member.name}</p>
-                  <p className="text-[11px] text-nirmaan-black/60">{member.email}</p>
+          {/* Digital Pass Card */}
+          <div className="mb-8">
+            <PassCard team={team} members={members} />
+          </div>
+
+          {/* Team Members Attendance Card */}
+          <div className="nirmaan-card p-6 bg-white border border-nirmaan-black/15 max-w-md mx-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-sm font-black uppercase text-nirmaan-black flex items-center gap-2">
+                <Users className="w-4 h-4 text-nirmaan-blue" />
+                TEAM ROSTER & ATTENDANCE
+              </h3>
+              <span className="text-xs font-bold uppercase text-nirmaan-black/70 bg-nirmaan-cream px-2.5 py-1 rounded-full">
+                {presentCount} / {members.length} PRESENT
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              {members.map((member) => (
+                <div
+                  key={member.id}
+                  className="p-3 rounded-xl bg-nirmaan-cream/40 border border-nirmaan-black/10 flex items-center justify-between"
+                >
+                  <div>
+                    <p className="font-bold text-xs text-nirmaan-black">{member.name}</p>
+                    <p className="text-[11px] text-nirmaan-black/60">{member.email}</p>
+                  </div>
+                  {member.present ? (
+                    <span className="nirmaan-pill bg-nirmaan-green-bright text-nirmaan-black text-[10px] font-black">
+                      PRESENT
+                    </span>
+                  ) : (
+                    <span className="nirmaan-pill bg-nirmaan-black/10 text-nirmaan-black/60 text-[10px] font-bold">
+                      ABSENT
+                    </span>
+                  )}
                 </div>
-                {member.present ? (
-                  <span className="nirmaan-pill bg-nirmaan-green-bright text-nirmaan-black text-[10px] font-black">
-                    PRESENT
-                  </span>
-                ) : (
-                  <span className="nirmaan-pill bg-nirmaan-black/10 text-nirmaan-black/60 text-[10px] font-bold">
-                    ABSENT
-                  </span>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Official Sponsors Section */}
-        <div className="mt-12 pt-10 border-t border-nirmaan-black/15">
+        {/* Official Sponsors Section — Broad on PC */}
+        <div className="mt-12 pt-10 border-t border-nirmaan-black/15 w-full">
           <SponsorGrid />
         </div>
       </main>

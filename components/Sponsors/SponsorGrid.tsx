@@ -126,49 +126,49 @@ export default function SponsorGrid() {
         </div>
       </div>
 
-      {/* DESKTOP / MONITOR ONLY (md+): 100% EXACT ORIGINAL UNTOUCHED GRID */}
-      <div className="hidden md:grid md:grid-cols-3 gap-4 sm:gap-6">
+      {/* DESKTOP / MONITOR ONLY (md+): WIDER & BROADER CARDS */}
+      <div className="hidden md:grid md:grid-cols-3 gap-6 lg:gap-8 w-full">
         {sponsors.map((sponsor, idx) => (
           <a
             key={idx}
             href={sponsor.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="group nirmaan-card p-6 bg-white border-2 border-nirmaan-black/10 hover:border-nirmaan-black flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-lg shadow-sm"
+            className="group nirmaan-card p-6 lg:p-8 bg-white border-2 border-nirmaan-black/10 hover:border-nirmaan-black flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-lg shadow-sm w-full"
           >
             <div>
               {/* Category Pill Tag */}
-              <div className="flex items-center justify-between gap-2 mb-4">
-                <span className={`nirmaan-pill ${sponsor.tagColor} ${sponsor.textColor} text-[10px] font-black`}>
+              <div className="flex items-center justify-between gap-2 mb-5">
+                <span className={`nirmaan-pill ${sponsor.tagColor} ${sponsor.textColor} text-xs font-black`}>
                   {sponsor.category}
                 </span>
-                <ExternalLink className="w-3.5 h-3.5 text-nirmaan-black/40 group-hover:text-nirmaan-black transition-colors" />
+                <ExternalLink className="w-4 h-4 text-nirmaan-black/40 group-hover:text-nirmaan-black transition-colors" />
               </div>
 
               {/* Logo Presentation Box */}
               <div
-                className={`h-24 w-full rounded-2xl flex items-center justify-center p-4 mb-4 transition-transform group-hover:scale-102 ${
+                className={`h-28 lg:h-32 w-full rounded-2xl flex items-center justify-center p-5 mb-5 transition-transform group-hover:scale-102 ${
                   sponsor.darkBg ? 'bg-nirmaan-black' : 'bg-nirmaan-cream/40 border border-nirmaan-black/5'
                 }`}
               >
                 <img
                   src={sponsor.logo}
                   alt={sponsor.name}
-                  className="max-h-16 max-w-[85%] object-contain filter drop-shadow-xs"
+                  className="max-h-16 lg:max-h-20 max-w-[85%] object-contain filter drop-shadow-xs"
                 />
               </div>
 
               {/* Title & Description */}
-              <h4 className="font-display text-lg font-black uppercase text-nirmaan-black group-hover:text-nirmaan-blue transition-colors">
+              <h4 className="font-display text-xl lg:text-2xl font-black uppercase text-nirmaan-black group-hover:text-nirmaan-blue transition-colors">
                 {sponsor.name}
               </h4>
-              <p className="text-xs font-medium text-nirmaan-black/70 leading-relaxed mt-1.5">
+              <p className="text-xs lg:text-sm font-medium text-nirmaan-black/70 leading-relaxed mt-2">
                 {sponsor.description}
               </p>
             </div>
 
             {/* Visit link */}
-            <div className="mt-4 pt-3 border-t border-nirmaan-black/10 flex items-center justify-between text-xs font-bold text-nirmaan-black group-hover:text-nirmaan-amber transition-colors">
+            <div className="mt-6 pt-4 border-t border-nirmaan-black/10 flex items-center justify-between text-xs lg:text-sm font-bold text-nirmaan-black group-hover:text-nirmaan-amber transition-colors">
               <span>VISIT PARTNER</span>
               <span>➔</span>
             </div>
