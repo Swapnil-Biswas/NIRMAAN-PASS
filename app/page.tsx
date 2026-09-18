@@ -188,6 +188,7 @@ export default async function HomePage() {
             <Link href="/pass" className="hover:text-nirmaan-amber transition-colors">Pass</Link>
             <Link href="/dashboard" className="hover:text-nirmaan-amber transition-colors">Dashboard</Link>
             <Link href="/event-info" className="hover:text-nirmaan-amber transition-colors">Event Info</Link>
+            <Link href="/socials" className="hover:text-nirmaan-amber transition-colors">Socials</Link>
             <Link href="/admin/scanner" className="hover:text-nirmaan-amber transition-colors">Scanner</Link>
           </div>
         </div>

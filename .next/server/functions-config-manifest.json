@@ -1,1 +1,1 @@
-{"version":1,"functions":{"/api/admin/teams":{},"/api/announcements":{},"/api/admin/stats":{},"/dashboard":{},"/":{},"/admin/dashboard":{},"/pass":{}}}
+{"version":1,"functions":{"/api/admin/stats":{},"/api/admin/teams":{},"/api/announcements":{},"/admin/dashboard":{},"/pass":{},"/":{},"/dashboard":{}}}

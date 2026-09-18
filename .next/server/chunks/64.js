@@ -1,0 +1,1 @@
+"use strict";exports.id=64,exports.ids=[64],exports.modules={9064:(e,s,t)=>{t.d(s,{createAdminClient:()=>i});var r=t(7495);function i(){let e=process.env.SUPABASE_SERVICE_ROLE_KEY||"sb_publishable_c2UWGV6nf9YMEUOD_VWrbQ_LqtY0EuD";return(0,r.eI)("https://tgpxcqazpifkifsnfmmz.supabase.co",e,{auth:{persistSession:!1,autoRefreshToken:!1}})}}};

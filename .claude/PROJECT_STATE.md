@@ -1,6 +1,6 @@
 # Project State — NIRMAAN-PASS
 
-_Last updated: 2026-09-18 — Added official sponsors (MastryHub, Reskilll, Monster Energy) to participant pages_
+_Last updated: 2026-09-18 — Added Socials page and global navigation for Coding Club and Alterino_
 
 ## Architecture
 Next.js 14 (App Router) + TypeScript + Tailwind CSS with official NIRMAAN 2026 Design System.
@@ -17,7 +17,9 @@ Dual-mode Data Store: operates directly with live Supabase client / RPC procedur
 - [x] Generate `lib/data/seeded_teams.json` and `supabase/seed.sql` with unique QR tokens — 2026-09-18
 - [x] Configure `.env.local` with Supabase project URL and Publishable Keys — 2026-09-18
 - [x] Create Supabase client helpers and session refresh middleware — 2026-09-18
-- [x] Added official NIRMAAN 2026 Sponsors (`MastryHub`, `Reskilll`, `Monster Energy`) with logos, badges, and links to Participant Dashboard (`/dashboard`), Landing (`/`), Digital Pass (`/pass`), and Event Info (`/event-info`) — 2026-09-18
+- [x] Added official NIRMAAN 2026 Sponsors (`MastryHub`, `Reskilll`, `Monster Energy`) with logos, badges, and links — 2026-09-18
+- [x] Created Socials page (`/socials`) with direct links for BMSIT Coding Club (Instagram, LinkedIn, WhatsApp Community) and Alterino (Instagram, LinkedIn) + Live Site Link — 2026-09-18
+- [x] Updated Navbar (`components/Navbar.tsx`) and Footer (`app/page.tsx`) with Socials navigation item — 2026-09-18
 - [x] Verified Next.js production build (`npm run build`) and test suite (`npm test`) with 100% success — 2026-09-18
 
 ## In Progress / Pending
@@ -26,18 +28,13 @@ Dual-mode Data Store: operates directly with live Supabase client / RPC procedur
 - [ ] Live end-to-end browser walkthrough and validation
 
 ## Modified / Touched Files
-- `public/sponsors/mastryhub.png` — MastryHub official logo
-- `public/sponsors/reskilll.png` — Reskilll official logo
-- `public/sponsors/monster-energy.png` — Monster Energy official logo
-- `components/Sponsors/SponsorGrid.tsx` — Neo-brutalist Sponsor Grid component with tags and links
-- `app/dashboard/page.tsx` — Embedded Sponsor Grid in participant dashboard
-- `app/page.tsx` — Embedded Sponsor Grid on home landing page
-- `app/pass/page.tsx` — Embedded Sponsor Grid on digital pass page
-- `app/event-info/page.tsx` — Embedded Sponsor Grid on event info page
+- `app/socials/page.tsx` — Socials and community links page
+- `components/Navbar.tsx` — Added Socials navigation link
+- `app/page.tsx` — Added Socials link to footer
 - `.claude/PROJECT_STATE.md` — Project Continuity state
 
 ## Decisions
-- Styled sponsor logos with tailored backgrounds (dark card for Reskilll, cream card for MastryHub & Monster Energy) to match NIRMAAN neo-brutalist aesthetics.
+- Matched exact community structure from live NIRMAAN site: Coding Club and Alterino with Instagram, LinkedIn, and WhatsApp Community channels.
 
 ## Known Issues
 - None. Build and tests passing.

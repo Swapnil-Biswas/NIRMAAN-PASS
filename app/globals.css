@@ -127,3 +127,62 @@ h1, h2, h3, .font-display {
   background-color: var(--nirmaan-green-bright);
   animation: pulse-dot 1.8s infinite ease-in-out;
 }
+
+/* ======================================================================
+   PRINT-FRIENDLY STYLES — Digital Pass Page
+   ====================================================================== */
+@media print {
+  /* Reset page for clean print */
+  html, body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide everything that isn't the pass card */
+  nav,
+  .no-print,
+  [data-no-print],
+  footer,
+  .nirmaan-btn,
+  button,
+  a[href="/dashboard"],
+  .live-dot {
+    display: none !important;
+  }
+
+  /* Remove box shadows and borders for clean print */
+  .nirmaan-card {
+    box-shadow: none !important;
+    border: 2px solid #141414 !important;
+    break-inside: avoid !important;
+  }
+
+  /* Ensure QR code prints at full quality */
+  svg {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Remove animations */
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Page margins for A4 print */
+  @page {
+    margin: 1cm;
+    size: A4 portrait;
+  }
+
+  /* Make the pass card standalone and centered */
+  main {
+    padding: 0 !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+}
