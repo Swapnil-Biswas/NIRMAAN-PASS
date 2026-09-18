@@ -1,5 +1,6 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { ArrowLeft, ExternalLink, Instagram, Linkedin, MessageCircle, Share2, Sparkles } from 'lucide-react';
 
@@ -145,6 +146,8 @@ export default function SocialsPage() {
           ))}
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

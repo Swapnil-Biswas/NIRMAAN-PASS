@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import { getAnnouncements } from '@/lib/data/store';
 import { QrCode, LogIn, ArrowRight, ShieldCheck, Sparkles, CheckCircle2 } from 'lucide-react';
 import AnnouncementList from '@/components/AnnouncementCard/AnnouncementList';
@@ -86,21 +87,8 @@ export default async function HomePage() {
         </div>
       </main>
 
-      {/* Participant Footer (No Scanner / Admin links) */}
-      <footer className="w-full bg-nirmaan-black text-white py-6 border-t border-nirmaan-black mt-auto">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="font-display text-lg font-black">nirmaan.</span>
-            <span className="text-white/60 font-medium">© 2026 NIRMAAN Hackathon.</span>
-          </div>
-
-          <div className="flex items-center gap-4 font-bold text-white/80">
-            <Link href="/pass" className="hover:text-nirmaan-amber transition-colors">My Pass</Link>
-            <Link href="/dashboard" className="hover:text-nirmaan-amber transition-colors">Dashboard</Link>
-            <Link href="/socials" className="hover:text-nirmaan-amber transition-colors">Socials</Link>
-          </div>
-        </div>
-      </footer>
+      {/* Participant Footer */}
+      <Footer />
     </div>
   );
 }

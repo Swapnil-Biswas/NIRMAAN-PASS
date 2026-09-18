@@ -1,5 +1,6 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import PassCard from '@/components/TeamQR/PassCard';
 import SponsorGrid from '@/components/Sponsors/SponsorGrid';
 import { findTeamByToken, getTeamMembers } from '@/lib/data/store';
@@ -139,6 +140,8 @@ export default async function PassPage({ searchParams }: PassPageProps) {
           <SponsorGrid />
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

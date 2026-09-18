@@ -1,5 +1,6 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import PassCard from '@/components/TeamQR/PassCard';
 import FoodStatusGrid from '@/components/FoodStatus/FoodStatusGrid';
 import AnnouncementList from '@/components/AnnouncementCard/AnnouncementList';
@@ -196,6 +197,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           <SponsorGrid />
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }
