@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import { getAnnouncements } from '@/lib/data/store';
-import { QrCode, LogIn, Calendar, Users, Info, ShieldCheck, ArrowRight } from 'lucide-react';
+import { QrCode, LogIn, ArrowRight, ShieldCheck, Sparkles, CheckCircle2 } from 'lucide-react';
 import AnnouncementList from '@/components/AnnouncementCard/AnnouncementList';
 import SponsorGrid from '@/components/Sponsors/SponsorGrid';
 import PassLookupForm from '@/components/Participant/PassLookupForm';
@@ -47,14 +47,6 @@ export default async function HomePage() {
             >
               <LogIn className="w-4 h-4 text-nirmaan-amber" />
               ACTIVATE TEAM
-            </Link>
-
-            <Link
-              href="/event-info"
-              className="nirmaan-pill bg-white hover:bg-nirmaan-cream text-nirmaan-black border border-nirmaan-black/20 text-xs font-bold py-3 px-5 shadow-2xs"
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              EVENT SCHEDULE
             </Link>
           </div>
         </div>
@@ -105,7 +97,6 @@ export default async function HomePage() {
           <div className="flex items-center gap-4 font-bold text-white/80">
             <Link href="/pass" className="hover:text-nirmaan-amber transition-colors">My Pass</Link>
             <Link href="/dashboard" className="hover:text-nirmaan-amber transition-colors">Dashboard</Link>
-            <Link href="/event-info" className="hover:text-nirmaan-amber transition-colors">Event Info</Link>
             <Link href="/socials" className="hover:text-nirmaan-amber transition-colors">Socials</Link>
           </div>
         </div>

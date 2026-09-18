@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { QrCode, LayoutDashboard, Info, Share2, LogIn, LogOut, User } from 'lucide-react';
+import { QrCode, LayoutDashboard, Share2, LogIn, LogOut, User } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -83,17 +83,6 @@ export default function Navbar() {
             <span className="hidden sm:inline">Dashboard</span>
           </Link>
 
-          <Link
-            href="/event-info"
-            className={`nirmaan-pill transition-colors ${
-              isLinkActive('/event-info')
-                ? 'bg-nirmaan-purple text-white shadow-sm'
-                : 'bg-nirmaan-cream-card hover:bg-nirmaan-black/5 text-nirmaan-black border border-nirmaan-black/10'
-            }`}
-          >
-            <Info className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Event Info</span>
-          </Link>
 
           <Link
             href="/socials"

@@ -80,16 +80,6 @@ export default function SocialsPage() {
               Follow our organizing clubs & stay connected throughout NIRMAAN 2026
             </p>
           </div>
-
-          <a
-            href="https://nirmaan-2026-tau.vercel.app/socials"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="nirmaan-pill bg-nirmaan-purple text-white text-xs font-black shadow-sm"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            LIVE SITE SOCIALS
-          </a>
         </div>
 
         {/* Clubs Grid */}
