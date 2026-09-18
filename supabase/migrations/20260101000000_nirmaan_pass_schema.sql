@@ -10,7 +10,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- 1. Table: teams
 -- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.teams (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     team_name TEXT NOT NULL,
     college TEXT NOT NULL,
     auth_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -32,8 +32,8 @@ CREATE INDEX IF NOT EXISTS idx_teams_auth_id ON public.teams(auth_id);
 -- 2. Table: members
 -- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.members (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    team_id UUID NOT NULL REFERENCES public.teams(id) ON DELETE CASCADE,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    team_id TEXT NOT NULL REFERENCES public.teams(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     phone TEXT NOT NULL,
     email TEXT NOT NULL,
@@ -49,7 +49,7 @@ CREATE INDEX IF NOT EXISTS idx_members_present ON public.members(team_id, presen
 -- 3. Table: announcements
 -- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.announcements (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     title TEXT NOT NULL,
     message TEXT NOT NULL,
     priority TEXT NOT NULL DEFAULT 'normal' CHECK (priority IN ('normal', 'important', 'urgent')),
@@ -302,7 +302,7 @@ $$;
 -- 3. Process On-Desk Registration / Attendance Correction
 CREATE OR REPLACE FUNCTION public.process_registration(
     p_qr_token TEXT,
-    p_present_member_ids UUID[]
+    p_present_member_ids TEXT[]
 )
 RETURNS JSONB
 LANGUAGE plpgsql

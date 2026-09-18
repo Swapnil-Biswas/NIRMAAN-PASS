@@ -44,8 +44,13 @@ Data Store:
   - Next.js production build (`npm run build`) passing 100% (17/17 routes).
   - TypeScript check (`npm run lint`) passing with 0 errors.
 
+- [x] **Consolidated and Prepared Complete Supabase Database Migration** — 2026-09-18
+  - Fixed column types in schema (`id TEXT DEFAULT gen_random_uuid()::text`, `team_id TEXT`, `p_present_member_ids TEXT[]`) to match the string identifiers in the dataset and prevent Postgres UUID cast errors.
+  - Generated consolidated, single-file script `supabase/complete_database_migration.sql` (schema, RLS policies, atomic stored procedures, and 289 clean team records).
+  - Created automated live verification script `scripts/check_supabase.mjs` to test connectivity and schema cache status.
+
 ## In Progress / Pending
-- [ ] Execute clean seed (`supabase/seed.sql`) and migrations in Supabase SQL editor
+- [ ] Run `supabase/complete_database_migration.sql` in the Supabase SQL editor (or provide DB password / Service Role Key for automated push)
 - [ ] Live venue rehearsal with desk volunteers and food counter operators
 
 ## Modified / Touched Files
