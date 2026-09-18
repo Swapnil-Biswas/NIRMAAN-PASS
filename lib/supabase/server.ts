@@ -22,5 +22,13 @@ export function createClient(cookieStoreParam?: Awaited<ReturnType<typeof cookie
         }
       },
     },
+    global: {
+      fetch: (url: RequestInfo | URL, init?: RequestInit) => {
+        return fetch(url, {
+          ...init,
+          cache: 'no-store',
+        });
+      },
+    },
   });
 }

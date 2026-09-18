@@ -12,7 +12,11 @@ import { Team, Member } from '@/types/database';
 import Link from 'next/link';
 import { Users, LayoutDashboard, ExternalLink, LogIn, KeyRound } from 'lucide-react';
 
+import LiveRefresh from '@/components/Participant/LiveRefresh';
+
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 interface DashboardPageProps {
   searchParams?: { token?: string };
@@ -106,13 +110,16 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             )}
           </div>
 
-          <Link
-            href="/pass"
-            className="nirmaan-btn nirmaan-btn-primary text-xs py-2.5 px-5 font-bold shadow-xs flex items-center gap-2"
-          >
-            <span>VIEW FULL PASS</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </Link>
+          <div className="flex items-center gap-3">
+            <LiveRefresh intervalMs={5000} />
+            <Link
+              href={`/pass?token=${team.qr_token}`}
+              className="nirmaan-btn nirmaan-btn-primary text-xs py-2.5 px-5 font-bold shadow-xs flex items-center gap-2"
+            >
+              <span>VIEW FULL PASS</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
 
         {/* Food & Beverage Entitlement Grid */}
