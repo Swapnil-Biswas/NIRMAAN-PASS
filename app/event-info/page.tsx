@@ -3,29 +3,16 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import SponsorGrid from '@/components/Sponsors/SponsorGrid';
 import TimelineSection from '@/components/EventInfo/TimelineSection';
-import { getSchedule } from '@/lib/data/store';
-import { MapPin, ShieldAlert, HelpCircle, CheckCircle2 } from 'lucide-react';
+import { getSchedule, getAnnouncements } from '@/lib/data/store';
+import AnnouncementList from '@/components/AnnouncementCard/AnnouncementList';
+import { HelpCircle } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
 export default async function EventInfoPage() {
   const schedule = await getSchedule();
+  const announcements = await getAnnouncements(true);
 
-  const venues = [
-    { name: 'Main Auditorium', desc: 'Registration & Ceremonies' },
-    { name: 'Hack Bay A & B', desc: 'Team Workstations & Power Stations' },
-    { name: 'Food Hall B', desc: 'Breakfast, Lunch & Dinner Counters' },
-    { name: 'Lobby Counter', desc: '24×7 Unlimited Coffee & Tea' },
-  ];
-
-  const rules = [
-    'One Team = One QR. All team members must use the same team pass for meals and entry.',
-    'On-Desk Registration determines physical attendance and your team food entitlement.',
-    'Food scans record actual servings (1 scan = 1 meal). Members may collect meals at different times.',
-    'Coffee and Tea counters are unlimited throughout the hackathon.',
-    'All code, design, and assets must be developed during the hackathon period.',
-    'Maintain respectful conduct across hack bays and event halls at all times.',
-  ];
 
   const faqs = [
     {
@@ -67,50 +54,18 @@ export default async function EventInfoPage() {
         {/* Dynamic Schedule */}
         <TimelineSection initialSchedule={schedule} />
 
-        {/* 2-Column Grid: Venue & Rules */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-          {/* Venue Card */}
-          <div className="nirmaan-card p-6 bg-white border border-nirmaan-black/15 shadow-sm">
-            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-nirmaan-black/10">
-              <MapPin className="w-5 h-5 text-nirmaan-green-dark" />
-              <h3 className="font-display text-lg font-black uppercase text-nirmaan-black">
-                CAMPUS VENUE LOCATIONS
-              </h3>
-            </div>
-            <div className="space-y-2.5">
-              {venues.map((venue, idx) => (
-                <div
-                  key={idx}
-                  className="p-3 rounded-xl bg-nirmaan-cream/40 border border-nirmaan-black/10 flex items-start gap-2.5"
-                >
-                  <span className="text-sm select-none flex-shrink-0 mt-0.5">📍</span>
-                  <div className="text-xs leading-relaxed">
-                    <strong className="font-bold text-nirmaan-black">{venue.name}: </strong>
-                    <span className="font-medium text-nirmaan-black/80">{venue.desc}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Broadcast Announcements */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="font-display text-xs font-black uppercase tracking-wider text-nirmaan-black flex items-center gap-1.5">
+              <span className="live-dot"></span>
+              EVENT BROADCASTS & ANNOUNCEMENTS
+            </span>
+            <span className="text-[11px] font-bold text-nirmaan-black/50">
+              {announcements.length} updates
+            </span>
           </div>
-
-          {/* Rules Card */}
-          <div className="nirmaan-card p-6 bg-white border border-nirmaan-black/15 shadow-sm">
-            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-nirmaan-black/10">
-              <ShieldAlert className="w-5 h-5 text-nirmaan-red" />
-              <h3 className="font-display text-lg font-black uppercase text-nirmaan-black">
-                EVENT RULES
-              </h3>
-            </div>
-
-            <ul className="space-y-2.5">
-              {rules.map((rule, idx) => (
-                <li key={idx} className="flex items-start gap-2.5 text-xs font-medium text-nirmaan-black/85 leading-relaxed">
-                  <CheckCircle2 className="w-4 h-4 text-nirmaan-green-dark flex-shrink-0 mt-0.5" />
-                  <span>{rule}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <AnnouncementList announcements={announcements} />
         </div>
 
         {/* FAQ Section */}
