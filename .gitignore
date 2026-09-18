@@ -3,3 +3,7 @@ node_modules
 out
 .DS_Store
 *.tsbuildinfo
+
+# Environment secrets — never commit these
+.env.local
+.env.*.local

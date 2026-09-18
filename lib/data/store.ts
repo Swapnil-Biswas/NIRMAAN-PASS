@@ -32,8 +32,9 @@ const mockDb: MockDatabase = {
 
 function hasSupabaseConfig(): boolean {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  return Boolean(url && key && !url.includes('placeholder') && !key.includes('placeholder'));
+  // Require service role key for write operations to bypass RLS
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  return Boolean(url && key && !url.includes('placeholder') && !key.includes('placeholder') && !key.includes('your-service'));
 }
 
 // -----------------------------------------------------------------------------
@@ -54,9 +55,12 @@ export async function findTeamByToken(rawToken: string): Promise<Team | null> {
         .eq('qr_token', token)
         .maybeSingle();
 
+      if (error) {
+        console.error('[Supabase] findTeamByToken error:', error.message, error.code);
+      }
       if (!error && data) return data as Team;
-    } catch {
-      // Fallback to local store
+    } catch (e) {
+      console.error('[Supabase] findTeamByToken exception:', e);
     }
   }
 
@@ -75,9 +79,12 @@ export async function getTeamMembers(teamId: string): Promise<Member[]> {
         .eq('team_id', teamId)
         .order('created_at', { ascending: true });
 
-      if (!error && data && data.length > 0) return data as Member[];
-    } catch {
-      // Fallback
+      if (error) {
+        console.error('[Supabase] getTeamMembers error:', error.message, error.code);
+      }
+      if (!error && data) return data as Member[];
+    } catch (e) {
+      console.error('[Supabase] getTeamMembers exception:', e);
     }
   }
 
@@ -129,20 +136,22 @@ export async function processMealScan(rawToken: string, mealType: MealType): Pro
   const token = sanitizeQRToken(rawToken);
 
   if (hasSupabaseConfig()) {
-    try {
-      const { createAdminClient } = await import('../supabase/admin');
-      const supabase = createAdminClient();
-      const { data, error } = await supabase.rpc('process_meal_scan', {
-        p_qr_token: token,
-        p_meal_type: mealType,
-      });
+    const { createAdminClient } = await import('../supabase/admin');
+    const supabase = createAdminClient();
+    const { data, error } = await supabase.rpc('process_meal_scan', {
+      p_qr_token: token,
+      p_meal_type: mealType,
+    });
 
-      if (!error && data) {
-        return data as ScanResult;
-      }
-    } catch {
-      // Fallback
+    if (error) {
+      console.error('[Supabase] process_meal_scan error:', error.message, error.code, error.details);
+      return {
+        success: false,
+        error_code: 'SERVER_ERROR',
+        message: `Database error: ${error.message}`,
+      };
     }
+    if (data) return data as ScanResult;
   }
 
   // Fallback in-memory atomic processing
@@ -203,19 +212,21 @@ export async function processCoffeeScan(rawToken: string): Promise<ScanResult> {
   const token = sanitizeQRToken(rawToken);
 
   if (hasSupabaseConfig()) {
-    try {
-      const { createAdminClient } = await import('../supabase/admin');
-      const supabase = createAdminClient();
-      const { data, error } = await supabase.rpc('process_coffee_scan', {
-        p_qr_token: token,
-      });
+    const { createAdminClient } = await import('../supabase/admin');
+    const supabase = createAdminClient();
+    const { data, error } = await supabase.rpc('process_coffee_scan', {
+      p_qr_token: token,
+    });
 
-      if (!error && data) {
-        return data as ScanResult;
-      }
-    } catch {
-      // Fallback
+    if (error) {
+      console.error('[Supabase] process_coffee_scan error:', error.message, error.code, error.details);
+      return {
+        success: false,
+        error_code: 'SERVER_ERROR',
+        message: `Database error: ${error.message}`,
+      };
     }
+    if (data) return data as ScanResult;
   }
 
   const team = mockDb.teams.find((t) => t.qr_token === token || t.qr_token === rawToken.trim());
@@ -244,20 +255,22 @@ export async function processRegistration(rawToken: string, presentMemberIds: st
   const token = sanitizeQRToken(rawToken);
 
   if (hasSupabaseConfig()) {
-    try {
-      const { createAdminClient } = await import('../supabase/admin');
-      const supabase = createAdminClient();
-      const { data, error } = await supabase.rpc('process_registration', {
-        p_qr_token: token,
-        p_present_member_ids: presentMemberIds,
-      });
+    const { createAdminClient } = await import('../supabase/admin');
+    const supabase = createAdminClient();
+    const { data, error } = await supabase.rpc('process_registration', {
+      p_qr_token: token,
+      p_present_member_ids: presentMemberIds,
+    });
 
-      if (!error && data) {
-        return data as ScanResult;
-      }
-    } catch {
-      // Fallback
+    if (error) {
+      console.error('[Supabase] process_registration error:', error.message, error.code, error.details);
+      return {
+        success: false,
+        error_code: 'SERVER_ERROR',
+        message: `Database error: ${error.message}`,
+      };
     }
+    if (data) return data as ScanResult;
   }
 
   const team = mockDb.teams.find((t) => t.qr_token === token || t.qr_token === rawToken.trim());
@@ -300,11 +313,13 @@ export async function getEventStatistics(): Promise<EventStatistics> {
       const supabase = createAdminClient();
       const { data, error } = await supabase.rpc('get_event_statistics');
 
-      if (!error && data && (data as EventStatistics).total_teams > 0) {
+      if (error) {
+        console.error('[Supabase] get_event_statistics error:', error.message);
+      } else if (data) {
         return data as EventStatistics;
       }
-    } catch {
-      // Fallback
+    } catch (e) {
+      console.error('[Supabase] get_event_statistics exception:', e);
     }
   }
 
