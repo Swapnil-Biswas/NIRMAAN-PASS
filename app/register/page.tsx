@@ -277,14 +277,14 @@ export default function RegisterPage() {
                     Team Account Email *
                   </label>
                   <div className="relative">
-                    <Mail className="icon" />
+                    <Mail className="reg-field-icon" />
                     <input
                       required
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="team-leader@email.com"
-                      className="field pl-10 font-bold"
+                      className="reg-field pl-10 font-bold"
                     />
                   </div>
                   <p className="text-[10px] text-nirmaan-black/50">
@@ -299,14 +299,14 @@ export default function RegisterPage() {
                       Account Password *
                     </label>
                     <div className="relative">
-                      <Lock className="icon" />
+                      <Lock className="reg-field-icon" />
                       <input
                         required
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Min. 6 characters"
-                        className="field pl-10 pr-10"
+                        className="reg-field pl-10 pr-10"
                       />
                       <button
                         type="button"
@@ -323,14 +323,14 @@ export default function RegisterPage() {
                       Confirm Password *
                     </label>
                     <div className="relative">
-                      <Lock className="icon" />
+                      <Lock className="reg-field-icon" />
                       <input
                         required
                         type={showPassword ? 'text' : 'password'}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Re-enter password"
-                        className="field pl-10"
+                        className="reg-field pl-10"
                       />
                     </div>
                   </div>
@@ -398,7 +398,7 @@ export default function RegisterPage() {
                       value={teamName}
                       onChange={(e) => setTeamName(e.target.value)}
                       placeholder="e.g. CyberVanguard"
-                      className="field font-bold"
+                      className="reg-field font-bold"
                     />
                   </div>
 
@@ -411,7 +411,7 @@ export default function RegisterPage() {
                       value={college}
                       onChange={(e) => setCollege(e.target.value)}
                       placeholder="e.g. BMSIT & Management"
-                      className="field"
+                      className="reg-field"
                     />
                   </div>
                 </div>
@@ -426,7 +426,7 @@ export default function RegisterPage() {
                     required
                     value={track}
                     onChange={(e) => setTrack(e.target.value as Track)}
-                    className="field font-bold text-xs cursor-pointer"
+                    className="reg-field font-bold text-xs cursor-pointer"
                   >
                     <option value="">-- Select your official problem track --</option>
                     {TRACKS.map((item) => (
@@ -476,7 +476,7 @@ export default function RegisterPage() {
                       value={leaderName}
                       onChange={(e) => setLeaderName(e.target.value)}
                       placeholder="e.g. Sarah Jenkins"
-                      className="field font-bold"
+                      className="reg-field font-bold"
                     />
                   </div>
 
@@ -485,14 +485,14 @@ export default function RegisterPage() {
                       Leader Contact Phone *
                     </label>
                     <div className="relative">
-                      <Phone className="icon" />
+                      <Phone className="reg-field-icon" />
                       <input
                         required
                         type="tel"
                         value={leaderPhone}
                         onChange={(e) => setLeaderPhone(e.target.value)}
                         placeholder="+91 98765 43210"
-                        className="field pl-10"
+                        className="reg-field pl-10"
                       />
                     </div>
                   </div>
@@ -540,7 +540,7 @@ export default function RegisterPage() {
                         value={member.name}
                         onChange={(e) => updateMember(index, 'name', e.target.value)}
                         placeholder="Member full name"
-                        className="field text-xs"
+                        className="reg-field text-xs"
                       />
 
                       <div className="grid sm:grid-cols-2 gap-3">
@@ -550,7 +550,7 @@ export default function RegisterPage() {
                           value={member.email}
                           onChange={(e) => updateMember(index, 'email', e.target.value)}
                           placeholder="Member email address"
-                          className="field text-xs"
+                          className="reg-field text-xs"
                         />
                         <input
                           required
@@ -558,7 +558,7 @@ export default function RegisterPage() {
                           value={member.phone}
                           onChange={(e) => updateMember(index, 'phone', e.target.value)}
                           placeholder="Member phone number"
-                          className="field text-xs"
+                          className="reg-field text-xs"
                         />
                       </div>
                     </div>
@@ -614,33 +614,6 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      <style jsx>{`
-        .field {
-          width: 100%;
-          border: 2px solid rgba(0, 0, 0, 0.15);
-          border-radius: 0.75rem;
-          padding: 0.75rem 0.9rem;
-          font-size: 0.875rem;
-          outline: none;
-          background: white;
-          color: #141414;
-          transition: border-color 0.15s ease, box-shadow 0.15s ease;
-        }
-        .field:focus {
-          border-color: #141414;
-          box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
-        }
-        .icon {
-          position: absolute;
-          left: 0.85rem;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 1rem;
-          height: 1rem;
-          opacity: 0.45;
-          pointer-events: none;
-        }
-      `}</style>
     </main>
   );
 }
