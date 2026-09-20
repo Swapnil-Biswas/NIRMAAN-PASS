@@ -14,6 +14,9 @@ export default function AdminNavbar() {
 
   const handleLock = async () => {
     setLocking(true);
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('nirmaan_admin_active_tab');
+    }
     try {
       await fetch('/api/admin/auth', { method: 'DELETE' });
     } catch {}

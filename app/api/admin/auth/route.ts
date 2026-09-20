@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       message: 'Organizer session authenticated successfully.',
     });
 
-    // Set HTTP-only session cookie
+    // Set HTTP-only session cookie (no maxAge -> browser session cookie)
     response.cookies.set({
       name: ADMIN_COOKIE_NAME,
       value: getAdminSessionToken(),
@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 2, // 48 hours for hackathon duration
     });
 
     return response;

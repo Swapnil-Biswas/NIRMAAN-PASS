@@ -29,6 +29,9 @@ export default function AdminGate() {
       const data = await res.json();
 
       if (data.success) {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('nirmaan_admin_active_tab', '1');
+        }
         router.push('/admin/scanner');
         router.refresh();
       } else {
