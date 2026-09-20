@@ -280,7 +280,7 @@ export default function RegisterPage() {
             <div className="p-4 rounded-xl bg-nirmaan-red/10 border-2 border-nirmaan-red/30 text-nirmaan-red text-xs font-bold flex items-start gap-2.5 animate-in fade-in duration-200">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-black uppercase">REGISTRATION INCOMPLETE</p>
+                <p className="font-black uppercase">REGISTRATION ERROR</p>
                 <p className="font-medium mt-0.5">{error}</p>
               </div>
             </div>
@@ -560,17 +560,24 @@ export default function RegisterPage() {
                   </span>
                 </div>
 
-                <div className="space-y-3">
-                  {members.map((member, index) => (
-                    <div
-                      key={index}
-                      className="rounded-2xl border border-nirmaan-black/15 bg-nirmaan-cream/40 p-4 space-y-3"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-black uppercase text-nirmaan-black">
-                          TEAM MEMBER #{index + 1}
-                        </span>
-                        {members.length > 1 && (
+                {members.length === 0 ? (
+                  <div className="text-center py-4 px-3 rounded-2xl border border-dashed border-nirmaan-black/20 bg-nirmaan-cream/30 text-nirmaan-black/70 text-xs">
+                    <p className="font-bold">Leader Only (Solo Registration)</p>
+                    <p className="text-[11px] text-nirmaan-black/50 mt-0.5">
+                      If you have more teammates, click below to add up to 3 additional members.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {members.map((member, index) => (
+                      <div
+                        key={index}
+                        className="rounded-2xl border border-nirmaan-black/15 bg-nirmaan-cream/40 p-4 space-y-3"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-black uppercase text-nirmaan-black">
+                            TEAM MEMBER #{index + 1}
+                          </span>
                           <button
                             type="button"
                             onClick={() => removeMember(index)}
@@ -579,38 +586,38 @@ export default function RegisterPage() {
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
-                        )}
-                      </div>
+                        </div>
 
-                      <input
-                        required
-                        value={member.name}
-                        onChange={(e) => updateMember(index, 'name', e.target.value)}
-                        placeholder="Member full name"
-                        className="reg-field text-xs"
-                      />
-
-                      <div className="grid sm:grid-cols-2 gap-3">
                         <input
                           required
-                          type="email"
-                          value={member.email}
-                          onChange={(e) => updateMember(index, 'email', e.target.value)}
-                          placeholder="Member email address"
+                          value={member.name}
+                          onChange={(e) => updateMember(index, 'name', e.target.value)}
+                          placeholder="Member full name"
                           className="reg-field text-xs"
                         />
-                        <input
-                          required
-                          type="tel"
-                          value={member.phone}
-                          onChange={(e) => updateMember(index, 'phone', e.target.value)}
-                          placeholder="Member phone number"
-                          className="reg-field text-xs"
-                        />
+
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          <input
+                            required
+                            type="email"
+                            value={member.email}
+                            onChange={(e) => updateMember(index, 'email', e.target.value)}
+                            placeholder="Member email address"
+                            className="reg-field text-xs"
+                          />
+                          <input
+                            required
+                            type="tel"
+                            value={member.phone}
+                            onChange={(e) => updateMember(index, 'phone', e.target.value)}
+                            placeholder="Member phone number"
+                            className="reg-field text-xs"
+                          />
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
 
                 {members.length < 3 && (
                   <button

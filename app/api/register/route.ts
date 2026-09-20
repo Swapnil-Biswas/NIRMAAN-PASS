@@ -122,10 +122,10 @@ export async function POST(req: NextRequest) {
     });
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Registration error:', error);
     return NextResponse.json(
-      { success: false, message: 'Unable to complete registration. Please try again.' },
+      { success: false, message: error?.message || 'Unable to complete registration. Please try again.' },
       { status: 500 }
     );
   }
