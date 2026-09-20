@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   Cpu,
   Info,
+  House,
 } from 'lucide-react';
 import { TRACKS, TRACK_DESCRIPTIONS, Track } from '@/lib/registration';
 
@@ -183,6 +184,16 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen bg-nirmaan-cream px-4 py-8 sm:py-12">
+      {/* Fixed Home Button — top-left corner */}
+      <Link
+        href="/"
+        title="Back to Home"
+        className="fixed top-4 left-4 z-50 flex items-center gap-2 bg-white border-2 border-nirmaan-black/15 hover:border-nirmaan-black text-nirmaan-black hover:bg-nirmaan-black hover:text-white transition-all rounded-full px-3.5 py-2 shadow-sm group"
+      >
+        <House className="w-4 h-4" />
+        <span className="text-[11px] font-black uppercase hidden sm:inline">Home</span>
+      </Link>
+
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header Branding */}
         <div className="text-center space-y-3">
@@ -196,6 +207,7 @@ export default function RegisterPage() {
             Complete the 2-step registration to generate your official NIRMAAN 2026 Digital QR Pass.
           </p>
         </div>
+
 
         {/* 2-Step Progress Indicator */}
         <div className="flex items-center justify-between gap-2 max-w-md mx-auto px-2">
