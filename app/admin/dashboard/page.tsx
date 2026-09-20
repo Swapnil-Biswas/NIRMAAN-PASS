@@ -4,6 +4,7 @@ import TeamsTable from '@/components/Admin/TeamsTable';
 import { getEventStatistics, getAllTeams } from '@/lib/data/store';
 import Link from 'next/link';
 import { QrCode, Megaphone, Calendar } from 'lucide-react';
+import LiveRefresh from '@/components/Participant/LiveRefresh';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -25,6 +26,7 @@ export default async function AdminDashboardPage() {
             <span className="text-xs font-bold uppercase text-nirmaan-black/60">
               NIRMAAN 2026 EVENT OPERATIONS
             </span>
+            <LiveRefresh intervalMs={4000} />
           </div>
           <h1 className="font-display text-3xl sm:text-4xl font-black uppercase text-nirmaan-black">
             EVENT OVERVIEW & STATS

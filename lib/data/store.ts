@@ -602,14 +602,19 @@ export async function getEventStatistics(): Promise<EventStatistics> {
     }
   }
 
-  const totalTeams = Math.max(50, mockDb.teams.length);
-  const checkedInTeams = mockDb.teams.filter((t) => t.checked_in).length;
-  const totalStudents = mockDb.members.length;
-  const presentStudents = mockDb.members.filter((m) => m.present).length;
-  const breakfastServed = mockDb.teams.reduce((acc, t) => acc + t.breakfast_count, 0);
-  const lunchServed = mockDb.teams.reduce((acc, t) => acc + t.lunch_count, 0);
-  const dinnerServed = mockDb.teams.reduce((acc, t) => acc + t.dinner_count, 0);
-  const totalCoffee = mockDb.teams.reduce((acc, t) => acc + t.coffee_count, 0);
+  const activeTeams = mockDb.teams.filter((t) => t.review_status !== 'rejected' && t.review_status !== 'merged');
+  const totalTeams = activeTeams.length;
+  const checkedInTeams = activeTeams.filter((t) => t.checked_in).length;
+  const activeMembers = mockDb.members.filter((m) => {
+    const team = mockDb.teams.find((t) => t.id === m.team_id);
+    return team && team.review_status !== 'rejected' && team.review_status !== 'merged';
+  });
+  const totalStudents = activeMembers.length;
+  const presentStudents = activeMembers.filter((m) => m.present).length;
+  const breakfastServed = activeTeams.reduce((acc, t) => acc + t.breakfast_count, 0);
+  const lunchServed = activeTeams.reduce((acc, t) => acc + t.lunch_count, 0);
+  const dinnerServed = activeTeams.reduce((acc, t) => acc + t.dinner_count, 0);
+  const totalCoffee = activeTeams.reduce((acc, t) => acc + t.coffee_count, 0);
 
   return {
     total_teams: totalTeams,
