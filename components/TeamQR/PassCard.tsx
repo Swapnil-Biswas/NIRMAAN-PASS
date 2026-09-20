@@ -190,28 +190,30 @@ export default function PassCard({ team, members = [] }: PassCardProps) {
         </div>
 
         {/* Action Buttons: Save & Share */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
             onClick={handleDownload}
-            className="nirmaan-btn nirmaan-btn-dark text-xs py-3 w-full font-bold shadow-sm"
+            className="nirmaan-btn nirmaan-btn-dark text-xs py-3 w-full font-black shadow-sm flex items-center justify-center gap-2"
+            title="Download Official QR Pass PNG"
           >
-            <Download className="w-4 h-4" />
-            SAVE QR
+            <Download className="w-4 h-4 text-nirmaan-amber" />
+            <span>SAVE / DOWNLOAD PASS</span>
           </button>
 
           <button
             onClick={handleShare}
-            className="nirmaan-btn nirmaan-btn-primary text-xs py-3 w-full font-bold shadow-sm"
+            className="nirmaan-btn nirmaan-btn-primary text-xs py-3 w-full font-black shadow-sm flex items-center justify-center gap-2"
+            title="Share Official Event Pass Link"
           >
             {copied || shared ? (
               <>
-                <Check className="w-4 h-4" />
-                COPIED!
+                <Check className="w-4 h-4 text-white" />
+                <span>PASS COPIED!</span>
               </>
             ) : (
               <>
                 <Share2 className="w-4 h-4" />
-                SHARE QR
+                <span>SHARE EVENT PASS</span>
               </>
             )}
           </button>

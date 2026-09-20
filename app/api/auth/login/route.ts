@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const cleanEmail = normalizeEmail(email);
     const teams = await getAllTeams();
     const matchedTeam = teams.find((t) =>
-      t.members[0]?.email && normalizeEmail(t.members[0].email) === cleanEmail
+      t.members.some((m) => m?.email && normalizeEmail(m.email) === cleanEmail)
     );
 
     if (!matchedTeam) {
