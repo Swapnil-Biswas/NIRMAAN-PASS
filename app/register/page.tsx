@@ -273,20 +273,18 @@ export default function RegisterPage() {
 
                 {/* Email Field */}
                 <div className="space-y-1">
-                  <label className="text-[11px] font-bold uppercase text-nirmaan-black/70">
+                  <label className="text-[11px] font-bold uppercase text-nirmaan-black/70 flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-nirmaan-blue" />
                     Team Account Email *
                   </label>
-                  <div className="relative">
-                    <Mail className="reg-field-icon" />
-                    <input
-                      required
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="team-leader@email.com"
-                      className="reg-field pl-10 font-bold"
-                    />
-                  </div>
+                  <input
+                    required
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="team-leader@email.com"
+                    className="reg-field font-bold"
+                  />
                   <p className="text-[10px] text-nirmaan-black/50">
                     Used to sign in, receive event announcements, and access your team&apos;s digital pass.
                   </p>
@@ -295,18 +293,18 @@ export default function RegisterPage() {
                 {/* Password Fields */}
                 <div className="grid sm:grid-cols-2 gap-4 pt-1">
                   <div className="space-y-1">
-                    <label className="text-[11px] font-bold uppercase text-nirmaan-black/70">
+                    <label className="text-[11px] font-bold uppercase text-nirmaan-black/70 flex items-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5 text-nirmaan-blue" />
                       Account Password *
                     </label>
                     <div className="relative">
-                      <Lock className="reg-field-icon" />
                       <input
                         required
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Min. 6 characters"
-                        className="reg-field pl-10 pr-10"
+                        className="reg-field pr-10"
                       />
                       <button
                         type="button"
@@ -319,20 +317,18 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[11px] font-bold uppercase text-nirmaan-black/70">
+                    <label className="text-[11px] font-bold uppercase text-nirmaan-black/70 flex items-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5 text-nirmaan-blue" />
                       Confirm Password *
                     </label>
-                    <div className="relative">
-                      <Lock className="reg-field-icon" />
-                      <input
-                        required
-                        type={showPassword ? 'text' : 'password'}
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Re-enter password"
-                        className="reg-field pl-10"
-                      />
-                    </div>
+                    <input
+                      required
+                      type={showPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Re-enter password"
+                      className="reg-field"
+                    />
                   </div>
                 </div>
               </div>
@@ -481,20 +477,18 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[11px] font-bold uppercase text-nirmaan-black/70">
+                    <label className="text-[11px] font-bold uppercase text-nirmaan-black/70 flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-nirmaan-blue" />
                       Leader Contact Phone *
                     </label>
-                    <div className="relative">
-                      <Phone className="reg-field-icon" />
-                      <input
-                        required
-                        type="tel"
-                        value={leaderPhone}
-                        onChange={(e) => setLeaderPhone(e.target.value)}
-                        placeholder="+91 98765 43210"
-                        className="reg-field pl-10"
-                      />
-                    </div>
+                    <input
+                      required
+                      type="tel"
+                      value={leaderPhone}
+                      onChange={(e) => setLeaderPhone(e.target.value)}
+                      placeholder="+91 98765 43210"
+                      className="reg-field"
+                    />
                   </div>
                 </div>
               </div>
