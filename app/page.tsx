@@ -7,6 +7,7 @@ import { QrCode, LogIn } from 'lucide-react';
 import AnnouncementList from '@/components/AnnouncementCard/AnnouncementList';
 import SponsorGrid from '@/components/Sponsors/SponsorGrid';
 import PassLookupForm from '@/components/Participant/PassLookupForm';
+import FirstVisitRedirect from '@/components/FirstVisitRedirect';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-nirmaan-cream">
+      <FirstVisitRedirect />
       <Navbar />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full space-y-10">
