@@ -63,6 +63,7 @@ export default function RegisterPage() {
 
   // Step 2: Leader Details
   const [leaderName, setLeaderName] = useState('');
+  const [leaderEmail, setLeaderEmail] = useState('');
   const [leaderPhone, setLeaderPhone] = useState('');
 
   // Step 2: Team Members
@@ -138,6 +139,14 @@ export default function RegisterPage() {
       setError('Team leader full name is required.');
       return;
     }
+    if (!leaderEmail.trim()) {
+      setError('Team leader email is required.');
+      return;
+    }
+    if (!leaderEmail.trim().includes('@')) {
+      setError('Please enter a valid email address for the team leader.');
+      return;
+    }
     if (!leaderPhone.trim()) {
       setError('Team leader contact phone is required.');
       return;
@@ -157,9 +166,9 @@ export default function RegisterPage() {
       }
     }
 
-    // Check unique emails
-    const leaderEmail = email.trim().toLowerCase();
-    const allEmails = [leaderEmail, ...filledMembers.map((m) => m.email.trim().toLowerCase())];
+    // Check unique emails — leader email must be unique among all member emails
+    const normalizedLeaderEmail = leaderEmail.trim().toLowerCase();
+    const allEmails = [normalizedLeaderEmail, ...filledMembers.map((m) => m.email.trim().toLowerCase())];
     if (new Set(allEmails).size !== allEmails.length) {
       setError('Each team member and leader must use a unique email address.');
       return;
@@ -176,7 +185,7 @@ export default function RegisterPage() {
           track,
           leader: {
             name: leaderName.trim(),
-            email: leaderEmail,
+            email: leaderEmail.trim().toLowerCase(),
             phone: leaderPhone.trim(),
           },
           members: filledMembers,
@@ -531,18 +540,33 @@ export default function RegisterPage() {
 
                   <div className="space-y-1">
                     <label className="text-[11px] font-bold uppercase text-nirmaan-black/70 flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5 text-nirmaan-blue" />
-                      Leader Contact Phone *
+                      <Mail className="w-3.5 h-3.5 text-nirmaan-blue" />
+                      Leader Email Address *
                     </label>
                     <input
                       required
-                      type="tel"
-                      value={leaderPhone}
-                      onChange={(e) => setLeaderPhone(e.target.value)}
-                      placeholder="+91 98765 43210"
+                      type="email"
+                      value={leaderEmail}
+                      onChange={(e) => setLeaderEmail(e.target.value)}
+                      placeholder="leader@email.com"
                       className="reg-field"
                     />
                   </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold uppercase text-nirmaan-black/70 flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-nirmaan-blue" />
+                    Leader Contact Phone *
+                  </label>
+                  <input
+                    required
+                    type="tel"
+                    value={leaderPhone}
+                    onChange={(e) => setLeaderPhone(e.target.value)}
+                    placeholder="+91 98765 43210"
+                    className="reg-field"
+                  />
                 </div>
               </div>
 
