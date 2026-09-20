@@ -17,7 +17,7 @@ export default function TimelineSection({ initialSchedule }: TimelineSectionProp
 
     const fetchLiveSchedule = async () => {
       try {
-        const res = await fetch('/api/schedule');
+        const res = await fetch('/api/schedule', { cache: 'no-store' });
         if (!res.ok) return;
         const data = await res.json();
         if (isMounted && data.success && Array.isArray(data.schedule)) {
@@ -28,7 +28,10 @@ export default function TimelineSection({ initialSchedule }: TimelineSectionProp
       }
     };
 
-    const interval = setInterval(fetchLiveSchedule, 20000);
+    // Fetch immediately on mount to pick up any admin changes
+    fetchLiveSchedule();
+
+    const interval = setInterval(fetchLiveSchedule, 10000);
     return () => {
       isMounted = false;
       clearInterval(interval);

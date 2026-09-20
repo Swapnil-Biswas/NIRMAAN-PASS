@@ -4,9 +4,9 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Root /admin page
- * When authenticated, redirects directly to the organizer dashboard.
+ * When authenticated, redirects directly to the QR scanner (primary ops tool).
  * When unauthenticated, intercepted by app/admin/layout.tsx (AdminGate challenge).
  */
 export default function AdminRootPage() {
-  redirect('/admin/dashboard');
+  redirect('/admin/scanner');
 }

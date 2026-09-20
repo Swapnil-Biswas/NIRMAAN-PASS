@@ -2,11 +2,14 @@ import { NextResponse } from 'next/server';
 import { getSchedule } from '@/lib/data/store';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
   try {
     const schedule = await getSchedule();
-    return NextResponse.json({ success: true, schedule });
+    const response = NextResponse.json({ success: true, schedule });
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    return response;
   } catch (error: any) {
     return NextResponse.json(
       { success: false, message: error.message || 'Failed to fetch schedule' },

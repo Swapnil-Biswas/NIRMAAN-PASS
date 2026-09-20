@@ -74,7 +74,7 @@ describe('Admin Security & Route Protection', () => {
     expect(authRes.status).toBe(200);
     const data = await authRes.json();
     expect(data.success).toBe(true);
-    expect(data.teams.length).toBe(289);
+    expect(data.teams.length).toBe(50);
   });
 
   it('protects /api/admin/scan against unauthenticated access', async () => {
@@ -129,8 +129,8 @@ describe('Admin Security & Route Protection', () => {
 });
 
 describe('Dummy Data Absence Verification', () => {
-  it('seeded dataset contains exactly 289 teams all starting with 0 counts', () => {
-    expect(seededDataset.teams.length).toBe(289);
+  it('seeded dataset contains exactly 50 teams all starting with 0 counts', () => {
+    expect(seededDataset.teams.length).toBe(50);
     for (const team of seededDataset.teams) {
       expect(team.checked_in).toBe(false);
       expect(team.breakfast_count).toBe(0);
@@ -140,8 +140,8 @@ describe('Dummy Data Absence Verification', () => {
     }
   });
 
-  it('seeded dataset contains 908 members all starting with present: false', () => {
-    expect(seededDataset.members.length).toBe(908);
+  it('seeded dataset contains 170 members all starting with present: false', () => {
+    expect(seededDataset.members.length).toBe(170);
     for (const member of seededDataset.members) {
       expect(member.present).toBe(false);
     }

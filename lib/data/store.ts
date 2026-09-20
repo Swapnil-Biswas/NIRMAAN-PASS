@@ -17,7 +17,7 @@ export interface NewTeamInput {
   members: { name: string; email: string; phone: string }[];
 }
 
-// In-Memory store with real NIRMAAN 2026 teams (289 teams, 908 members)
+// In-Memory store with NIRMAAN 2026 reference teams (50 teams)
 interface MockDatabase {
   teams: Team[];
   members: Member[];
@@ -142,6 +142,32 @@ export async function findTeamByToken(rawToken: string): Promise<Team | null> {
   }
 
   const team = mockDb.teams.find((t) => t.qr_token === token || t.qr_token === rawToken.trim());
+  return team ? { ...team } : null;
+}
+
+export async function findTeamById(teamId: string): Promise<Team | null> {
+  if (!teamId) return null;
+
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { data, error } = await supabase
+        .from('teams')
+        .select('*')
+        .eq('id', teamId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('[Supabase] findTeamById error:', error.message, error.code);
+      }
+      if (!error && data) return data as Team;
+    } catch (e) {
+      console.error('[Supabase] findTeamById exception:', e);
+    }
+  }
+
+  const team = mockDb.teams.find((t) => t.id === teamId);
   return team ? { ...team } : null;
 }
 
@@ -465,6 +491,24 @@ export async function createAnnouncement(announcement: Omit<Announcement, 'id' |
 
   mockDb.announcements.unshift(newAnn);
   return newAnn;
+}
+
+export async function deleteAnnouncement(id: string): Promise<boolean> {
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { error } = await supabase.from('announcements').delete().eq('id', id);
+      if (!error) return true;
+    } catch {
+      // Fallback to local store
+    }
+  }
+
+  const idx = mockDb.announcements.findIndex((a) => a.id === id);
+  if (idx === -1) return false;
+  mockDb.announcements.splice(idx, 1);
+  return true;
 }
 
 // -----------------------------------------------------------------------------

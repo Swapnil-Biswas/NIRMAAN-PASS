@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ShieldCheck, AlertTriangle, Eye, QrCode, Utensils, Coffee, Sun, Moon } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, Eye, Utensils, Coffee, Sun, Moon, Download } from 'lucide-react';
 import { Team, Member } from '@/types/database';
-
 import Link from 'next/link';
 
 interface TeamRowData extends Team {
@@ -25,8 +24,7 @@ export default function TeamsTable({ teams, onSelectTeam }: TeamsTableProps) {
   const filteredTeams = teams.filter(
     (t) =>
       t.team_name.toLowerCase().includes(search.toLowerCase()) ||
-      t.college.toLowerCase().includes(search.toLowerCase()) ||
-      t.qr_token.toLowerCase().includes(search.toLowerCase())
+      t.college.toLowerCase().includes(search.toLowerCase())
   );
 
   const totalPages = pageSize === 0 ? 1 : Math.max(1, Math.ceil(filteredTeams.length / pageSize));
@@ -41,17 +39,81 @@ export default function TeamsTable({ teams, onSelectTeam }: TeamsTableProps) {
     setPage(1);
   };
 
+  const exportToExcel = () => {
+    const escapeCSV = (val: string) => {
+      if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+        return `"${val.replace(/"/g, '""')}"`;
+      }
+      return val;
+    };
+
+    const headers = [
+      'Team Name',
+      'College',
+      'Track',
+      'Status',
+      'Total Members',
+      'Present Count',
+      'Member Names',
+      'Member Emails',
+      'Member Phones',
+      'Breakfast Served',
+      'Lunch Served',
+      'Dinner Served',
+      'Coffee / Tea Served',
+    ];
+
+    const rows = filteredTeams.map((team) => [
+      escapeCSV(team.team_name),
+      escapeCSV(team.college),
+      escapeCSV(team.track || 'N/A'),
+      team.checked_in ? 'Checked In' : 'Unregistered',
+      String(team.total_members),
+      String(team.present_count),
+      escapeCSV(team.members.map((m) => m.name).join('; ')),
+      escapeCSV(team.members.map((m) => m.email).join('; ')),
+      escapeCSV(team.members.map((m) => m.phone).join('; ')),
+      String(team.breakfast_count),
+      String(team.lunch_count),
+      String(team.dinner_count),
+      String(team.coffee_count),
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `NIRMAAN_2026_Teams_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="w-full space-y-4">
       {/* Search & Pagination Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <input
-          type="text"
-          placeholder="Search team by name, college, or token..."
-          value={search}
-          onChange={handleSearchChange}
-          className="w-full max-w-md px-4 py-2 rounded-full border border-nirmaan-black/20 bg-white font-medium text-xs outline-none focus:border-nirmaan-black"
-        />
+        <div className="flex items-center gap-2 w-full max-w-md">
+          <input
+            type="text"
+            placeholder="Search team by name or college..."
+            value={search}
+            onChange={handleSearchChange}
+            className="flex-1 px-4 py-2 rounded-full border border-nirmaan-black/20 bg-white font-medium text-xs outline-none focus:border-nirmaan-black"
+          />
+          <button
+            type="button"
+            onClick={exportToExcel}
+            className="nirmaan-pill bg-nirmaan-green-dark text-white text-[10px] font-black py-2 px-3 hover:opacity-90 transition-opacity shadow-xs flex-shrink-0"
+            title="Export to Excel (CSV)"
+          >
+            <Download className="w-3.5 h-3.5" />
+            EXPORT
+          </button>
+        </div>
 
         <div className="flex items-center justify-between sm:justify-end gap-3 text-xs font-bold text-nirmaan-black/70">
           <span className="hidden md:inline">
@@ -113,8 +175,8 @@ export default function TeamsTable({ teams, onSelectTeam }: TeamsTableProps) {
                 <th className="p-3.5 text-center">Breakfast</th>
                 <th className="p-3.5 text-center">Lunch</th>
                 <th className="p-3.5 text-center">Dinner</th>
-                <th className="p-3.5 text-center">Coffee</th>
-                <th className="p-3.5 text-right">QR Token</th>
+                <th className="p-3.5 text-center">Coffee / Tea</th>
+                <th className="p-3.5 text-right">Pass</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-nirmaan-black/5 font-medium">
@@ -187,17 +249,15 @@ export default function TeamsTable({ teams, onSelectTeam }: TeamsTableProps) {
                       {team.coffee_count} cups
                     </td>
 
-                    <td className="p-3.5 text-right font-mono text-[11px] text-nirmaan-black/60">
-                      <div className="flex items-center justify-end gap-2">
-                        <span className="select-all hidden sm:inline">{team.qr_token}</span>
-                        <Link
-                          href={`/pass?token=${team.qr_token}`}
-                          className="nirmaan-pill bg-nirmaan-cream hover:bg-nirmaan-black hover:text-white text-nirmaan-black text-[10px] py-1 px-2.5 border border-nirmaan-black/15 transition-colors shadow-xs"
-                          title="View Digital Pass"
-                        >
-                          Pass ➔
-                        </Link>
-                      </div>
+                    <td className="p-3.5 text-right">
+                      <Link
+                        href={`/admin/dashboard/pass?teamId=${team.id}`}
+                        className="nirmaan-pill bg-nirmaan-cream hover:bg-nirmaan-black hover:text-white text-nirmaan-black text-[10px] py-1 px-2.5 border border-nirmaan-black/15 transition-colors shadow-xs inline-flex items-center gap-1"
+                        title="View Team Pass & Dashboard"
+                      >
+                        <span>Pass</span>
+                        <span>➔</span>
+                      </Link>
                     </td>
                   </tr>
                 ))

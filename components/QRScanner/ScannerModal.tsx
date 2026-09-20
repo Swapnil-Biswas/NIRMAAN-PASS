@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { QrCode, Camera, CheckCircle2, AlertCircle, RefreshCw, Sparkles, Shield, Utensils, Sun, Moon, Coffee } from 'lucide-react';
+import { QrCode, Camera, CheckCircle2, AlertCircle, RefreshCw, Sparkles, Shield, Utensils, Sun, Moon, Coffee, ChevronDown } from 'lucide-react';
 import { ScanPurpose, Team, Member, ScanResult, MealType } from '@/types/database';
 import { sanitizeQRToken } from '@/lib/qr/token';
 import RegistrationModal from '@/components/Admin/RegistrationModal';
@@ -253,31 +253,22 @@ export default function QRScanner() {
         <label className="block text-xs font-bold uppercase tracking-widest text-nirmaan-black/70 mb-2">
           SELECT SCAN PURPOSE
         </label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {(
-            [
-              { id: 'registration', label: 'Registration' },
-              { id: 'breakfast', label: 'Breakfast' },
-              { id: 'lunch', label: 'Lunch' },
-              { id: 'dinner', label: 'Dinner' },
-              { id: 'coffee', label: 'Coffee / Tea' },
-            ] as const
-          ).map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setPurpose(item.id);
-                setErrorMsg(null);
-              }}
-              className={`nirmaan-pill py-3 justify-center text-xs font-black transition-all ${
-                purpose === item.id
-                  ? 'bg-nirmaan-black text-white shadow-md scale-102'
-                  : 'bg-white hover:bg-nirmaan-cream text-nirmaan-black border border-nirmaan-black/15'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+        <div className="relative">
+          <select
+            value={purpose}
+            onChange={(e) => {
+              setPurpose(e.target.value as ScanPurpose);
+              setErrorMsg(null);
+            }}
+            className="w-full appearance-none bg-white border-2 border-nirmaan-black/20 rounded-xl px-4 py-3.5 pr-12 font-display text-sm font-black uppercase text-nirmaan-black focus:border-nirmaan-black focus:outline-none cursor-pointer transition-colors hover:border-nirmaan-black/40"
+          >
+            <option value="registration">Registration</option>
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch">Lunch</option>
+            <option value="dinner">Dinner</option>
+            <option value="coffee">Coffee / Tea</option>
+          </select>
+          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-nirmaan-black/50 pointer-events-none" />
         </div>
 
         {/* Current Active Mode Banner */}

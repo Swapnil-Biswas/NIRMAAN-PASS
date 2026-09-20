@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Megaphone, Send, CheckCircle2, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Megaphone, Send, CheckCircle2, AlertTriangle, ArrowLeft, Trash2 } from 'lucide-react';
 import { Announcement, PriorityLevel } from '@/types/database';
-import AnnouncementList from '@/components/AnnouncementCard/AnnouncementList';
 import Link from 'next/link';
 
 export default function AdminAnnouncementsPage() {
@@ -17,7 +16,7 @@ export default function AdminAnnouncementsPage() {
 
   const fetchAnnouncements = async () => {
     try {
-      const res = await fetch('/api/announcements?all=true');
+      const res = await fetch('/api/announcements?all=true', { cache: 'no-store' });
       const data = await res.json();
       if (data.success) {
         setAnnouncements(data.announcements);
@@ -27,7 +26,33 @@ export default function AdminAnnouncementsPage() {
 
   useEffect(() => {
     fetchAnnouncements();
+    const interval = setInterval(fetchAnnouncements, 10000);
+    return () => clearInterval(interval);
   }, []);
+
+  const handleDelete = async (id: string, title: string) => {
+    if (!confirm(`Remove announcement "${title}"?`)) return;
+
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/announcements?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSuccess(true);
+        fetchAnnouncements();
+        setTimeout(() => setSuccess(false), 3000);
+      } else {
+        setError(data.message || 'Failed to delete announcement.');
+      }
+    } catch {
+      setError('Network error while deleting announcement.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -182,7 +207,50 @@ export default function AdminAnnouncementsPage() {
             <h3 className="font-display text-sm font-black uppercase text-nirmaan-black">
               CURRENTLY BROADCASTING ({announcements.length})
             </h3>
-            <AnnouncementList announcements={announcements} />
+            {announcements.length === 0 ? (
+              <div className="nirmaan-card p-6 text-center text-nirmaan-black/60 border border-nirmaan-black/10">
+                <Megaphone className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                <p className="font-bold text-sm">No announcements yet</p>
+                <p className="text-xs">Create your first broadcast using the form.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {announcements.map((ann) => {
+                  const priorityStyles = ann.priority === 'urgent'
+                    ? { label: 'URGENT', bg: 'bg-nirmaan-red', text: 'text-white', border: 'border-nirmaan-red' }
+                    : ann.priority === 'important'
+                    ? { label: 'IMPORTANT', bg: 'bg-nirmaan-amber', text: 'text-nirmaan-black', border: 'border-nirmaan-amber' }
+                    : { label: 'ANNOUNCEMENT', bg: 'bg-nirmaan-blue', text: 'text-white', border: 'border-nirmaan-blue' };
+
+                  return (
+                    <div
+                      key={ann.id}
+                      className={`nirmaan-card p-5 bg-white border-l-4 ${priorityStyles.border} shadow-sm`}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <span className={`nirmaan-pill ${priorityStyles.bg} ${priorityStyles.text} text-[10px] font-black`}>
+                          {priorityStyles.label}
+                        </span>
+                        <button
+                          onClick={() => handleDelete(ann.id, ann.title)}
+                          disabled={loading}
+                          className="p-1.5 rounded-lg text-nirmaan-red/60 hover:text-nirmaan-red hover:bg-nirmaan-red/10 transition-colors disabled:opacity-50"
+                          title="Delete announcement"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <h4 className="font-display text-base font-black uppercase text-nirmaan-black mb-1">
+                        {ann.title}
+                      </h4>
+                      <p className="text-sm font-medium text-nirmaan-black/80 leading-relaxed">
+                        {ann.message}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </main>

@@ -29,7 +29,7 @@ export default function AdminGate() {
       const data = await res.json();
 
       if (data.success) {
-        router.push('/admin/dashboard');
+        router.push('/admin/scanner');
         router.refresh();
       } else {
         setError(data.message || 'Invalid Organizer Access Code.');
