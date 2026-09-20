@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createTeam, getAllTeams } from '@/lib/data/store';
-import { isTrack, normalizeEmail, type RegistrationMemberInput } from '@/lib/registration';
+import {
+  isTrack,
+  normalizeEmail,
+  normalizePhone,
+  detectTeamDuplicates,
+  type RegistrationMemberInput,
+} from '@/lib/registration';
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,8 +36,9 @@ export async function POST(req: NextRequest) {
         email: normalizeEmail(member.email),
         phone: member.phone.trim(),
       }));
-    const emails = [normalizedLeader.email, ...normalizedMembers.map((member: RegistrationMemberInput) => member.email)];
 
+    // Internal duplicate email check
+    const emails = [normalizedLeader.email, ...normalizedMembers.map((m: RegistrationMemberInput) => m.email)];
     if (new Set(emails).size !== emails.length) {
       return NextResponse.json(
         { success: false, message: 'Each team member must use a unique email address.' },
@@ -39,10 +46,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const existingTeams = await getAllTeams();
-    if (existingTeams.some((team) => team.members.some((member) => emails.includes(normalizeEmail(member.email))))) {
+    // Internal duplicate phone check
+    const normalizedPhones = [
+      normalizePhone(normalizedLeader.phone),
+      ...normalizedMembers.map((m: RegistrationMemberInput) => normalizePhone(m.phone)),
+    ];
+    if (new Set(normalizedPhones).size !== normalizedPhones.length) {
       return NextResponse.json(
-        { success: false, message: 'A team is already registered with one of these email addresses.' },
+        { success: false, message: 'Each team member must use a unique contact phone number.' },
+        { status: 400 }
+      );
+    }
+
+    const registrationInput = {
+      teamName,
+      college,
+      track,
+      leader: normalizedLeader,
+      members: normalizedMembers,
+    };
+
+    // Retrieve existing teams and run anti-duplicate detection
+    const existingTeams = await getAllTeams();
+    const duplicateCheck = detectTeamDuplicates(registrationInput, existingTeams);
+
+    if (duplicateCheck.action === 'hard_block') {
+      return NextResponse.json(
+        {
+          success: false,
+          error_code: 'DUPLICATE_REGISTRATION',
+          message: duplicateCheck.reason || 'This team or participant is already registered for NIRMAAN 2026.',
+        },
         { status: 409 }
       );
     }
@@ -53,12 +87,18 @@ export async function POST(req: NextRequest) {
       track,
       leader: normalizedLeader,
       members: normalizedMembers,
+      reviewStatus: duplicateCheck.reviewStatus,
+      duplicateNotes: duplicateCheck.reason,
+      duplicateMatchTeamId: duplicateCheck.matchedTeam?.id,
     });
+
     const response = NextResponse.json({
       success: true,
       team_name: team.team_name,
+      review_status: team.review_status,
       message: 'Registration complete. Your team pass is ready.',
     });
+
     response.cookies.set({
       name: 'nirmaan_team_session',
       value: JSON.stringify({
@@ -73,6 +113,7 @@ export async function POST(req: NextRequest) {
       path: '/',
       maxAge: 60 * 60 * 24 * 30,
     });
+
     return response;
   } catch (error) {
     console.error('Registration error:', error);

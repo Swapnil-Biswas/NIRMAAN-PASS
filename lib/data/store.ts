@@ -1,8 +1,8 @@
-import { Team, Member, Announcement, ScheduleItem, ScanResult, EventStatistics, MealType } from '@/types/database';
+import { Team, Member, Announcement, ScheduleItem, ScanResult, EventStatistics, MealType, TeamReviewStatus } from '@/types/database';
 import { sanitizeQRToken } from '@/lib/qr/token';
 import { validateMealEligibility } from '@/lib/validation/rules';
 import { generateQRToken } from '@/lib/qr/token';
-import { normalizeEmail, type Track } from '@/lib/registration';
+import { normalizeEmail, normalizePhone, canonicalizeTeamName, type Track } from '@/lib/registration';
 import { randomUUID } from 'crypto';
 
 import seededDataset from './seeded_teams.json';
@@ -15,6 +15,9 @@ export interface NewTeamInput {
   track: Track;
   leader: { name: string; email: string; phone: string };
   members: { name: string; email: string; phone: string }[];
+  reviewStatus?: TeamReviewStatus;
+  duplicateNotes?: string | null;
+  duplicateMatchTeamId?: string | null;
 }
 
 // In-Memory store with NIRMAAN 2026 reference teams (50 teams)
@@ -41,70 +44,98 @@ const mockDb: MockDatabase = {
   schedule: JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)) as ScheduleItem[],
 };
 
+// In-memory registration concurrency lock
+let registrationMutex = Promise.resolve();
+
 export async function createTeam(input: NewTeamInput): Promise<Team> {
-  const now = new Date().toISOString();
-  const teamId = `team-${randomUUID()}`;
-  const team: Team = {
-    id: teamId,
-    team_name: input.teamName,
-    college: input.college,
-    auth_id: null,
-    qr_token: generateQRToken(),
-    checked_in: false,
-    breakfast_count: 0,
-    lunch_count: 0,
-    dinner_count: 0,
-    coffee_count: 0,
-    created_at: now,
-    updated_at: now,
-    track: input.track,
-  };
-  const allMembers = [input.leader, ...input.members];
-  const members: Member[] = allMembers.map((member, index) => ({
-    id: `${teamId}-member-${index + 1}`,
-    team_id: teamId,
-    name: member.name,
-    phone: member.phone,
-    email: normalizeEmail(member.email),
-    present: false,
-    created_at: now,
-  }));
+  const unlock = await new Promise<() => void>((resolve) => {
+    registrationMutex = registrationMutex.then(() => new Promise<void>((res) => resolve(res)));
+  });
 
-  if (hasSupabaseConfig()) {
-    const { createAdminClient } = await import('../supabase/admin');
-    const supabase = createAdminClient();
-    const { data: created, error: teamError } = await supabase
-      .from('teams')
-      .insert({
-        team_name: team.team_name,
-        college: team.college,
-        track: team.track,
-        qr_token: team.qr_token,
-      })
-      .select('*')
-      .single();
-    if (teamError || !created) {
-      throw new Error(teamError?.message || 'Unable to create team.');
+  try {
+    const now = new Date().toISOString();
+    const teamId = `team-${randomUUID()}`;
+    const canonicalName = canonicalizeTeamName(input.teamName);
+    const reviewStatus: TeamReviewStatus = input.reviewStatus || 'approved';
+
+    const team: Team = {
+      id: teamId,
+      team_name: input.teamName,
+      canonical_name: canonicalName,
+      college: input.college,
+      auth_id: null,
+      qr_token: generateQRToken(),
+      checked_in: false,
+      breakfast_count: 0,
+      lunch_count: 0,
+      dinner_count: 0,
+      coffee_count: 0,
+      created_at: now,
+      updated_at: now,
+      track: input.track,
+      review_status: reviewStatus,
+      duplicate_notes: input.duplicateNotes || null,
+      duplicate_match_team_id: input.duplicateMatchTeamId || null,
+      merged_into_team_id: null,
+    };
+
+    const allMembers = [input.leader, ...input.members];
+    const members: Member[] = allMembers.map((member, index) => ({
+      id: `${teamId}-member-${index + 1}`,
+      team_id: teamId,
+      name: member.name,
+      phone: member.phone,
+      normalized_phone: normalizePhone(member.phone),
+      email: member.email,
+      normalized_email: normalizeEmail(member.email),
+      present: false,
+      created_at: now,
+    }));
+
+    if (hasSupabaseConfig()) {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { data: created, error: teamError } = await supabase
+        .from('teams')
+        .insert({
+          team_name: team.team_name,
+          canonical_name: team.canonical_name,
+          college: team.college,
+          track: team.track,
+          qr_token: team.qr_token,
+          review_status: team.review_status,
+          duplicate_notes: team.duplicate_notes,
+          duplicate_match_team_id: team.duplicate_match_team_id,
+        })
+        .select('*')
+        .single();
+      if (teamError || !created) {
+        throw new Error(teamError?.message || 'Unable to create team.');
+      }
+      const { error: membersError } = await supabase.from('members').insert(
+        members.map(({ id, team_id, name, phone, email, normalized_phone, normalized_email }) => ({
+          id,
+          team_id: created.id,
+          name,
+          phone,
+          normalized_phone,
+          email,
+          normalized_email,
+        }))
+      );
+      if (membersError) {
+        await supabase.from('teams').delete().eq('id', created.id);
+        throw new Error(membersError.message);
+      }
+      return created as Team;
     }
-    const { error: membersError } = await supabase.from('members').insert(
-      members.map(({ id, team_id, name, phone, email }) => ({
-        id,
-        team_id: created.id,
-        name,
-        phone,
-        email,
-      }))
-    );
-    if (membersError) {
-      await supabase.from('teams').delete().eq('id', created.id);
-      throw new Error(membersError.message);
-    }
-    return created as Team;
+
+    mockDb.teams.push(team);
+    mockDb.members.push(...members);
+    return team;
+  } finally {
+    unlock();
   }
-
-  mockDb.teams.push(team);
-  mockDb.members.push(...members);
-  return team;
 }
 
 function hasSupabaseConfig(): boolean {
@@ -270,6 +301,22 @@ export async function processMealScan(rawToken: string, mealType: MealType): Pro
     };
   }
 
+  if (team.review_status === 'rejected') {
+    return {
+      success: false,
+      error_code: 'TOKEN_REVOKED',
+      message: 'This event pass has been rejected or disqualified by organizers.',
+    };
+  }
+
+  if (team.review_status === 'merged') {
+    return {
+      success: false,
+      error_code: 'TEAM_MERGED',
+      message: 'This duplicate team pass was merged into another registration and is now inactive.',
+    };
+  }
+
   const members = mockDb.members.filter((m) => m.team_id === team.id);
   const validation = validateMealEligibility(team, members, mealType);
 
@@ -344,6 +391,22 @@ export async function processCoffeeScan(rawToken: string): Promise<ScanResult> {
     };
   }
 
+  if (team.review_status === 'rejected') {
+    return {
+      success: false,
+      error_code: 'TOKEN_REVOKED',
+      message: 'This event pass has been rejected or disqualified by organizers.',
+    };
+  }
+
+  if (team.review_status === 'merged') {
+    return {
+      success: false,
+      error_code: 'TEAM_MERGED',
+      message: 'This duplicate team pass was merged into another registration and is now inactive.',
+    };
+  }
+
   team.coffee_count += 1;
   team.updated_at = new Date().toISOString();
 
@@ -388,6 +451,22 @@ export async function processRegistration(rawToken: string, presentMemberIds: st
     };
   }
 
+  if (team.review_status === 'rejected') {
+    return {
+      success: false,
+      error_code: 'TOKEN_REVOKED',
+      message: 'This event pass has been rejected or disqualified by organizers.',
+    };
+  }
+
+  if (team.review_status === 'merged') {
+    return {
+      success: false,
+      error_code: 'TEAM_MERGED',
+      message: 'This duplicate team pass was merged into another registration and is now inactive.',
+    };
+  }
+
   team.checked_in = true;
   team.updated_at = new Date().toISOString();
 
@@ -409,6 +488,100 @@ export async function processRegistration(rawToken: string, presentMemberIds: st
     present_count: presentCount,
     members: teamMembers,
     message: `Registration saved. ${presentCount}/${teamMembers.length} members marked present.`,
+  };
+}
+
+export async function updateTeamReviewStatus(
+  teamId: string,
+  reviewStatus: TeamReviewStatus,
+  notes?: string
+): Promise<Team | null> {
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const updates: Record<string, any> = { review_status: reviewStatus, updated_at: new Date().toISOString() };
+      if (notes !== undefined) updates.duplicate_notes = notes;
+      const { data, error } = await supabase
+        .from('teams')
+        .update(updates)
+        .eq('id', teamId)
+        .select()
+        .single();
+      if (!error && data) return data as Team;
+    } catch (e) {
+      console.error('[Supabase] updateTeamReviewStatus error:', e);
+    }
+  }
+
+  const team = mockDb.teams.find((t) => t.id === teamId);
+  if (!team) return null;
+  team.review_status = reviewStatus;
+  if (notes !== undefined) team.duplicate_notes = notes;
+  team.updated_at = new Date().toISOString();
+  return { ...team };
+}
+
+export async function mergeDuplicateTeam(
+  duplicateTeamId: string,
+  primaryTeamId: string,
+  notes?: string
+): Promise<{ success: boolean; message: string; primaryTeam?: Team; duplicateTeam?: Team }> {
+  if (duplicateTeamId === primaryTeamId) {
+    return { success: false, message: 'Cannot merge a team into itself.' };
+  }
+
+  const primaryTeam = await findTeamById(primaryTeamId);
+  const duplicateTeam = await findTeamById(duplicateTeamId);
+
+  if (!primaryTeam || !duplicateTeam) {
+    return { success: false, message: 'Primary or duplicate team not found.' };
+  }
+
+  const mergeNote = notes || `Merged duplicate registration into primary team '${primaryTeam.team_name}' (${primaryTeam.id})`;
+
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { data, error } = await supabase
+        .from('teams')
+        .update({
+          review_status: 'merged',
+          merged_into_team_id: primaryTeamId,
+          duplicate_notes: mergeNote,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', duplicateTeamId)
+        .select()
+        .single();
+      if (error) {
+        return { success: false, message: error.message };
+      }
+      return {
+        success: true,
+        message: `Successfully merged duplicate team '${duplicateTeam.team_name}' into '${primaryTeam.team_name}'.`,
+        primaryTeam,
+        duplicateTeam: data as Team,
+      };
+    } catch (e: any) {
+      return { success: false, message: e.message || 'Error merging teams.' };
+    }
+  }
+
+  const dup = mockDb.teams.find((t) => t.id === duplicateTeamId);
+  if (dup) {
+    dup.review_status = 'merged';
+    dup.merged_into_team_id = primaryTeamId;
+    dup.duplicate_notes = mergeNote;
+    dup.updated_at = new Date().toISOString();
+  }
+
+  return {
+    success: true,
+    message: `Successfully merged duplicate team '${duplicateTeam.team_name}' into '${primaryTeam.team_name}'.`,
+    primaryTeam,
+    duplicateTeam: dup ? { ...dup } : duplicateTeam,
   };
 }
 

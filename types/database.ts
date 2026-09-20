@@ -1,8 +1,9 @@
-export type PriorityLevel = 'normal' | 'important' | 'urgent';
+export type TeamReviewStatus = 'approved' | 'flagged_duplicate' | 'merged' | 'rejected';
 
 export interface Team {
   id: string;
   team_name: string;
+  canonical_name?: string;
   college: string;
   auth_id: string | null;
   qr_token: string;
@@ -14,6 +15,10 @@ export interface Team {
   created_at: string;
   updated_at: string;
   track?: string | null;
+  review_status?: TeamReviewStatus;
+  duplicate_notes?: string | null;
+  duplicate_match_team_id?: string | null;
+  merged_into_team_id?: string | null;
 }
 
 export interface Member {
@@ -21,10 +26,14 @@ export interface Member {
   team_id: string;
   name: string;
   phone: string;
+  normalized_phone?: string;
   email: string;
+  normalized_email?: string;
   present: boolean;
   created_at: string;
 }
+
+export type PriorityLevel = 'normal' | 'important' | 'urgent';
 
 export interface Announcement {
   id: string;
@@ -59,7 +68,10 @@ export interface ScanResult {
     | 'ALREADY_REGISTERED'
     | 'INVALID_MEAL_TYPE'
     | 'UNAUTHORIZED'
-    | 'SERVER_ERROR';
+    | 'SERVER_ERROR'
+    | 'TOKEN_REVOKED'
+    | 'TEAM_MERGED'
+    | 'TEAM_REJECTED';
   message: string;
   team_id?: string;
   team_name?: string;

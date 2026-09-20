@@ -100,6 +100,48 @@ export default function AdminTeamPreview({
         </Link>
       </div>
 
+      {currentTeam?.review_status === 'flagged_duplicate' && (
+        <div className="bg-nirmaan-amber/15 border-2 border-nirmaan-amber p-4 rounded-2xl text-xs space-y-1">
+          <div className="flex items-center gap-2 font-bold text-nirmaan-black">
+            <AlertTriangle className="w-4 h-4 text-nirmaan-amber flex-shrink-0" />
+            <span className="uppercase font-display">
+              ⚠️ FLAG FOR DUPLICATE REVIEW: {currentTeam.duplicate_notes || 'Suspicious duplicate registration detected.'}
+            </span>
+          </div>
+          <p className="text-nirmaan-black/70">
+            This team pass is currently active but flagged for organizer review in the Teams Table.
+          </p>
+        </div>
+      )}
+
+      {currentTeam?.review_status === 'rejected' && (
+        <div className="bg-nirmaan-red/10 border-2 border-nirmaan-red p-4 rounded-2xl text-xs space-y-1 text-nirmaan-red">
+          <div className="flex items-center gap-2 font-bold">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+            <span className="uppercase font-display">
+              ⛔ PASS REVOKED / DUPLICATE REGISTRATION REJECTED
+            </span>
+          </div>
+          <p className="text-nirmaan-red/80">
+            This registration was rejected as a duplicate. Scans will fail with error TOKEN_REVOKED.
+          </p>
+        </div>
+      )}
+
+      {currentTeam?.review_status === 'merged' && (
+        <div className="bg-nirmaan-black/10 border-2 border-nirmaan-black/30 p-4 rounded-2xl text-xs space-y-1 text-nirmaan-black">
+          <div className="flex items-center gap-2 font-bold">
+            <Shield className="w-4 h-4 flex-shrink-0" />
+            <span className="uppercase font-display">
+              🔗 DUPLICATE REGISTRATION MERGED (INACTIVE PASS)
+            </span>
+          </div>
+          <p className="text-nirmaan-black/70">
+            This duplicate registration was merged into another primary team. Scans will return TEAM_MERGED.
+          </p>
+        </div>
+      )}
+
       {!currentTeam ? (
         <div className="nirmaan-card p-12 text-center bg-white border border-nirmaan-black/15 shadow-sm space-y-4 max-w-md mx-auto">
           <Info className="w-8 h-8 mx-auto text-nirmaan-black/40" />
