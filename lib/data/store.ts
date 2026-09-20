@@ -585,6 +585,127 @@ export async function mergeDuplicateTeam(
   };
 }
 
+export interface UpdateTeamDetailsInput {
+  teamName: string;
+  college: string;
+  track: Track;
+  leader: { name: string; email: string; phone: string };
+  members: { name: string; email: string; phone: string }[];
+}
+
+export async function updateTeamDetails(
+  teamId: string,
+  input: UpdateTeamDetailsInput
+): Promise<{ success: boolean; message: string; team?: Team; members?: Member[] }> {
+  const canonicalName = canonicalizeTeamName(input.teamName);
+  const now = new Date().toISOString();
+  const allMembersInput = [input.leader, ...input.members];
+
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+
+      const { data: updatedTeam, error: teamError } = await supabase
+        .from('teams')
+        .update({
+          team_name: input.teamName,
+          canonical_name: canonicalName,
+          college: input.college,
+          track: input.track,
+          updated_at: now,
+        })
+        .eq('id', teamId)
+        .select()
+        .single();
+
+      if (teamError || !updatedTeam) {
+        return { success: false, message: teamError?.message || 'Failed to update team.' };
+      }
+
+      const { data: existingMembers } = await supabase
+        .from('members')
+        .select('*')
+        .eq('team_id', teamId);
+
+      const existingPresentEmails = new Set(
+        (existingMembers || []).filter((m: Member) => m.present).map((m: Member) => normalizeEmail(m.email))
+      );
+
+      await supabase.from('members').delete().eq('team_id', teamId);
+
+      const newMembers = allMembersInput.map((member, index) => ({
+        id: `${teamId}-member-${index + 1}-${Date.now()}`,
+        team_id: teamId,
+        name: member.name.trim(),
+        phone: member.phone.trim(),
+        normalized_phone: normalizePhone(member.phone),
+        email: normalizeEmail(member.email),
+        normalized_email: normalizeEmail(member.email),
+        present: existingPresentEmails.has(normalizeEmail(member.email)),
+        created_at: now,
+      }));
+
+      const { data: insertedMembers, error: membersError } = await supabase
+        .from('members')
+        .insert(newMembers)
+        .select('*');
+
+      if (membersError) {
+        return { success: false, message: membersError.message };
+      }
+
+      return {
+        success: true,
+        message: 'Team details updated successfully.',
+        team: updatedTeam as Team,
+        members: (insertedMembers || []) as Member[],
+      };
+    } catch (e: any) {
+      return { success: false, message: e.message || 'Error updating team' };
+    }
+  }
+
+  const team = mockDb.teams.find((t) => t.id === teamId);
+  if (!team) {
+    return { success: false, message: 'Team not found' };
+  }
+
+  team.team_name = input.teamName;
+  team.canonical_name = canonicalName;
+  team.college = input.college;
+  team.track = input.track;
+  team.updated_at = now;
+
+  const existingMembers = mockDb.members.filter((m) => m.team_id === teamId);
+  const existingPresentEmails = new Set(
+    existingMembers.filter((m) => m.present).map((m) => normalizeEmail(m.email))
+  );
+
+  mockDb.members = mockDb.members.filter((m) => m.team_id !== teamId);
+
+  const updatedMembers: Member[] = allMembersInput.map((member, index) => ({
+    id: `${teamId}-member-${index + 1}-${Date.now()}`,
+    team_id: teamId,
+    name: member.name.trim(),
+    phone: member.phone.trim(),
+    normalized_phone: normalizePhone(member.phone),
+    email: normalizeEmail(member.email),
+    normalized_email: normalizeEmail(member.email),
+    present: existingPresentEmails.has(normalizeEmail(member.email)),
+    created_at: now,
+  }));
+
+  mockDb.members.push(...updatedMembers);
+
+  return {
+    success: true,
+    message: 'Team details updated successfully.',
+    team: { ...team },
+    members: updatedMembers.map((m) => ({ ...m })),
+  };
+}
+
 export async function getEventStatistics(): Promise<EventStatistics> {
   if (hasSupabaseConfig()) {
     try {

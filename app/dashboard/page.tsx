@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { Users, LayoutDashboard, ExternalLink, LogIn, KeyRound } from 'lucide-react';
 
 import LiveRefresh from '@/components/Participant/LiveRefresh';
+import EditTeamModal from '@/components/Participant/EditTeamModal';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -110,11 +111,12 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             )}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
             <LiveRefresh intervalMs={5000} />
+            <EditTeamModal team={team} members={members} />
             <Link
               href={`/pass?token=${team.qr_token}`}
-              className="nirmaan-btn nirmaan-btn-primary text-xs py-2.5 px-5 font-bold shadow-xs flex items-center gap-2"
+              className="nirmaan-btn nirmaan-btn-primary text-xs py-2.5 px-4 font-bold shadow-xs flex items-center gap-1.5"
             >
               <span>VIEW FULL PASS</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -149,7 +151,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           <div className="lg:col-span-7 space-y-8">
             {/* Team Roster Card */}
             <div className="nirmaan-card p-6 bg-white border border-nirmaan-black/15 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <div>
                   <h3 className="font-display text-base font-black uppercase text-nirmaan-black flex items-center gap-2">
                     <Users className="w-4 h-4 text-nirmaan-blue" />
@@ -159,9 +161,17 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                     Attendance determines your team's total meal entitlement
                   </p>
                 </div>
-                <span className="text-xs font-bold uppercase bg-nirmaan-cream px-3 py-1 rounded-full text-nirmaan-black">
-                  {presentCount} / {members.length} Present
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase bg-nirmaan-cream px-3 py-1 rounded-full text-nirmaan-black">
+                    {presentCount} / {members.length} Present
+                  </span>
+                  <EditTeamModal
+                    team={team}
+                    members={members}
+                    buttonLabel="Edit Roster"
+                    buttonClassName="nirmaan-pill bg-nirmaan-cream hover:bg-nirmaan-black hover:text-white text-nirmaan-black text-[10px] py-1 px-2.5 border border-nirmaan-black/15 transition-colors shadow-xs inline-flex items-center gap-1"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

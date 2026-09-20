@@ -16,6 +16,7 @@ import {
   findTeamByToken,
   updateTeamReviewStatus,
   mergeDuplicateTeam,
+  updateTeamDetails,
   processMealScan,
   processCoffeeScan,
   processRegistration,
@@ -345,4 +346,32 @@ describe('Store & Admin Duplicate Review Lifecycle', () => {
     expect(mealResult.success).toBe(false);
     expect(mealResult.error_code).toBe('TEAM_MERGED');
   });
+
+  it('allows editing team details and roster from dashboard', async () => {
+    const editResult = await updateTeamDetails(createdTeam.id, {
+      teamName: 'Updated Team Innovators',
+      college: 'Updated Tech Institute',
+      track: 'Cyber-Physical Security & Defense',
+      leader: {
+        name: 'Leader Updated',
+        email: 'leader.updated@test.com',
+        phone: '9988112233',
+      },
+      members: [
+        {
+          name: 'Member New',
+          email: 'member.new@test.com',
+          phone: '9988112234',
+        },
+      ],
+    });
+
+    expect(editResult.success).toBe(true);
+    expect(editResult.team?.team_name).toBe('Updated Team Innovators');
+    expect(editResult.team?.college).toBe('Updated Tech Institute');
+    expect(editResult.team?.track).toBe('Cyber-Physical Security & Defense');
+    expect(editResult.members?.length).toBe(2);
+    expect(editResult.members?.[0].name).toBe('Leader Updated');
+  });
 });
+
