@@ -115,7 +115,7 @@ export async function createTeam(input: NewTeamInput): Promise<Team> {
         .single();
 
       if (res1.error && (res1.error.message.includes('column') || res1.error.message.includes('schema cache'))) {
-        // Fall back to baseline columns if migration has not been applied yet
+        // Fall back to baseline columns with track
         const res2 = await supabase
           .from('teams')
           .insert({
@@ -126,8 +126,24 @@ export async function createTeam(input: NewTeamInput): Promise<Team> {
           })
           .select('*')
           .single();
-        created = res2.data;
-        teamError = res2.error;
+
+        if (res2.error && (res2.error.message.includes('column') || res2.error.message.includes('schema cache'))) {
+          // Fall back to minimal original columns (without track)
+          const res3 = await supabase
+            .from('teams')
+            .insert({
+              team_name: team.team_name,
+              college: team.college,
+              qr_token: team.qr_token,
+            })
+            .select('*')
+            .single();
+          created = res3.data;
+          teamError = res3.error;
+        } else {
+          created = res2.data;
+          teamError = res2.error;
+        }
       } else {
         created = res1.data;
         teamError = res1.error;
@@ -680,8 +696,24 @@ export async function updateTeamDetails(
           .eq('id', teamId)
           .select()
           .single();
-        updatedTeam = res2.data;
-        teamError = res2.error;
+
+        if (res2.error && (res2.error.message.includes('column') || res2.error.message.includes('schema cache'))) {
+          const res3 = await supabase
+            .from('teams')
+            .update({
+              team_name: input.teamName,
+              college: input.college,
+              updated_at: now,
+            })
+            .eq('id', teamId)
+            .select()
+            .single();
+          updatedTeam = res3.data;
+          teamError = res3.error;
+        } else {
+          updatedTeam = res2.data;
+          teamError = res2.error;
+        }
       } else {
         updatedTeam = res1.data;
         teamError = res1.error;
