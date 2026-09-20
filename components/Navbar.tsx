@@ -104,7 +104,7 @@ export default function Navbar() {
             <div className="font-display text-2xl sm:text-3xl font-black tracking-tighter text-nirmaan-black flex items-baseline">
               nirmaan<span className="text-nirmaan-red font-black text-3xl sm:text-4xl leading-none">.</span>
             </div>
-            <span className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black font-extrabold text-[10px] sm:text-[11px] px-2.5 py-0.5 ml-1 hidden xs:inline-flex">
+            <span className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black font-extrabold text-[10px] sm:text-[11px] px-2.5 py-0.5 ml-1">
               PASS
             </span>
           </Link>

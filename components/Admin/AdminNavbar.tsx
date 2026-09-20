@@ -79,6 +79,9 @@ export default function AdminNavbar() {
               <span className="font-display text-2xl sm:text-[28px] font-black tracking-tight text-white group-hover:text-nirmaan-amber transition-colors">
                 nirmaan<span className="text-nirmaan-red text-3xl sm:text-[32px] leading-none">.</span>
               </span>
+              <span className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black font-extrabold text-[10px] px-2.5 py-0.5 ml-0.5">
+                PASS
+              </span>
             </Link>
             <span className="nirmaan-pill bg-nirmaan-green-dark text-white text-[9px] sm:text-[10px] font-black py-0.5 px-2 sm:px-2.5 border border-nirmaan-green-bright/30">
               <Shield className="w-3 h-3 text-nirmaan-green-bright" />
@@ -164,8 +167,8 @@ export default function AdminNavbar() {
                   <span className="font-display text-2xl font-black text-white">
                     nirmaan<span className="text-nirmaan-red text-3xl leading-none">.</span>
                   </span>
-                  <span className="nirmaan-pill bg-nirmaan-green-dark text-white text-[9px] font-black py-0.5 px-2">
-                    ADMIN
+                  <span className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black text-[9px] font-black py-0.5 px-2">
+                    PASS
                   </span>
                 </div>
 
