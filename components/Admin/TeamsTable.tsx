@@ -15,9 +15,11 @@ import {
   GitMerge,
   Filter,
   Users,
+  UserCheck,
 } from 'lucide-react';
 import { Team, Member, TeamReviewStatus } from '@/types/database';
 import Link from 'next/link';
+import RegistrationModal from '@/components/Admin/RegistrationModal';
 
 interface TeamRowData extends Team {
   members: Member[];
@@ -37,7 +39,9 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
   const [page, setPage] = useState<number>(1);
   const [statusFilter, setStatusFilter] = useState<'all' | 'flagged' | 'approved' | 'merged_rejected'>('all');
   const [reviewModalTeam, setReviewModalTeam] = useState<TeamRowData | null>(null);
+  const [registrationModalTeam, setRegistrationModalTeam] = useState<TeamRowData | null>(null);
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [checkInLoading, setCheckInLoading] = useState(false);
   const [reviewError, setReviewError] = useState('');
 
   // Keep local state in sync if prop updates
@@ -76,6 +80,75 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
     setPage(1);
+  };
+
+  const handleQuickApprove = async (teamId: string) => {
+    setReviewLoading(true);
+    try {
+      const res = await fetch('/api/admin/teams/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'approve',
+          teamId,
+          notes: 'Approved by organizer via teams table',
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to approve team');
+      }
+      setTeams((prev) =>
+        prev.map((t) => (t.id === teamId ? { ...t, review_status: 'approved' } : t))
+      );
+    } catch (err: any) {
+      alert(err.message || 'Failed to approve team');
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
+  const handleCheckInConfirm = async (presentMemberIds: string[]) => {
+    if (!registrationModalTeam) return;
+    setCheckInLoading(true);
+    try {
+      const res = await fetch('/api/admin/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          qr_token: registrationModalTeam.qr_token,
+          purpose: 'registration',
+          present_member_ids: presentMemberIds,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to complete registration check-in');
+      }
+
+      setTeams((prev) =>
+        prev.map((t) => {
+          if (t.id === registrationModalTeam.id) {
+            const updatedMembers = t.members.map((m) => ({
+              ...m,
+              present: presentMemberIds.includes(m.id),
+            }));
+            return {
+              ...t,
+              checked_in: true,
+              members: updatedMembers,
+              present_count: presentMemberIds.length,
+            };
+          }
+          return t;
+        })
+      );
+      setRegistrationModalTeam(null);
+    } catch (err: any) {
+      alert(err.message || 'Error saving registration check-in');
+    } finally {
+      setCheckInLoading(false);
+    }
   };
 
   const handleReviewAction = async (action: 'approve' | 'reject' | 'merge', matchedTeamId?: string) => {
@@ -439,16 +512,39 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                       {team.coffee_count} cups
                     </td>
 
-                    <td className="p-3.5 text-right space-x-1.5">
-                      {team.review_status === 'flagged_duplicate' && (
+                    <td className="p-3.5 text-right space-x-1.5 whitespace-nowrap">
+                      {team.review_status === 'flagged_duplicate' ? (
+                        <>
+                          <button
+                            type="button"
+                            disabled={reviewLoading}
+                            onClick={() => handleQuickApprove(team.id)}
+                            className="nirmaan-pill bg-nirmaan-green-bright hover:opacity-90 text-nirmaan-black text-[10px] py-1 px-2.5 font-black shadow-xs inline-flex items-center gap-1 cursor-pointer"
+                            title="Approve Team Registration"
+                          >
+                            <CheckCircle2 className="w-3 h-3" />
+                            <span>Approve</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setReviewModalTeam(team)}
+                            className="nirmaan-pill bg-nirmaan-amber hover:bg-nirmaan-amber/80 text-nirmaan-black text-[10px] py-1 px-2.5 font-bold shadow-xs inline-flex items-center gap-1 cursor-pointer"
+                          >
+                            Review
+                          </button>
+                        </>
+                      ) : !team.checked_in && team.review_status !== 'rejected' && team.review_status !== 'merged' ? (
                         <button
                           type="button"
-                          onClick={() => setReviewModalTeam(team)}
-                          className="nirmaan-pill bg-nirmaan-amber hover:bg-nirmaan-amber/80 text-nirmaan-black text-[10px] py-1 px-2.5 font-bold shadow-xs inline-flex items-center gap-1"
+                          onClick={() => setRegistrationModalTeam(team)}
+                          className="nirmaan-pill bg-nirmaan-green-dark hover:opacity-90 text-white text-[10px] py-1 px-2.5 font-black shadow-xs inline-flex items-center gap-1 cursor-pointer"
+                          title="Approve On-Desk Registration & Check-In"
                         >
-                          Review
+                          <UserCheck className="w-3 h-3" />
+                          <span>Check-In</span>
                         </button>
-                      )}
+                      ) : null}
+
                       <Link
                         href={`/admin/dashboard/pass?teamId=${team.id}`}
                         className="nirmaan-pill bg-nirmaan-cream hover:bg-nirmaan-black hover:text-white text-nirmaan-black text-[10px] py-1 px-2.5 border border-nirmaan-black/15 transition-colors shadow-xs inline-flex items-center gap-1"
@@ -592,7 +688,19 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
           </div>
         </div>
       )}
+
+      {/* On-Desk Registration & Check-In Approval Modal */}
+      {registrationModalTeam && (
+        <RegistrationModal
+          team={registrationModalTeam}
+          members={registrationModalTeam.members}
+          onConfirm={handleCheckInConfirm}
+          onCancel={() => setRegistrationModalTeam(null)}
+          loading={checkInLoading}
+        />
+      )}
     </div>
   );
 }
+
 

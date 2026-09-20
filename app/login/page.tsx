@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, LogIn, ArrowRight, Zap, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -13,6 +13,17 @@ function LoginForm() {
   const [email, setEmail] = useState(searchParams.get('email') || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/auth/session')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.loggedIn && data.teamId) {
+          router.replace(searchParams.get('redirect') || '/dashboard');
+        }
+      })
+      .catch(() => {});
+  }, [router, searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

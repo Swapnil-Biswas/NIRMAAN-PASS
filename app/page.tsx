@@ -3,7 +3,8 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { getAnnouncements } from '@/lib/data/store';
-import { QrCode, LogIn } from 'lucide-react';
+import { getTeamForUser } from '@/lib/auth/session';
+import { QrCode, LogIn, LayoutDashboard, ShieldCheck, ArrowRight } from 'lucide-react';
 import AnnouncementList from '@/components/AnnouncementCard/AnnouncementList';
 import SponsorGrid from '@/components/Sponsors/SponsorGrid';
 import PassLookupForm from '@/components/Participant/PassLookupForm';
@@ -12,11 +13,14 @@ import FirstVisitRedirect from '@/components/FirstVisitRedirect';
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const announcements = await getAnnouncements(true);
+  const [announcements, userTeam] = await Promise.all([
+    getAnnouncements(true),
+    getTeamForUser(),
+  ]);
 
   return (
     <div className="min-h-screen flex flex-col bg-nirmaan-cream">
-      <FirstVisitRedirect />
+      {!userTeam && <FirstVisitRedirect />}
       <Navbar />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full space-y-10">
@@ -44,26 +48,63 @@ export default async function HomePage() {
               VIEW MY PASS
             </Link>
 
-            <Link
-              href="/register"
-              className="nirmaan-btn nirmaan-btn-dark text-xs px-6 py-3 font-bold shadow-sm"
-            >
-              <LogIn className="w-4 h-4 text-nirmaan-amber" />
-              REGISTER TEAM
-            </Link>
+            {userTeam ? (
+              <Link
+                href="/dashboard"
+                className="nirmaan-btn nirmaan-btn-dark text-xs px-6 py-3 font-bold shadow-sm flex items-center gap-2"
+              >
+                <LayoutDashboard className="w-4 h-4 text-nirmaan-amber" />
+                <span>TEAM DASHBOARD</span>
+              </Link>
+            ) : (
+              <Link
+                href="/register"
+                className="nirmaan-btn nirmaan-btn-dark text-xs px-6 py-3 font-bold shadow-sm flex items-center gap-2"
+              >
+                <LogIn className="w-4 h-4 text-nirmaan-amber" />
+                <span>REGISTER TEAM</span>
+              </Link>
+            )}
           </div>
         </div>
 
-        {/* Quick Pass Lookup Card */}
-        <div className="nirmaan-card p-6 bg-white border border-nirmaan-black/15 max-w-xl mx-auto text-center space-y-3 shadow-xs">
-          <p className="text-[11px] font-bold uppercase text-nirmaan-black/60 tracking-wider">
-            ENTER YOUR TEAM LEADER EMAIL TO ACCESS YOUR PASS:
-          </p>
-          <PassLookupForm />
-          <p className="text-[11px] text-nirmaan-black/50">
-            Your access is remembered on this device so you do not need to log in again when you return.
-          </p>
-        </div>
+        {/* Quick Pass Lookup Card / Active Team Card */}
+        {userTeam ? (
+          <div className="nirmaan-card p-6 bg-white border border-nirmaan-black/15 max-w-xl mx-auto text-center space-y-3 shadow-xs">
+            <div className="inline-flex items-center gap-1.5 bg-nirmaan-green-bright/20 border border-nirmaan-green-dark/30 px-3 py-1 rounded-full text-nirmaan-green-dark text-[11px] font-black uppercase">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>LOGGED IN AS {userTeam.team.team_name}</span>
+            </div>
+            <p className="text-xs font-semibold text-nirmaan-black/70">
+              {userTeam.team.college} • {userTeam.members.length} Members Registered
+            </p>
+            <div className="flex items-center justify-center gap-3 pt-1">
+              <Link
+                href="/pass"
+                className="nirmaan-pill bg-nirmaan-blue text-white text-xs py-2 px-4 font-bold shadow-xs hover:opacity-90 inline-flex items-center gap-1"
+              >
+                <span>Go to My Pass</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <Link
+                href="/dashboard"
+                className="nirmaan-pill bg-nirmaan-cream text-nirmaan-black border border-nirmaan-black/15 text-xs py-2 px-4 font-bold hover:bg-nirmaan-cream-card inline-flex items-center gap-1"
+              >
+                <span>Team Dashboard</span>
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="nirmaan-card p-6 bg-white border border-nirmaan-black/15 max-w-xl mx-auto text-center space-y-3 shadow-xs">
+            <p className="text-[11px] font-bold uppercase text-nirmaan-black/60 tracking-wider">
+              ENTER YOUR TEAM LEADER EMAIL TO ACCESS YOUR PASS:
+            </p>
+            <PassLookupForm />
+            <p className="text-[11px] text-nirmaan-black/50">
+              Your access is remembered on this device so you do not need to log in again when you return.
+            </p>
+          </div>
+        )}
 
         {/* Live Announcements Section */}
         <div className="space-y-3 max-w-2xl mx-auto">

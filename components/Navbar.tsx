@@ -304,21 +304,23 @@ export default function Navbar() {
                     <span className="text-xs">➔</span>
                   </Link>
 
-                  <Link
-                    href="/register"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between p-3 rounded-xl font-display text-sm font-black uppercase border transition-all ${
-                      isLinkActive('/register')
-                        ? 'bg-nirmaan-black text-white border-nirmaan-black shadow-sm'
-                        : 'bg-white hover:bg-nirmaan-cream text-nirmaan-black border-nirmaan-black/15'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <KeyRound className="w-4 h-4 text-nirmaan-amber" />
-                      <span>REGISTER TEAM</span>
-                    </div>
-                    <span className="text-xs">➔</span>
-                  </Link>
+                  {!isLoggedIn && (
+                    <Link
+                      href="/register"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center justify-between p-3 rounded-xl font-display text-sm font-black uppercase border transition-all ${
+                        isLinkActive('/register')
+                          ? 'bg-nirmaan-black text-white border-nirmaan-black shadow-sm'
+                          : 'bg-white hover:bg-nirmaan-cream text-nirmaan-black border-nirmaan-black/15'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <KeyRound className="w-4 h-4 text-nirmaan-amber" />
+                        <span>REGISTER TEAM</span>
+                      </div>
+                      <span className="text-xs">➔</span>
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

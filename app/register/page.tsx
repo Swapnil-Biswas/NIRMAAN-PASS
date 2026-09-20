@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -31,7 +31,23 @@ const emptyMember = (): Member => ({ name: '', email: '', phone: '' });
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [checkingSession, setCheckingSession] = useState(true);
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
+
+  useEffect(() => {
+    fetch('/api/auth/session')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.loggedIn && data.teamId) {
+          router.replace('/dashboard');
+        } else {
+          setCheckingSession(false);
+        }
+      })
+      .catch(() => {
+        setCheckingSession(false);
+      });
+  }, [router]);
 
   // Step 1: Account Credentials (Email & Password)
   const [email, setEmail] = useState('');
@@ -182,6 +198,19 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+
+  if (checkingSession) {
+    return (
+      <main className="min-h-screen bg-nirmaan-cream flex items-center justify-center p-4">
+        <div className="nirmaan-card p-8 text-center max-w-sm w-full bg-white border border-nirmaan-black/15 shadow-sm space-y-3">
+          <div className="w-8 h-8 rounded-full border-2 border-nirmaan-black border-t-transparent animate-spin mx-auto" />
+          <p className="font-display text-xs font-black uppercase text-nirmaan-black">
+            CHECKING REGISTRATION STATUS...
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-nirmaan-cream px-4 py-8 sm:py-12">

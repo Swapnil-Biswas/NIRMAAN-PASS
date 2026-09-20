@@ -14,6 +14,12 @@ export default function FirstVisitRedirect() {
   const router = useRouter();
 
   useEffect(() => {
+    // If user already has an active team session cookie, mark visited and do not redirect to /register
+    if (typeof document !== 'undefined' && document.cookie.includes('nirmaan_team_session')) {
+      localStorage.setItem(VISITED_KEY, '1');
+      return;
+    }
+
     const hasVisited = localStorage.getItem(VISITED_KEY);
 
     if (!hasVisited) {
