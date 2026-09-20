@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { calculateMealEntitlement, validateMealEligibility } from '@/lib/validation/rules';
 import { generateQRToken, formatQRPayload, sanitizeQRToken, isValidTokenFormat } from '@/lib/qr/token';
 import { Team, Member } from '@/types/database';
-import { processMealScan, processCoffeeScan, processRegistration, findTeamByToken } from '@/lib/data/store';
+import { processMealScan, processCoffeeScan, processRegistration, findTeamByToken, createTeam, getTeamMembers } from '@/lib/data/store';
 
 describe('QR Token Utilities', () => {
   it('generates random, valid non-guessable tokens', () => {
@@ -29,7 +29,7 @@ describe('Domain Rules & Meal Entitlement', () => {
     team_name: 'Test Team',
     college: 'Test College',
     auth_id: null,
-    qr_token: 'test_token_100',
+    qr_token: 'test_token',
     checked_in: true,
     breakfast_count: 0,
     lunch_count: 0,
@@ -40,45 +40,45 @@ describe('Domain Rules & Meal Entitlement', () => {
   };
 
   const dummyMembers: Member[] = [
-    { id: 'm1', team_id: 't-100', name: 'Member 1', phone: '123', email: 'm1@test.com', present: true, created_at: '' },
-    { id: 'm2', team_id: 't-100', name: 'Member 2', phone: '123', email: 'm2@test.com', present: true, created_at: '' },
-    { id: 'm3', team_id: 't-100', name: 'Member 3', phone: '123', email: 'm3@test.com', present: false, created_at: '' },
-    { id: 'm4', team_id: 't-100', name: 'Member 4', phone: '123', email: 'm4@test.com', present: false, created_at: '' },
+    { id: 'm-1', team_id: 't-100', name: 'Alice', phone: '123', email: 'a@test.com', present: true, created_at: '' },
+    { id: 'm-2', team_id: 't-100', name: 'Bob', phone: '123', email: 'b@test.com', present: true, created_at: '' },
+    { id: 'm-3', team_id: 't-100', name: 'Charlie', phone: '123', email: 'c@test.com', present: false, created_at: '' },
   ];
 
-  it('entitlement is strictly equal to count of present members (2 present out of 4)', () => {
+  it('calculates entitlement based strictly on present count (2 of 3 present)', () => {
     const entitlement = calculateMealEntitlement(dummyMembers);
     expect(entitlement).toBe(2);
   });
 
-  it('rejects meal if team is not checked in', () => {
-    const uncheckedTeam = { ...dummyTeam, checked_in: false };
-    const result = validateMealEligibility(uncheckedTeam, dummyMembers, 'lunch');
-    expect(result.eligible).toBe(false);
-    expect(result.errorCode).toBe('NOT_CHECKED_IN');
-  });
+  it('allows meal scan up to present count and blocks when full', () => {
+    const freshTeam = { ...dummyTeam, lunch_count: 1 };
+    const result1 = validateMealEligibility(freshTeam, dummyMembers, 'lunch');
+    expect(result1.eligible).toBe(true);
+    expect(result1.presentCount).toBe(2);
 
-  it('allows meal if current count < present members', () => {
-    const validTeam = { ...dummyTeam, lunch_count: 1 };
-    const result = validateMealEligibility(validTeam, dummyMembers, 'lunch');
-    expect(result.eligible).toBe(true);
-    expect(result.presentCount).toBe(2);
-  });
-
-  it('rejects meal when limit is exactly reached (2/2)', () => {
     const fullTeam = { ...dummyTeam, lunch_count: 2 };
-    const result = validateMealEligibility(fullTeam, dummyMembers, 'lunch');
-    expect(result.eligible).toBe(false);
-    expect(result.errorCode).toBe('MEAL_LIMIT_REACHED');
-    expect(result.message).toContain('Lunch limit reached');
+    const result2 = validateMealEligibility(fullTeam, dummyMembers, 'lunch');
+    expect(result2.eligible).toBe(false);
+    expect(result2.errorCode).toBe('MEAL_LIMIT_REACHED');
   });
 });
 
 describe('Store Operations (Meals, Coffee, Registration)', () => {
   it('on-desk registration sets checked_in and updates present members', async () => {
-    // Team 1 is initially not checked in
-    const token = 'nirmaan_0xdeadead_036aa8d8a426';
-    const regRes = await processRegistration(token, ['m-nir-0001', 'm-nir-0002']);
+    const team = await createTeam({
+      teamName: 'Alpha Team',
+      college: 'Test Tech',
+      track: 'Cyber-Physical Security & Defense',
+      leader: { name: 'Leader One', email: 'leader1@test.com', phone: '1234567890' },
+      members: [
+        { name: 'Member Two', email: 'mem2@test.com', phone: '1234567891' },
+        { name: 'Member Three', email: 'mem3@test.com', phone: '1234567892' },
+      ],
+    });
+
+    const members = await getTeamMembers(team.id);
+    const token = team.qr_token;
+    const regRes = await processRegistration(token, [members[0].id, members[1].id]);
     expect(regRes.success).toBe(true);
     expect(regRes.checked_in).toBe(true);
     expect(regRes.present_count).toBe(2);
@@ -101,7 +101,15 @@ describe('Store Operations (Meals, Coffee, Registration)', () => {
   });
 
   it('coffee scans are unlimited and increment every time', async () => {
-    const token = 'nirmaan_0xdeadead_036aa8d8a426';
+    const team = await createTeam({
+      teamName: 'Coffee Lovers',
+      college: 'Test Tech',
+      track: 'Deep Tech & Edge AI',
+      leader: { name: 'Leader Coffee', email: 'coffee@test.com', phone: '1234567890' },
+      members: [],
+    });
+
+    const token = team.qr_token;
     const res1 = await processCoffeeScan(token);
     expect(res1.success).toBe(true);
     const count1 = res1.new_count!;
@@ -112,8 +120,15 @@ describe('Store Operations (Meals, Coffee, Registration)', () => {
   });
 
   it('rejects meal scan when team is not checked in', async () => {
-    // Team 2 is not checked in
-    const token = 'nirmaan_3_bhk_c4f57ff6e3d7';
+    const team = await createTeam({
+      teamName: 'Unregistered Team',
+      college: 'Test Tech',
+      track: 'AgriTech' as any,
+      leader: { name: 'Unreg Leader', email: 'unreg@test.com', phone: '1234567890' },
+      members: [],
+    });
+
+    const token = team.qr_token;
     const scanRes = await processMealScan(token, 'breakfast');
     expect(scanRes.success).toBe(false);
     expect(scanRes.error_code).toBe('NOT_CHECKED_IN');

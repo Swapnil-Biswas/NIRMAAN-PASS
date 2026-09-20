@@ -2,10 +2,15 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldAlert, KeyRound, ArrowRight, Eye, EyeOff, Lock } from 'lucide-react';
+import { ShieldAlert, ArrowRight, Eye, EyeOff, Lock } from 'lucide-react';
 import Link from 'next/link';
+import { ADMIN_TAB_SESSION_FLAG } from './AdminSessionGuard';
 
-export default function AdminGate() {
+interface AdminGateProps {
+  onUnlocked?: () => void;
+}
+
+export default function AdminGate({ onUnlocked }: AdminGateProps) {
   const [code, setCode] = useState('');
   const [showCode, setShowCode] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -14,7 +19,8 @@ export default function AdminGate() {
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!code.trim()) return;
+    const cleanCode = code.trim();
+    if (!cleanCode) return;
 
     setLoading(true);
     setError(null);
@@ -23,16 +29,21 @@ export default function AdminGate() {
       const res = await fetch('/api/admin/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: code.trim() }),
+        body: JSON.stringify({ code: cleanCode }),
       });
 
       const data = await res.json();
 
       if (data.success) {
         if (typeof window !== 'undefined') {
-          sessionStorage.setItem('nirmaan_admin_active_tab', '1');
+          sessionStorage.setItem(ADMIN_TAB_SESSION_FLAG, '1');
         }
-        router.push('/admin/scanner');
+        setCode(''); // Clear memory
+        if (onUnlocked) {
+          onUnlocked();
+        } else {
+          router.push('/admin/scanner');
+        }
         router.refresh();
       } else {
         setError(data.message || 'Invalid Organizer Access Code.');
@@ -88,6 +99,7 @@ export default function AdminGate() {
                   placeholder="Enter access code..."
                   autoFocus
                   required
+                  autoComplete="off"
                   className="w-full px-4 py-3 bg-nirmaan-cream/40 rounded-xl border-2 border-nirmaan-black/20 focus:border-nirmaan-black outline-none font-mono text-xs text-nirmaan-black pr-10 transition-colors"
                 />
                 <button
@@ -113,7 +125,7 @@ export default function AdminGate() {
           {/* Security Notice & Exit */}
           <div className="pt-4 border-t border-nirmaan-black/10 text-center space-y-3">
             <p className="text-[10px] font-medium text-nirmaan-black/40">
-              Authorized NIRMAAN 2026 event desk personnel only.
+              Authorized NIRMAAN 2026 event desk personnel only. Relogin required after inactivity.
             </p>
             <Link
               href="/"

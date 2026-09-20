@@ -1,14 +1,24 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { NextRequest } from 'next/server';
 import { POST as loginPost } from '@/app/api/auth/login/route';
 import { GET as sessionGet } from '@/app/api/auth/session/route';
 import { POST as logoutPost } from '@/app/api/auth/logout/route';
-import seededDataset from '@/lib/data/seeded_teams.json';
+import { createTeam } from '@/lib/data/store';
+import { Team } from '@/types/database';
 
 describe('Participant Standalone Auth & Session Management', () => {
-  const sampleMember = seededDataset.members.find((m) => m.email && m.email.includes('@'));
-  const sampleEmail = sampleMember?.email || 'chetankulkarni47@gmail.com';
-  const sampleTeam = seededDataset.teams.find((t) => t.id === sampleMember?.team_id);
+  let sampleTeam: Team;
+  const sampleEmail = 'chetan_test_auth@college.edu';
+
+  beforeAll(async () => {
+    sampleTeam = await createTeam({
+      teamName: 'Auth Test Team',
+      college: 'BMSIT',
+      track: 'Cyber-Physical Security & Defense',
+      leader: { name: 'Chetan K', email: sampleEmail, phone: '9876543210' },
+      members: [],
+    });
+  });
 
   it('POST /api/auth/login rejects empty or invalid email', async () => {
     const emptyReq = new NextRequest('http://localhost/api/auth/login', {
@@ -36,7 +46,7 @@ describe('Participant Standalone Auth & Session Management', () => {
 
     const data = await validRes.json();
     expect(data.success).toBe(true);
-    expect(data.token).toBe(sampleTeam?.qr_token);
+    expect(data.token).toBe(sampleTeam.qr_token);
 
     const setCookie = validRes.headers.get('set-cookie');
     expect(setCookie).toContain('nirmaan_team_session');
@@ -52,10 +62,10 @@ describe('Participant Standalone Auth & Session Management', () => {
 
   it('GET /api/auth/session recognizes nirmaan_team_session cookie', async () => {
     const sessionPayload = JSON.stringify({
-      teamId: sampleTeam?.id,
+      teamId: sampleTeam.id,
       email: sampleEmail,
-      token: sampleTeam?.qr_token,
-      team_name: sampleTeam?.team_name,
+      token: sampleTeam.qr_token,
+      team_name: sampleTeam.team_name,
     });
 
     const authReq = new NextRequest('http://localhost/api/auth/session', {
@@ -68,7 +78,7 @@ describe('Participant Standalone Auth & Session Management', () => {
     const data = await res.json();
     expect(data.loggedIn).toBe(true);
     expect(data.email).toBe(sampleEmail);
-    expect(data.token).toBe(sampleTeam?.qr_token);
+    expect(data.token).toBe(sampleTeam.qr_token);
   });
 
   it('POST /api/auth/logout deletes nirmaan_team_session cookie', async () => {

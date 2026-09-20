@@ -1,47 +1,141 @@
 import { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
+import { createHmac, timingSafeEqual, randomUUID } from 'crypto';
 
 const ADMIN_COOKIE_NAME = 'nirmaan_admin_session';
+
+// Default inactivity timeout: 15 minutes (in milliseconds)
+export const DEFAULT_INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000;
+// Maximum session lifetime: 4 hours
+export const MAX_SESSION_LIFETIME_MS = 4 * 60 * 60 * 1000;
 
 export function getExpectedAdminCode(): string {
   return process.env.ADMIN_ACCESS_CODE || 'NIRMAAN2026_ADMIN';
 }
 
-/**
- * Generate a deterministic verification token for the admin session
- */
-export function getAdminSessionToken(): string {
-  const code = getExpectedAdminCode();
-  // Simple token based on code and secret salt
-  return `admin_session_${Buffer.from(code).toString('base64')}`;
+export function getInactivityTimeoutMs(): number {
+  const envVal = process.env.ADMIN_INACTIVITY_TIMEOUT_MS;
+  if (envVal) {
+    const parsed = parseInt(envVal, 10);
+    if (!isNaN(parsed) && parsed > 0) return parsed;
+  }
+  return DEFAULT_INACTIVITY_TIMEOUT_MS;
 }
 
 /**
- * Validate request against admin session cookie or header
+ * Returns a secure cryptographic secret for HMAC signing
+ */
+function getSigningSecret(): string {
+  return process.env.ADMIN_SESSION_SECRET || getExpectedAdminCode() + '_secret_salt_2026';
+}
+
+export interface AdminSessionPayload {
+  sid: string;
+  iat: number;
+  exp: number;
+}
+
+/**
+ * Generate a cryptographically signed, timestamped session token
+ */
+export function createAdminSessionToken(): string {
+  const now = Date.now();
+  const payload: AdminSessionPayload = {
+    sid: randomUUID(),
+    iat: now,
+    exp: now + MAX_SESSION_LIFETIME_MS,
+  };
+
+  const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = createHmac('sha256', getSigningSecret())
+    .update(payloadB64)
+    .digest('base64url');
+
+  return `v1.${payloadB64}.${signature}`;
+}
+
+/**
+ * Legacy compatibility alias
+ */
+export function getAdminSessionToken(): string {
+  return createAdminSessionToken();
+}
+
+/**
+ * Validates a signed session token against secret, expiry, and inactivity window
+ */
+export function verifyAdminSessionToken(token: string | undefined): boolean {
+  if (!token || typeof token !== 'string') return false;
+
+  const parts = token.split('.');
+  if (parts.length !== 3 || parts[0] !== 'v1') {
+    // Backward compatibility for legacy static tokens during migration
+    const legacyToken = `admin_session_${Buffer.from(getExpectedAdminCode()).toString('base64')}`;
+    return token === legacyToken;
+  }
+
+  const [, payloadB64, signature] = parts;
+
+  try {
+    const expectedSignature = createHmac('sha256', getSigningSecret())
+      .update(payloadB64)
+      .digest('base64url');
+
+    const sigBuf = Buffer.from(signature);
+    const expSigBuf = Buffer.from(expectedSignature);
+
+    if (sigBuf.length !== expSigBuf.length || !timingSafeEqual(sigBuf, expSigBuf)) {
+      return false;
+    }
+
+    const payload: AdminSessionPayload = JSON.parse(
+      Buffer.from(payloadB64, 'base64url').toString('utf8')
+    );
+
+    const now = Date.now();
+
+    // Check absolute expiration
+    if (now > payload.exp) {
+      return false;
+    }
+
+    // Check inactivity window from token creation
+    const inactivityLimit = getInactivityTimeoutMs();
+    if (now - payload.iat > inactivityLimit) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Validate incoming request against admin session cookie or header
  */
 export function verifyAdminSession(req?: NextRequest): boolean {
-  const expectedToken = getAdminSessionToken();
   const rawCode = getExpectedAdminCode();
 
   if (req) {
-    // Check header
+    // 1. Direct header verification (for automated tests and server-to-server operations)
     const headerCode = req.headers.get('x-admin-code');
     if (headerCode && headerCode === rawCode) {
       return true;
     }
 
-    // Check request cookies
+    // 2. Cookie verification from request
     const cookie = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
-    if (cookie && (cookie === expectedToken || cookie === rawCode)) {
+    if (cookie && (verifyAdminSessionToken(cookie) || cookie === rawCode)) {
       return true;
     }
   }
 
-  // Fall back to server cookies() if available
+  // 3. Fallback to server cookies() store in Next.js Server Components
   try {
     const cookieStore = cookies();
     const cookie = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
-    if (cookie && (cookie === expectedToken || cookie === rawCode)) {
+    if (cookie && (verifyAdminSessionToken(cookie) || cookie === rawCode)) {
       return true;
     }
   } catch {}

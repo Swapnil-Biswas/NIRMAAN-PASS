@@ -182,8 +182,13 @@ export default function TeamsTable({ teams, onSelectTeam }: TeamsTableProps) {
             <tbody className="divide-y divide-nirmaan-black/5 font-medium">
               {filteredTeams.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-nirmaan-black/50 font-bold">
-                    No teams found matching search.
+                  <td colSpan={8} className="p-10 text-center text-nirmaan-black/50 font-bold space-y-1">
+                    <p className="text-sm text-nirmaan-black/70 font-black uppercase">
+                      {search ? `No teams found matching "${search}"` : 'No teams registered yet'}
+                    </p>
+                    <p className="text-xs font-medium text-nirmaan-black/50">
+                      {search ? 'Try clearing your search query.' : 'Teams will appear here in real time as participants complete registration.'}
+                    </p>
                   </td>
                 </tr>
               ) : (

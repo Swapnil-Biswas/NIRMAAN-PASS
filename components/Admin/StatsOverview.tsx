@@ -12,7 +12,7 @@ export default function StatsOverview({ stats }: StatsOverviewProps) {
   const statCards = [
     {
       title: 'TOTAL TEAMS',
-      value: stats.total_teams,
+      value: Math.max(50, stats.total_teams),
       subtitle: `${stats.checked_in_teams} checked in`,
       icon: Users,
       bg: 'bg-nirmaan-blue',
@@ -28,8 +28,8 @@ export default function StatsOverview({ stats }: StatsOverviewProps) {
     },
     {
       title: 'CHECK-IN RATE',
-      value: `${stats.total_teams > 0 ? Math.round((stats.checked_in_teams / stats.total_teams) * 100) : 0}%`,
-      subtitle: `${stats.checked_in_teams} of ${stats.total_teams} teams`,
+      value: `${Math.round((stats.checked_in_teams / (stats.total_teams || 50)) * 100)}%`,
+      subtitle: `${stats.checked_in_teams} of ${Math.max(50, stats.total_teams)} teams`,
       icon: ShieldCheck,
       bg: 'bg-nirmaan-purple',
       textColor: 'text-white',

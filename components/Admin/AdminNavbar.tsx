@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { BarChart3, Zap, Megaphone, Calendar, Lock, Shield, Menu, X } from 'lucide-react';
+import { ADMIN_TAB_SESSION_FLAG } from './AdminSessionGuard';
 
 export default function AdminNavbar() {
   const pathname = usePathname();
@@ -33,6 +34,7 @@ export default function AdminNavbar() {
   const handleLock = async () => {
     setLocking(true);
     if (typeof window !== 'undefined') {
+      sessionStorage.removeItem(ADMIN_TAB_SESSION_FLAG);
       sessionStorage.removeItem('nirmaan_admin_active_tab');
     }
     try {
