@@ -78,8 +78,8 @@ export default function RegisterPage() {
     );
 
   const addMember = () => {
-    if (members.length >= 4) {
-      setError('A team can have a maximum of 5 members (1 Leader + 4 Members).');
+    if (members.length >= 3) {
+      setError('A team can have a maximum of 4 members including the leader (1 Leader + up to 3 Members).');
       return;
     }
     setMembers((current) => [...current, emptyMember()]);
@@ -552,11 +552,11 @@ export default function RegisterPage() {
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-nirmaan-green-dark" />
                     <h2 className="font-display text-sm font-black uppercase text-nirmaan-black">
-                      3. ADDITIONAL TEAM MEMBERS ({members.length})
+                      3. ADDITIONAL TEAM MEMBERS ({members.length}/3)
                     </h2>
                   </div>
                   <span className="text-[10px] font-bold text-nirmaan-black/50 uppercase">
-                    Total Team Size: {1 + members.length}
+                    Total Team Size: {1 + members.length}/4
                   </span>
                 </div>
 
@@ -574,7 +574,7 @@ export default function RegisterPage() {
                           <button
                             type="button"
                             onClick={() => removeMember(index)}
-                            className="p-1 text-nirmaan-red/70 hover:text-nirmaan-red hover:bg-nirmaan-red/10 rounded-lg transition-colors"
+                            className="p-1 text-nirmaan-red/70 hover:text-nirmaan-red hover:bg-nirmaan-red/10 rounded-lg transition-colors cursor-pointer"
                             title="Remove member"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -612,11 +612,11 @@ export default function RegisterPage() {
                   ))}
                 </div>
 
-                {members.length < 4 && (
+                {members.length < 3 && (
                   <button
                     type="button"
                     onClick={addMember}
-                    className="w-full py-2.5 rounded-xl border-2 border-dashed border-nirmaan-black/20 hover:border-nirmaan-black text-xs font-black uppercase text-nirmaan-blue hover:bg-nirmaan-blue/5 transition-all flex items-center justify-center gap-1.5"
+                    className="w-full py-2.5 rounded-xl border-2 border-dashed border-nirmaan-black/20 hover:border-nirmaan-black text-xs font-black uppercase text-nirmaan-blue hover:bg-nirmaan-blue/5 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" /> Add Another Team Member
                   </button>

@@ -37,6 +37,13 @@ export async function POST(req: NextRequest) {
         phone: member.phone.trim(),
       }));
 
+    if (normalizedMembers.length > 3) {
+      return NextResponse.json(
+        { success: false, message: 'A team can have a maximum of 4 members including the team leader (Leader + up to 3 members).' },
+        { status: 400 }
+      );
+    }
+
     // Internal duplicate email check
     const emails = [normalizedLeader.email, ...normalizedMembers.map((m: RegistrationMemberInput) => m.email)];
     if (new Set(emails).size !== emails.length) {
