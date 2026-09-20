@@ -5,8 +5,8 @@ ALTER TABLE public.teams
   ADD COLUMN IF NOT EXISTS canonical_name TEXT,
   ADD COLUMN IF NOT EXISTS review_status TEXT DEFAULT 'approved',
   ADD COLUMN IF NOT EXISTS duplicate_notes TEXT,
-  ADD COLUMN IF NOT EXISTS duplicate_match_team_id UUID REFERENCES public.teams(id) ON DELETE SET NULL,
-  ADD COLUMN IF NOT EXISTS merged_into_team_id UUID REFERENCES public.teams(id) ON DELETE SET NULL;
+  ADD COLUMN IF NOT EXISTS duplicate_match_team_id TEXT REFERENCES public.teams(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS merged_into_team_id TEXT REFERENCES public.teams(id) ON DELETE SET NULL;
 
 ALTER TABLE public.members
   ADD COLUMN IF NOT EXISTS normalized_phone TEXT,

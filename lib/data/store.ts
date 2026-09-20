@@ -95,7 +95,11 @@ export async function createTeam(input: NewTeamInput): Promise<Team> {
     if (hasSupabaseConfig()) {
       const { createAdminClient } = await import('../supabase/admin');
       const supabase = createAdminClient();
-      const { data: created, error: teamError } = await supabase
+      let created: any = null;
+      let teamError: any = null;
+
+      // Try inserting with all extended anti-duplicate fields
+      const res1 = await supabase
         .from('teams')
         .insert({
           team_name: team.team_name,
@@ -109,10 +113,32 @@ export async function createTeam(input: NewTeamInput): Promise<Team> {
         })
         .select('*')
         .single();
-      if (teamError || !created) {
-        throw new Error(teamError?.message || 'Unable to create team.');
+
+      if (res1.error && (res1.error.message.includes('column') || res1.error.message.includes('schema cache'))) {
+        // Fall back to baseline columns if migration has not been applied yet
+        const res2 = await supabase
+          .from('teams')
+          .insert({
+            team_name: team.team_name,
+            college: team.college,
+            track: team.track,
+            qr_token: team.qr_token,
+          })
+          .select('*')
+          .single();
+        created = res2.data;
+        teamError = res2.error;
+      } else {
+        created = res1.data;
+        teamError = res1.error;
       }
-      const { error: membersError } = await supabase.from('members').insert(
+
+      if (teamError || !created) {
+        throw new Error(teamError?.message || 'Unable to create team in database.');
+      }
+
+      // Try inserting members with normalized fields
+      const memRes1 = await supabase.from('members').insert(
         members.map(({ id, team_id, name, phone, email, normalized_phone, normalized_email }) => ({
           id,
           team_id: created.id,
@@ -123,11 +149,31 @@ export async function createTeam(input: NewTeamInput): Promise<Team> {
           normalized_email,
         }))
       );
-      if (membersError) {
+
+      if (memRes1.error && (memRes1.error.message.includes('column') || memRes1.error.message.includes('schema cache'))) {
+        // Fall back to baseline member columns
+        const memRes2 = await supabase.from('members').insert(
+          members.map(({ id, team_id, name, phone, email }) => ({
+            id,
+            team_id: created.id,
+            name,
+            phone,
+            email,
+          }))
+        );
+        if (memRes2.error) {
+          await supabase.from('teams').delete().eq('id', created.id);
+          throw new Error(memRes2.error.message);
+        }
+      } else if (memRes1.error) {
         await supabase.from('teams').delete().eq('id', created.id);
-        throw new Error(membersError.message);
+        throw new Error(memRes1.error.message);
       }
-      return created as Team;
+
+      return {
+        ...team,
+        ...created,
+      } as Team;
     }
 
     mockDb.teams.push(team);
@@ -606,7 +652,10 @@ export async function updateTeamDetails(
       const { createAdminClient } = await import('../supabase/admin');
       const supabase = createAdminClient();
 
-      const { data: updatedTeam, error: teamError } = await supabase
+      let updatedTeam: any = null;
+      let teamError: any = null;
+
+      const res1 = await supabase
         .from('teams')
         .update({
           team_name: input.teamName,
@@ -618,6 +667,25 @@ export async function updateTeamDetails(
         .eq('id', teamId)
         .select()
         .single();
+
+      if (res1.error && (res1.error.message.includes('column') || res1.error.message.includes('schema cache'))) {
+        const res2 = await supabase
+          .from('teams')
+          .update({
+            team_name: input.teamName,
+            college: input.college,
+            track: input.track,
+            updated_at: now,
+          })
+          .eq('id', teamId)
+          .select()
+          .single();
+        updatedTeam = res2.data;
+        teamError = res2.error;
+      } else {
+        updatedTeam = res1.data;
+        teamError = res1.error;
+      }
 
       if (teamError || !updatedTeam) {
         return { success: false, message: teamError?.message || 'Failed to update team.' };
@@ -646,13 +714,35 @@ export async function updateTeamDetails(
         created_at: now,
       }));
 
-      const { data: insertedMembers, error: membersError } = await supabase
+      let insertedMembers: any = null;
+      const memRes1 = await supabase
         .from('members')
         .insert(newMembers)
         .select('*');
 
-      if (membersError) {
-        return { success: false, message: membersError.message };
+      if (memRes1.error && (memRes1.error.message.includes('column') || memRes1.error.message.includes('schema cache'))) {
+        const memRes2 = await supabase
+          .from('members')
+          .insert(
+            newMembers.map(({ id, team_id, name, phone, email, present, created_at }) => ({
+              id,
+              team_id,
+              name,
+              phone,
+              email,
+              present,
+              created_at,
+            }))
+          )
+          .select('*');
+        if (memRes2.error) {
+          return { success: false, message: memRes2.error.message };
+        }
+        insertedMembers = memRes2.data;
+      } else if (memRes1.error) {
+        return { success: false, message: memRes1.error.message };
+      } else {
+        insertedMembers = memRes1.data;
       }
 
       return {
