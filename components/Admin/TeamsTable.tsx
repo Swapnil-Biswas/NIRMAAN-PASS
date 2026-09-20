@@ -16,6 +16,7 @@ import {
   Filter,
   Users,
   UserCheck,
+  Clock,
 } from 'lucide-react';
 import { Team, Member, TeamReviewStatus } from '@/types/database';
 import Link from 'next/link';
@@ -37,7 +38,7 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
   const [search, setSearch] = useState('');
   const [pageSize, setPageSize] = useState<number>(25);
   const [page, setPage] = useState<number>(1);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'flagged' | 'approved' | 'merged_rejected'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'flagged' | 'approved' | 'merged_rejected'>('all');
   const [reviewModalTeam, setReviewModalTeam] = useState<TeamRowData | null>(null);
   const [registrationModalTeam, setRegistrationModalTeam] = useState<TeamRowData | null>(null);
   const [reviewLoading, setReviewLoading] = useState(false);
@@ -49,6 +50,7 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
     setTeams(initialTeams);
   }, [initialTeams]);
 
+  const pendingCount = teams.filter((t) => t.review_status === 'pending').length;
   const flaggedCount = teams.filter((t) => t.review_status === 'flagged_duplicate').length;
 
   const filteredTeams = teams.filter((t) => {
@@ -58,6 +60,9 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
 
     if (!matchesSearch) return false;
 
+    if (statusFilter === 'pending') {
+      return t.review_status === 'pending';
+    }
     if (statusFilter === 'flagged') {
       return t.review_status === 'flagged_duplicate';
     }
@@ -275,6 +280,27 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
         <button
           type="button"
           onClick={() => {
+            setStatusFilter('pending');
+            setPage(1);
+          }}
+          className={`nirmaan-pill text-xs font-bold py-1.5 px-3.5 transition-all flex items-center gap-1.5 ${
+            statusFilter === 'pending'
+              ? 'bg-nirmaan-amber text-nirmaan-black shadow-xs'
+              : 'bg-white text-nirmaan-black/70 hover:bg-nirmaan-cream border border-nirmaan-black/10'
+          }`}
+        >
+          <Clock className="w-3.5 h-3.5 text-nirmaan-amber" />
+          <span>Pending Approval</span>
+          {pendingCount > 0 && (
+            <span className="bg-nirmaan-black text-white text-[10px] px-1.5 py-0.2 rounded-full font-mono">
+              {pendingCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
             setStatusFilter('flagged');
             setPage(1);
           }}
@@ -444,33 +470,44 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                     </td>
 
                     <td className="p-3.5">
-                      {team.review_status === 'flagged_duplicate' ? (
+                      {team.review_status === 'pending' ? (
+                        <button
+                          type="button"
+                          onClick={() => handleQuickApprove(team.id)}
+                          className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black text-[10px] font-black hover:opacity-90 transition-opacity flex items-center gap-1 cursor-pointer"
+                          title="Click to Approve Team Registration"
+                        >
+                          <Clock className="w-3 h-3 text-nirmaan-black" />
+                          <span>PENDING APPROVAL</span>
+                        </button>
+                      ) : team.review_status === 'flagged_duplicate' ? (
                         <button
                           type="button"
                           onClick={() => setReviewModalTeam(team)}
                           className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black text-[10px] font-black hover:opacity-90 transition-opacity flex items-center gap-1"
                         >
                           <AlertTriangle className="w-3 h-3" />
-                          REVIEW REQUIRED
+                          <span>REVIEW REQUIRED</span>
                         </button>
                       ) : team.review_status === 'rejected' ? (
                         <span className="nirmaan-pill bg-nirmaan-red text-white text-[10px] font-black">
                           <XCircle className="w-3 h-3" />
-                          REJECTED
+                          <span>REJECTED</span>
                         </span>
                       ) : team.review_status === 'merged' ? (
                         <span className="nirmaan-pill bg-nirmaan-black/20 text-nirmaan-black/80 text-[10px] font-bold">
                           <GitMerge className="w-3 h-3" />
-                          MERGED
+                          <span>MERGED</span>
                         </span>
                       ) : team.checked_in ? (
                         <span className="nirmaan-pill bg-nirmaan-green-bright text-nirmaan-black text-[10px] font-black">
                           <ShieldCheck className="w-3 h-3" />
-                          CHECKED IN
+                          <span>CHECKED IN</span>
                         </span>
                       ) : (
-                        <span className="nirmaan-pill bg-nirmaan-cream text-nirmaan-black text-[10px] font-bold border border-nirmaan-black/15">
-                          UNREGISTERED
+                        <span className="nirmaan-pill bg-nirmaan-green-bright/20 text-nirmaan-green-dark border border-nirmaan-green-dark/30 text-[10px] font-black">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>APPROVED</span>
                         </span>
                       )}
                     </td>
@@ -513,7 +550,18 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                     </td>
 
                     <td className="p-3.5 text-right space-x-1.5 whitespace-nowrap">
-                      {team.review_status === 'flagged_duplicate' ? (
+                      {team.review_status === 'pending' ? (
+                        <button
+                          type="button"
+                          disabled={reviewLoading}
+                          onClick={() => handleQuickApprove(team.id)}
+                          className="nirmaan-pill bg-nirmaan-green-bright hover:opacity-90 text-nirmaan-black text-[10px] py-1 px-2.5 font-black shadow-xs inline-flex items-center gap-1 cursor-pointer"
+                          title="Approve Team Registration & Unlock QR Pass"
+                        >
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>Approve Pass</span>
+                        </button>
+                      ) : team.review_status === 'flagged_duplicate' ? (
                         <>
                           <button
                             type="button"

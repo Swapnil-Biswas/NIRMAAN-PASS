@@ -24,7 +24,7 @@ import {
   Info,
   House,
 } from 'lucide-react';
-import { TRACKS, TRACK_DESCRIPTIONS, Track } from '@/lib/registration';
+import { TRACKS, TRACK_DESCRIPTIONS, Track, isValidEmail, isValidPhone } from '@/lib/registration';
 
 type Member = { name: string; email: string; phone: string };
 const emptyMember = (): Member => ({ name: '', email: '', phone: '' });
@@ -72,6 +72,8 @@ export default function RegisterPage() {
   // UI Feedback
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [registeredTeamName, setRegisteredTeamName] = useState('');
 
   const updateMember = (index: number, key: keyof Member, value: string) =>
     setMembers((current) =>
@@ -95,8 +97,8 @@ export default function RegisterPage() {
     setError(null);
 
     const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail || !cleanEmail.includes('@')) {
-      setError('Please enter a valid email address.');
+    if (!isValidEmail(cleanEmail)) {
+      setError('Please enter a valid email address with a proper domain extension (e.g. name@gmail.com, name@hotmail.com, name@college.edu).');
       return;
     }
     if (!password) {
@@ -110,6 +112,11 @@ export default function RegisterPage() {
     if (password !== confirmPassword) {
       setError('Passwords do not match. Please re-enter your password.');
       return;
+    }
+
+    // Auto sync leader email if not already modified
+    if (!leaderEmail || leaderEmail === email) {
+      setLeaderEmail(cleanEmail);
     }
 
     setCurrentStep(2);
@@ -139,16 +146,12 @@ export default function RegisterPage() {
       setError('Team leader full name is required.');
       return;
     }
-    if (!leaderEmail.trim()) {
-      setError('Team leader email is required.');
+    if (!isValidEmail(leaderEmail)) {
+      setError('Please enter a valid email address with a domain extension (.com, .in, .edu, etc.) for the team leader.');
       return;
     }
-    if (!leaderEmail.trim().includes('@')) {
-      setError('Please enter a valid email address for the team leader.');
-      return;
-    }
-    if (!leaderPhone.trim()) {
-      setError('Team leader contact phone is required.');
+    if (!isValidPhone(leaderPhone)) {
+      setError('Team leader phone must be a valid 10-digit number (not more than 10 digits).');
       return;
     }
 
@@ -160,8 +163,12 @@ export default function RegisterPage() {
         setError(`Please fill in all details (name, email, phone) for Team Member ${i + 1}.`);
         return;
       }
-      if (!m.email.includes('@')) {
-        setError(`Invalid email address for Team Member ${i + 1}.`);
+      if (!isValidEmail(m.email)) {
+        setError(`Please enter a valid email address with a domain extension (.com, .in, .edu, etc.) for Team Member ${i + 1}.`);
+        return;
+      }
+      if (!isValidPhone(m.phone)) {
+        setError(`Contact phone for Team Member ${i + 1} must be a valid 10-digit number.`);
         return;
       }
     }
@@ -198,9 +205,8 @@ export default function RegisterPage() {
         return;
       }
 
-      // Automatically authenticated -> redirect to Event Pass QR
-      router.push('/pass');
-      router.refresh();
+      setRegisteredTeamName(teamName.trim());
+      setShowApprovalModal(true);
     } catch {
       setError('Connection error. Please check your network and try again.');
     } finally {
@@ -555,17 +561,21 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[11px] font-bold uppercase text-nirmaan-black/70 flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-nirmaan-blue" />
-                    Leader Contact Phone *
+                  <label className="text-[11px] font-bold uppercase text-nirmaan-black/70 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-nirmaan-blue" />
+                      Leader Contact Phone *
+                    </span>
+                    <span className="text-[10px] text-nirmaan-black/40 font-mono">10 digits max</span>
                   </label>
                   <input
                     required
                     type="tel"
+                    maxLength={10}
                     value={leaderPhone}
-                    onChange={(e) => setLeaderPhone(e.target.value)}
-                    placeholder="+91 98765 43210"
-                    className="reg-field"
+                    onChange={(e) => setLeaderPhone(e.target.value.replace(/[^0-9]/g, '').slice(0, 10))}
+                    placeholder="e.g. 9876543210"
+                    className="reg-field font-mono"
                   />
                 </div>
               </div>
@@ -626,16 +636,19 @@ export default function RegisterPage() {
                             type="email"
                             value={member.email}
                             onChange={(e) => updateMember(index, 'email', e.target.value)}
-                            placeholder="Member email address"
+                            placeholder="Member email address (e.g. member@gmail.com)"
                             className="reg-field text-xs"
                           />
                           <input
                             required
                             type="tel"
+                            maxLength={10}
                             value={member.phone}
-                            onChange={(e) => updateMember(index, 'phone', e.target.value)}
-                            placeholder="Member phone number"
-                            className="reg-field text-xs"
+                            onChange={(e) =>
+                              updateMember(index, 'phone', e.target.value.replace(/[^0-9]/g, '').slice(0, 10))
+                            }
+                            placeholder="10-digit mobile number"
+                            className="reg-field text-xs font-mono"
                           />
                         </div>
                       </div>
@@ -692,6 +705,74 @@ export default function RegisterPage() {
         </div>
       </div>
 
+      {/* ================= REGISTRATION SUCCESS & APPROVAL MODAL ================= */}
+      {showApprovalModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-nirmaan-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="nirmaan-card max-w-lg w-full bg-white border-2 border-nirmaan-black shadow-2xl p-6 sm:p-8 space-y-6 animate-in zoom-in-95 duration-200 text-center">
+            {/* Celebration Emblem */}
+            <div className="w-16 h-16 rounded-full bg-nirmaan-green-bright border-2 border-nirmaan-black flex items-center justify-center mx-auto shadow-md">
+              <Sparkles className="w-8 h-8 text-nirmaan-black" />
+            </div>
+
+            <div className="space-y-2">
+              <span className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black text-[10px] font-black uppercase">
+                AWAITING ORGANIZER APPROVAL
+              </span>
+              <h2 className="font-display text-2xl sm:text-3xl font-black uppercase tracking-tight text-nirmaan-black">
+                REGISTRATION SUBMITTED!
+              </h2>
+              <p className="text-xs sm:text-sm font-semibold text-nirmaan-black/75">
+                Thank you for registering team <strong className="text-nirmaan-black font-black uppercase underline">{registeredTeamName || 'your team'}</strong> for NIRMAAN 2026.
+              </p>
+            </div>
+
+            {/* Instruction Card */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-nirmaan-cream/80 border-2 border-nirmaan-black/15 text-left space-y-2.5">
+              <div className="flex items-center gap-2 font-display text-xs font-black uppercase text-nirmaan-black">
+                <ShieldCheck className="w-4 h-4 text-nirmaan-blue flex-shrink-0" />
+                <span>WHAT HAPPENS NEXT?</span>
+              </div>
+              <ul className="text-xs font-medium text-nirmaan-black/80 space-y-2 list-disc list-inside leading-relaxed">
+                <li>
+                  <strong>Organizer Approval:</strong> The organizing team will review and approve your registration shortly.
+                </li>
+                <li>
+                  <strong>Digital QR Pass Unlock:</strong> Once approved, your team's official <strong>Digital QR Pass</strong> will be unlocked on your dashboard.
+                </li>
+                <li>
+                  <strong>Event Day On-Desk Registration:</strong> On the day of the event, present your approved QR Pass at the venue desk for on-desk physical check-in and meal access.
+                </li>
+              </ul>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  router.push('/dashboard');
+                  router.refresh();
+                }}
+                className="nirmaan-btn nirmaan-btn-primary w-full py-3.5 text-xs font-black uppercase shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>GO TO DASHBOARD</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  router.push('/pass');
+                  router.refresh();
+                }}
+                className="nirmaan-btn nirmaan-btn-outline w-full py-3.5 text-xs font-black uppercase border-2 border-nirmaan-black/20 hover:border-nirmaan-black cursor-pointer"
+              >
+                <span>CHECK PASS STATUS</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

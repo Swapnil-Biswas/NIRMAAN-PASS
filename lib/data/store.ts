@@ -56,7 +56,7 @@ export async function createTeam(input: NewTeamInput): Promise<Team> {
     const now = new Date().toISOString();
     const teamId = `team-${randomUUID()}`;
     const canonicalName = canonicalizeTeamName(input.teamName);
-    const reviewStatus: TeamReviewStatus = input.reviewStatus || 'approved';
+    const reviewStatus: TeamReviewStatus = input.reviewStatus || 'pending';
 
     const team: Team = {
       id: teamId,

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Team, Member } from '@/types/database';
-import { TRACKS, TRACK_DESCRIPTIONS, Track } from '@/lib/registration';
+import { TRACKS, TRACK_DESCRIPTIONS, Track, isValidEmail, isValidPhone } from '@/lib/registration';
 import {
   Edit3,
   Users,
@@ -132,11 +132,27 @@ export default function EditTeamModal({
       setError('Complete team leader details (name, email, phone) are required.');
       return;
     }
+    if (!isValidEmail(leader.email)) {
+      setError('Please provide a valid leader email address with a domain extension (.com, .in, .edu, etc.).');
+      return;
+    }
+    if (!isValidPhone(leader.phone)) {
+      setError('Leader phone must be a valid 10-digit mobile number.');
+      return;
+    }
 
     for (let i = 0; i < additionalMembers.length; i++) {
       const m = additionalMembers[i];
       if (!m.name.trim() || !m.email.trim() || !m.phone.trim()) {
         setError(`Please fill all fields for Member ${i + 2}, or remove the entry.`);
+        return;
+      }
+      if (!isValidEmail(m.email)) {
+        setError(`Please provide a valid email address with a domain extension for Member ${i + 2}.`);
+        return;
+      }
+      if (!isValidPhone(m.phone)) {
+        setError(`Phone for Member ${i + 2} must be a valid 10-digit number.`);
         return;
       }
     }
@@ -320,15 +336,16 @@ export default function EditTeamModal({
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold uppercase text-nirmaan-black/70 mb-1">
-                      Leader Phone *
+                      Leader Phone * <span className="font-mono text-[9px] text-nirmaan-black/40">(10 digits max)</span>
                     </label>
                     <input
                       type="tel"
                       required
+                      maxLength={10}
                       value={leader.phone}
-                      onChange={(e) => setLeader({ ...leader, phone: e.target.value })}
+                      onChange={(e) => setLeader({ ...leader, phone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10) })}
                       placeholder="10-digit mobile"
-                      className="w-full px-3 py-2 bg-white border border-nirmaan-black/20 rounded-xl text-xs font-medium focus:border-nirmaan-black focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-nirmaan-black/20 rounded-xl text-xs font-mono focus:border-nirmaan-black focus:outline-none"
                     />
                   </div>
                 </div>
@@ -400,10 +417,13 @@ export default function EditTeamModal({
                           <input
                             type="tel"
                             required
+                            maxLength={10}
                             value={member.phone}
-                            onChange={(e) => handleMemberChange(idx, 'phone', e.target.value)}
+                            onChange={(e) =>
+                              handleMemberChange(idx, 'phone', e.target.value.replace(/[^0-9]/g, '').slice(0, 10))
+                            }
                             placeholder="10-digit mobile"
-                            className="w-full px-3 py-2 bg-white border border-nirmaan-black/20 rounded-xl text-xs font-medium focus:border-nirmaan-black focus:outline-none"
+                            className="w-full px-3 py-2 bg-white border border-nirmaan-black/20 rounded-xl text-xs font-mono focus:border-nirmaan-black focus:outline-none"
                           />
                         </div>
                       </div>

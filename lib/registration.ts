@@ -48,6 +48,17 @@ export function normalizeEmail(email: string): string {
 }
 
 /**
+ * Validates that an email has a proper format with a compulsory domain extension (.com, .org, .edu, .in, etc.)
+ * e.g., name@gmail.com, name@hotmail.com, name@bmsit.edu.in
+ */
+export function isValidEmail(email: string): boolean {
+  if (!email || typeof email !== 'string') return false;
+  const trimmed = email.trim().toLowerCase();
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailRegex.test(trimmed);
+}
+
+/**
  * Normalizes Indian and standard international phone numbers into canonical 10-digit format
  * e.g., '+91 98765 43210', '09876543210', '98765-43210' -> '9876543210'
  */
@@ -67,6 +78,23 @@ export function normalizePhone(phone: string): string {
 
   // Standard 10-digit number or other digit lengths
   return digitsOnly;
+}
+
+/**
+ * Validates phone numbers: ensures no more than 10 digits (exactly 10 digits in canonical format).
+ */
+export function isValidPhone(phone: string): boolean {
+  if (!phone || typeof phone !== 'string') return false;
+  const rawDigits = phone.replace(/[^0-9]/g, '');
+  if (!rawDigits) return false;
+
+  // Direct digits without '+' prefix must not exceed 10 digits (or 11 if leading with 0)
+  if (!phone.includes('+') && rawDigits.length > 10 && !rawDigits.startsWith('0')) {
+    return false;
+  }
+
+  const normalized = normalizePhone(phone);
+  return /^\d{10}$/.test(normalized);
 }
 
 /**
@@ -257,9 +285,9 @@ export function detectTeamDuplicates(
     }
   }
 
-  // 5. Clean, unique registration
+  // 5. Clean, unique registration awaiting organizer approval
   return {
     action: 'allow',
-    reviewStatus: 'approved',
+    reviewStatus: 'pending',
   };
 }

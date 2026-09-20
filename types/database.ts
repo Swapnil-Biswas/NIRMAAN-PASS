@@ -1,4 +1,4 @@
-export type TeamReviewStatus = 'approved' | 'flagged_duplicate' | 'merged' | 'rejected';
+export type TeamReviewStatus = 'pending' | 'approved' | 'flagged_duplicate' | 'merged' | 'rejected';
 
 export interface Team {
   id: string;

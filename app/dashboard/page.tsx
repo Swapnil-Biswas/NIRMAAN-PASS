@@ -10,7 +10,7 @@ import { findTeamByToken, getAnnouncements, getTeamMembers } from '@/lib/data/st
 import { getTeamForUser } from '@/lib/auth/session';
 import { Team, Member } from '@/types/database';
 import Link from 'next/link';
-import { Users, LayoutDashboard, ExternalLink, LogIn, KeyRound } from 'lucide-react';
+import { Users, LayoutDashboard, ExternalLink, LogIn, KeyRound, Clock, AlertTriangle, ShieldCheck } from 'lucide-react';
 
 import LiveRefresh from '@/components/Participant/LiveRefresh';
 import EditTeamModal from '@/components/Participant/EditTeamModal';
@@ -123,6 +123,20 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </Link>
           </div>
         </div>
+
+        {/* Approval Notice Banner if Registration is Pending */}
+        {team.review_status === 'pending' || team.review_status === 'flagged_duplicate' ? (
+          <div className="mb-8 p-4 sm:p-5 rounded-2xl bg-nirmaan-amber/15 border-2 border-nirmaan-amber text-nirmaan-black space-y-2 animate-in fade-in duration-200">
+            <div className="flex items-center gap-2 font-display text-xs sm:text-sm font-black uppercase text-nirmaan-black">
+              <Clock className="w-4 h-4 text-nirmaan-amber flex-shrink-0" />
+              <span>REGISTRATION STATUS: AWAITING ORGANIZER APPROVAL</span>
+            </div>
+            <p className="text-xs sm:text-sm font-medium text-nirmaan-black/85 leading-relaxed">
+              Your team registration has been submitted and is currently being reviewed by the NIRMAAN 2026 organizing team.
+              Once approved, your official <strong>Digital QR Pass</strong> will unlock automatically. Present your QR Pass at the venue desk on event day for on-desk registration and food coupons.
+            </p>
+          </div>
+        ) : null}
 
         {/* Food & Beverage Entitlement Grid */}
         <div className="mb-10">

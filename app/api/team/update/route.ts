@@ -4,6 +4,8 @@ import {
   isTrack,
   normalizeEmail,
   normalizePhone,
+  isValidEmail,
+  isValidPhone,
   detectTeamDuplicates,
   type RegistrationMemberInput,
 } from '@/lib/registration';
@@ -81,6 +83,46 @@ export async function POST(req: NextRequest) {
         email: normalizeEmail(m.email),
         phone: m.phone.trim(),
       }));
+
+    if (normalizedMembers.length > 3) {
+      return NextResponse.json(
+        { success: false, message: 'A team can have a maximum of 4 members including the team leader (Leader + up to 3 members).' },
+        { status: 400 }
+      );
+    }
+
+    // Validate email format and domain extension for leader
+    if (!isValidEmail(normalizedLeader.email)) {
+      return NextResponse.json(
+        { success: false, message: 'Please provide a valid team leader email with a domain extension (e.g. name@gmail.com, name@hotmail.com, name@college.edu).' },
+        { status: 400 }
+      );
+    }
+
+    // Validate phone number format (not more than 10 digits) for leader
+    if (!isValidPhone(normalizedLeader.phone)) {
+      return NextResponse.json(
+        { success: false, message: 'Team leader contact phone must be a valid 10-digit number.' },
+        { status: 400 }
+      );
+    }
+
+    // Validate member emails and phones
+    for (let i = 0; i < normalizedMembers.length; i++) {
+      const m = normalizedMembers[i];
+      if (!isValidEmail(m.email)) {
+        return NextResponse.json(
+          { success: false, message: `Please provide a valid email with domain extension for Team Member ${i + 2} (${m.name || 'Member'}).` },
+          { status: 400 }
+        );
+      }
+      if (!isValidPhone(m.phone)) {
+        return NextResponse.json(
+          { success: false, message: `Contact phone for Team Member ${i + 2} (${m.name || 'Member'}) must be a valid 10-digit number.` },
+          { status: 400 }
+        );
+      }
+    }
 
     // Internal duplicate email check
     const emails = [normalizedLeader.email, ...normalizedMembers.map((m: RegistrationMemberInput) => m.email)];

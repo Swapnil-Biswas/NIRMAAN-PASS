@@ -152,72 +152,117 @@ export default function PassCard({ team, members = [] }: PassCardProps) {
           )}
         </div>
 
-        {/* QR Code Presentation Box */}
-        <div className="bg-white p-6 rounded-2xl shadow-inner border border-nirmaan-black/10 flex flex-col items-center justify-center mb-6">
-          <div ref={qrRef} className="p-2 bg-white rounded-xl">
-            <QRCodeSVG
-              value={qrPayload}
-              size={220}
-              level="H"
-              includeMargin={false}
-              fgColor="#141414"
-              bgColor="#FFFFFF"
-              imageSettings={{
-                src: NIRMAAN_QR_LOGO,
-                height: 52,
-                width: 52,
-                excavate: true,
-              }}
-            />
+        {/* Status Check: Pending Approval / Rejected vs Approved */}
+        {team.review_status === 'pending' || team.review_status === 'flagged_duplicate' ? (
+          <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-inner border-2 border-dashed border-nirmaan-amber flex flex-col items-center justify-center text-center mb-6 space-y-4">
+            <div className="w-16 h-16 rounded-full bg-nirmaan-amber/20 border-2 border-nirmaan-amber flex items-center justify-center text-nirmaan-black animate-pulse">
+              <AlertTriangle className="w-8 h-8 text-nirmaan-amber" />
+            </div>
+
+            <div className="space-y-1.5 max-w-sm">
+              <span className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black text-[10px] font-black uppercase">
+                AWAITING ORGANIZER APPROVAL
+              </span>
+              <h3 className="font-display text-lg font-black uppercase text-nirmaan-black pt-1">
+                REGISTRATION UNDER REVIEW
+              </h3>
+              <p className="text-xs font-semibold text-nirmaan-black/70 leading-relaxed">
+                Your team registration is currently being verified by the NIRMAAN 2026 Organizing Committee.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-nirmaan-cream/60 border border-nirmaan-black/10 text-left w-full space-y-1">
+              <p className="text-[11px] font-black uppercase text-nirmaan-black flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-nirmaan-blue" />
+                ON-DESK REGISTRATION PASS
+              </p>
+              <p className="text-[11px] text-nirmaan-black/70 leading-normal">
+                Once approved, your official <strong>Digital QR Pass</strong> will be unlocked here. You must present that QR Pass at the venue desk on event day for physical registration & food coupons.
+              </p>
+            </div>
           </div>
-
-          <div className="mt-4 text-center">
-            <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-nirmaan-black/60">
-              TOKEN ID
-            </p>
-            <p className="font-mono font-bold text-xs text-nirmaan-black bg-nirmaan-cream px-3 py-1 rounded-md mt-0.5 select-all">
-              {team.qr_token}
+        ) : team.review_status === 'rejected' || team.review_status === 'merged' ? (
+          <div className="bg-white p-6 sm:p-8 rounded-2xl border-2 border-nirmaan-red/30 flex flex-col items-center justify-center text-center mb-6 space-y-3">
+            <div className="w-14 h-14 rounded-full bg-nirmaan-red/10 border border-nirmaan-red/30 flex items-center justify-center text-nirmaan-red">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+            <h3 className="font-display text-base font-black uppercase text-nirmaan-red">
+              {team.review_status === 'merged' ? 'DUPLICATE TEAM MERGED' : 'REGISTRATION REJECTED'}
+            </h3>
+            <p className="text-xs font-medium text-nirmaan-black/70 max-w-xs">
+              {team.duplicate_notes || 'This registration is inactive. Please contact the NIRMAAN help desk for assistance.'}
             </p>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* QR Code Presentation Box */}
+            <div className="bg-white p-6 rounded-2xl shadow-inner border border-nirmaan-black/10 flex flex-col items-center justify-center mb-6">
+              <div ref={qrRef} className="p-2 bg-white rounded-xl">
+                <QRCodeSVG
+                  value={qrPayload}
+                  size={220}
+                  level="H"
+                  includeMargin={false}
+                  fgColor="#141414"
+                  bgColor="#FFFFFF"
+                  imageSettings={{
+                    src: NIRMAAN_QR_LOGO,
+                    height: 52,
+                    width: 52,
+                    excavate: true,
+                  }}
+                />
+              </div>
 
-        {/* Mandatory Participant Instruction Banner */}
-        <div className="bg-nirmaan-amber/20 border-l-4 border-nirmaan-amber p-3.5 rounded-r-xl mb-6">
-          <p className="text-xs font-semibold text-nirmaan-black leading-relaxed">
-            <strong className="uppercase font-bold block mb-0.5">Important:</strong>
-            Every team member must show this team QR when collecting meals or beverages. Share this pass with all members.
-          </p>
-        </div>
+              <div className="mt-4 text-center">
+                <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-nirmaan-black/60">
+                  TOKEN ID
+                </p>
+                <p className="font-mono font-bold text-xs text-nirmaan-black bg-nirmaan-cream px-3 py-1 rounded-md mt-0.5 select-all">
+                  {team.qr_token}
+                </p>
+              </div>
+            </div>
 
-        {/* Action Buttons: Save & Share */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button
-            onClick={handleDownload}
-            className="nirmaan-btn nirmaan-btn-dark text-xs py-3 w-full font-black shadow-sm flex items-center justify-center gap-2"
-            title="Download Official QR Pass PNG"
-          >
-            <Download className="w-4 h-4 text-nirmaan-amber" />
-            <span>SAVE / DOWNLOAD PASS</span>
-          </button>
+            {/* Mandatory Participant Instruction Banner */}
+            <div className="bg-nirmaan-amber/20 border-l-4 border-nirmaan-amber p-3.5 rounded-r-xl mb-6">
+              <p className="text-xs font-semibold text-nirmaan-black leading-relaxed">
+                <strong className="uppercase font-bold block mb-0.5">Important:</strong>
+                Show this official QR Pass on event day at the venue desk for on-desk registration, check-in, and meals.
+              </p>
+            </div>
 
-          <button
-            onClick={handleShare}
-            className="nirmaan-btn nirmaan-btn-primary text-xs py-3 w-full font-black shadow-sm flex items-center justify-center gap-2"
-            title="Share Official Event Pass Link"
-          >
-            {copied || shared ? (
-              <>
-                <Check className="w-4 h-4 text-white" />
-                <span>PASS COPIED!</span>
-              </>
-            ) : (
-              <>
-                <Share2 className="w-4 h-4" />
-                <span>SHARE EVENT PASS</span>
-              </>
-            )}
-          </button>
-        </div>
+            {/* Action Buttons: Save & Share */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                onClick={handleDownload}
+                className="nirmaan-btn nirmaan-btn-dark text-xs py-3 w-full font-black shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                title="Download Official QR Pass PNG"
+              >
+                <Download className="w-4 h-4 text-nirmaan-amber" />
+                <span>SAVE / DOWNLOAD PASS</span>
+              </button>
+
+              <button
+                onClick={handleShare}
+                className="nirmaan-btn nirmaan-btn-primary text-xs py-3 w-full font-black shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                title="Share Official Event Pass Link"
+              >
+                {copied || shared ? (
+                  <>
+                    <Check className="w-4 h-4 text-white" />
+                    <span>PASS COPIED!</span>
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="w-4 h-4" />
+                    <span>SHARE EVENT PASS</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -7,6 +7,8 @@ import {
   canonicalizeTeamName,
   calculateSimilarity,
   detectTeamDuplicates,
+  isValidEmail,
+  isValidPhone,
   RegistrationTeamInput,
   ExistingTeamWithMembers,
 } from '@/lib/registration';
@@ -23,10 +25,30 @@ import {
 } from '@/lib/data/store';
 import { Team, Member } from '@/types/database';
 
-describe('Anti-Duplicate Normalization Utilities', () => {
+describe('Anti-Duplicate Normalization & Validation Utilities', () => {
   it('normalizes email addresses correctly', () => {
     expect(normalizeEmail('  Leader@Example.COM  ')).toBe('leader@example.com');
     expect(normalizeEmail('user.name+tag@sub.domain.org')).toBe('user.name+tag@sub.domain.org');
+  });
+
+  it('validates email addresses with compulsory domain extensions', () => {
+    expect(isValidEmail('leader@gmail.com')).toBe(true);
+    expect(isValidEmail('member@hotmail.com')).toBe(true);
+    expect(isValidEmail('student@bmsit.edu.in')).toBe(true);
+    expect(isValidEmail('admin@nirmaan.org')).toBe(true);
+    expect(isValidEmail('invalid-email')).toBe(false);
+    expect(isValidEmail('user@gmail')).toBe(false); // missing .com extension
+    expect(isValidEmail('@domain.com')).toBe(false);
+    expect(isValidEmail('')).toBe(false);
+  });
+
+  it('validates phone numbers to not exceed 10 digits and require valid length', () => {
+    expect(isValidPhone('9876543210')).toBe(true);
+    expect(isValidPhone('+91 98765 43210')).toBe(true);
+    expect(isValidPhone('09876543210')).toBe(true);
+    expect(isValidPhone('121212111211')).toBe(false); // 12 raw digits
+    expect(isValidPhone('12345')).toBe(false); // too short
+    expect(isValidPhone('')).toBe(false);
   });
 
   it('normalizes various Indian and international phone number formats to 10 digits', () => {
@@ -266,7 +288,7 @@ describe('Multi-Factor Anti-Duplicate Detection Engine', () => {
 
     const result = detectTeamDuplicates(input, existingTeamsList);
     expect(result.action).toBe('allow');
-    expect(result.reviewStatus).toBe('approved');
+    expect(result.reviewStatus).toBe('pending');
   });
 });
 
