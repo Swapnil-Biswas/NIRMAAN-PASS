@@ -11,6 +11,7 @@ export default function SocialsPage() {
       tag: 'CC',
       tagColor: 'bg-nirmaan-purple',
       college: 'BMSIT Coding Club — Build, Learn, Ship.',
+      logo: '/organizers/coding-club.png',
       links: [
         {
           title: 'Instagram',
@@ -40,6 +41,7 @@ export default function SocialsPage() {
       tag: 'AL',
       tagColor: 'bg-nirmaan-orange',
       college: 'BMSIT Alterino — Hardware, Innovation, Impact.',
+      logo: '/organizers/alterino.jpg',
       links: [
         {
           title: 'Instagram',
@@ -91,17 +93,24 @@ export default function SocialsPage() {
               className="nirmaan-card p-6 sm:p-8 bg-white border-2 border-nirmaan-black/15 shadow-sm flex flex-col justify-between"
             >
               <div>
-                {/* Club Header */}
+                {/* Club Header with Logo */}
                 <div className="flex items-center gap-4 mb-6 pb-4 border-b border-nirmaan-black/10">
-                  <div
-                    className={`${club.tagColor} text-white h-12 w-12 rounded-2xl flex items-center justify-center font-display font-black text-sm shadow-sm`}
-                  >
-                    {club.tag}
+                  <div className="h-14 w-14 rounded-2xl bg-black border border-nirmaan-black/15 flex items-center justify-center p-1 overflow-hidden shrink-0 shadow-xs">
+                    <img
+                      src={club.logo}
+                      alt={club.name}
+                      className="max-h-full max-w-full object-contain rounded-lg"
+                    />
                   </div>
                   <div>
-                    <h2 className="font-display text-xl font-black uppercase text-nirmaan-black">
-                      {club.name}
-                    </h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="font-display text-xl font-black uppercase text-nirmaan-black">
+                        {club.name}
+                      </h2>
+                      <span className={`nirmaan-pill ${club.tagColor} text-white text-[9px] font-black px-2 py-0.5`}>
+                        {club.tag}
+                      </span>
+                    </div>
                     <p className="text-xs font-semibold text-nirmaan-black/60">
                       {club.college}
                     </p>

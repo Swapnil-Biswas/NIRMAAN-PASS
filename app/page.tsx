@@ -7,6 +7,7 @@ import { getTeamForUser } from '@/lib/auth/session';
 import { QrCode, LogIn, LayoutDashboard, ShieldCheck, ArrowRight } from 'lucide-react';
 import AnnouncementList from '@/components/AnnouncementCard/AnnouncementList';
 import SponsorGrid from '@/components/Sponsors/SponsorGrid';
+import OrganizersSection from '@/components/Organizers/OrganizersSection';
 import PassLookupForm from '@/components/Participant/PassLookupForm';
 import FirstVisitRedirect from '@/components/FirstVisitRedirect';
 
@@ -118,6 +119,11 @@ export default async function HomePage() {
             </span>
           </div>
           <AnnouncementList announcements={announcements} />
+        </div>
+
+        {/* Organizing Bodies Section */}
+        <div className="pt-6 border-t border-nirmaan-black/15">
+          <OrganizersSection />
         </div>
 
         {/* Official Sponsors Section */}

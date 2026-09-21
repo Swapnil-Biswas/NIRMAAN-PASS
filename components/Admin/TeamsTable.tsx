@@ -260,96 +260,6 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
 
   return (
     <div className="w-full space-y-4">
-      {/* Filter Tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-nirmaan-black/10 pb-3">
-        <button
-          type="button"
-          onClick={() => {
-            setStatusFilter('all');
-            setPage(1);
-          }}
-          className={`nirmaan-pill text-xs font-bold py-1.5 px-3.5 transition-all ${
-            statusFilter === 'all'
-              ? 'bg-nirmaan-black text-white shadow-xs'
-              : 'bg-white text-nirmaan-black/70 hover:bg-nirmaan-cream border border-nirmaan-black/10'
-          }`}
-        >
-          All Teams ({teams.length})
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setStatusFilter('pending');
-            setPage(1);
-          }}
-          className={`nirmaan-pill text-xs font-bold py-1.5 px-3.5 transition-all flex items-center gap-1.5 ${
-            statusFilter === 'pending'
-              ? 'bg-nirmaan-amber text-nirmaan-black shadow-xs'
-              : 'bg-white text-nirmaan-black/70 hover:bg-nirmaan-cream border border-nirmaan-black/10'
-          }`}
-        >
-          <Clock className="w-3.5 h-3.5 text-nirmaan-amber" />
-          <span>Pending Approval</span>
-          {pendingCount > 0 && (
-            <span className="bg-nirmaan-black text-white text-[10px] px-1.5 py-0.2 rounded-full font-mono">
-              {pendingCount}
-            </span>
-          )}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setStatusFilter('flagged');
-            setPage(1);
-          }}
-          className={`nirmaan-pill text-xs font-bold py-1.5 px-3.5 transition-all flex items-center gap-1.5 ${
-            statusFilter === 'flagged'
-              ? 'bg-nirmaan-amber text-nirmaan-black shadow-xs'
-              : 'bg-white text-nirmaan-black/70 hover:bg-nirmaan-cream border border-nirmaan-black/10'
-          }`}
-        >
-          <AlertTriangle className="w-3.5 h-3.5" />
-          <span>Flagged Review</span>
-          {flaggedCount > 0 && (
-            <span className="bg-nirmaan-black text-white text-[10px] px-1.5 py-0.2 rounded-full font-mono">
-              {flaggedCount}
-            </span>
-          )}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setStatusFilter('approved');
-            setPage(1);
-          }}
-          className={`nirmaan-pill text-xs font-bold py-1.5 px-3.5 transition-all ${
-            statusFilter === 'approved'
-              ? 'bg-nirmaan-green-bright text-nirmaan-black shadow-xs'
-              : 'bg-white text-nirmaan-black/70 hover:bg-nirmaan-cream border border-nirmaan-black/10'
-          }`}
-        >
-          Approved Teams
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setStatusFilter('merged_rejected');
-            setPage(1);
-          }}
-          className={`nirmaan-pill text-xs font-bold py-1.5 px-3.5 transition-all ${
-            statusFilter === 'merged_rejected'
-              ? 'bg-nirmaan-red text-white shadow-xs'
-              : 'bg-white text-nirmaan-black/70 hover:bg-nirmaan-cream border border-nirmaan-black/10'
-          }`}
-        >
-          Merged / Inactive
-        </button>
-      </div>
-
       {/* Search & Pagination Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2 w-full max-w-md">
@@ -426,13 +336,13 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
             <thead className="bg-nirmaan-cream border-b border-nirmaan-black/10 text-nirmaan-black uppercase font-display font-bold">
               <tr>
                 <th className="p-3.5">Team & College</th>
-                <th className="p-3.5">Status</th>
-                <th className="p-3.5 text-center">Attendance</th>
+                <th className="p-3.5">Registration Status</th>
+                <th className="p-3.5 text-center">On-Desk Check-In</th>
                 <th className="p-3.5 text-center">Breakfast</th>
                 <th className="p-3.5 text-center">Lunch</th>
                 <th className="p-3.5 text-center">Dinner</th>
                 <th className="p-3.5 text-center">Coffee / Tea</th>
-                <th className="p-3.5 text-right">Pass / Review</th>
+                <th className="p-3.5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-nirmaan-black/5 font-medium">
@@ -473,9 +383,9 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                       {team.review_status === 'pending' ? (
                         <button
                           type="button"
-                          onClick={() => handleQuickApprove(team.id)}
+                          onClick={() => setReviewModalTeam(team)}
                           className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black text-[10px] font-black hover:opacity-90 transition-opacity flex items-center gap-1 cursor-pointer"
-                          title="Click to Approve Team Registration"
+                          title="Click to review details and approve QR Pass"
                         >
                           <Clock className="w-3 h-3 text-nirmaan-black" />
                           <span>PENDING APPROVAL</span>
@@ -485,6 +395,7 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                           type="button"
                           onClick={() => setReviewModalTeam(team)}
                           className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black text-[10px] font-black hover:opacity-90 transition-opacity flex items-center gap-1"
+                          title="Suspicious or duplicate login detected - review required"
                         >
                           <AlertTriangle className="w-3 h-3" />
                           <span>REVIEW REQUIRED</span>
@@ -499,11 +410,6 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                           <GitMerge className="w-3 h-3" />
                           <span>MERGED</span>
                         </span>
-                      ) : team.checked_in ? (
-                        <span className="nirmaan-pill bg-nirmaan-green-bright text-nirmaan-black text-[10px] font-black">
-                          <ShieldCheck className="w-3 h-3" />
-                          <span>CHECKED IN</span>
-                        </span>
                       ) : (
                         <span className="nirmaan-pill bg-nirmaan-green-bright/20 text-nirmaan-green-dark border border-nirmaan-green-dark/30 text-[10px] font-black">
                           <CheckCircle2 className="w-3 h-3" />
@@ -512,10 +418,17 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                       )}
                     </td>
 
-                    <td className="p-3.5 text-center font-bold">
-                      <span className="bg-nirmaan-cream px-2.5 py-1 rounded-full text-nirmaan-black">
-                        {team.present_count} / {team.total_members}
-                      </span>
+                    <td className="p-3.5 text-center">
+                      {team.checked_in ? (
+                        <span className="inline-flex items-center gap-1 bg-nirmaan-green-bright/20 text-nirmaan-green-dark border border-nirmaan-green-dark/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+                          <ShieldCheck className="w-3 h-3" />
+                          <span>{team.present_count}/{team.total_members} Present</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 bg-nirmaan-black/5 text-nirmaan-black/50 text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
+                          <span>Not Checked In</span>
+                        </span>
+                      )}
                     </td>
 
                     <td className="p-3.5 text-center">
@@ -550,55 +463,25 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                     </td>
 
                     <td className="p-3.5 text-right space-x-1.5 whitespace-nowrap">
-                      {team.review_status === 'pending' ? (
+                      {team.review_status === 'pending' || team.review_status === 'flagged_duplicate' ? (
                         <button
                           type="button"
                           disabled={reviewLoading}
-                          onClick={() => handleQuickApprove(team.id)}
+                          onClick={() => setReviewModalTeam(team)}
                           className="nirmaan-pill bg-nirmaan-green-bright hover:opacity-90 text-nirmaan-black text-[10px] py-1 px-2.5 font-black shadow-xs inline-flex items-center gap-1 cursor-pointer"
-                          title="Approve Team Registration & Unlock QR Pass"
+                          title="Review Registration Details & Approve QR Pass"
                         >
                           <CheckCircle2 className="w-3 h-3" />
-                          <span>Approve Pass</span>
-                        </button>
-                      ) : team.review_status === 'flagged_duplicate' ? (
-                        <>
-                          <button
-                            type="button"
-                            disabled={reviewLoading}
-                            onClick={() => handleQuickApprove(team.id)}
-                            className="nirmaan-pill bg-nirmaan-green-bright hover:opacity-90 text-nirmaan-black text-[10px] py-1 px-2.5 font-black shadow-xs inline-flex items-center gap-1 cursor-pointer"
-                            title="Approve Team Registration"
-                          >
-                            <CheckCircle2 className="w-3 h-3" />
-                            <span>Approve</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setReviewModalTeam(team)}
-                            className="nirmaan-pill bg-nirmaan-amber hover:bg-nirmaan-amber/80 text-nirmaan-black text-[10px] py-1 px-2.5 font-bold shadow-xs inline-flex items-center gap-1 cursor-pointer"
-                          >
-                            Review
-                          </button>
-                        </>
-                      ) : !team.checked_in && team.review_status !== 'rejected' && team.review_status !== 'merged' ? (
-                        <button
-                          type="button"
-                          onClick={() => setRegistrationModalTeam(team)}
-                          className="nirmaan-pill bg-nirmaan-green-dark hover:opacity-90 text-white text-[10px] py-1 px-2.5 font-black shadow-xs inline-flex items-center gap-1 cursor-pointer"
-                          title="Approve On-Desk Registration & Check-In"
-                        >
-                          <UserCheck className="w-3 h-3" />
-                          <span>Check-In</span>
+                          <span>Review & Approve</span>
                         </button>
                       ) : null}
 
                       <Link
                         href={`/admin/dashboard/pass?teamId=${team.id}`}
                         className="nirmaan-pill bg-nirmaan-cream hover:bg-nirmaan-black hover:text-white text-nirmaan-black text-[10px] py-1 px-2.5 border border-nirmaan-black/15 transition-colors shadow-xs inline-flex items-center gap-1"
-                        title="View Team Pass & Dashboard"
+                        title="View Team Pass & Details"
                       >
-                        <span>Pass</span>
+                        <span>View Pass</span>
                         <span>➔</span>
                       </Link>
                     </td>
@@ -636,12 +519,22 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
               </div>
             )}
 
-            {/* Flag Reason Banner */}
-            <div className="bg-nirmaan-amber/10 border border-nirmaan-amber/40 p-3.5 rounded-xl text-xs font-medium text-nirmaan-black space-y-1">
+            {/* Flag / Review Reason Banner */}
+            <div className={`p-3.5 rounded-xl text-xs font-medium space-y-1 ${
+              reviewModalTeam.review_status === 'flagged_duplicate'
+                ? 'bg-nirmaan-amber/15 border border-nirmaan-amber/40 text-nirmaan-black'
+                : 'bg-nirmaan-blue/10 border border-nirmaan-blue/30 text-nirmaan-black'
+            }`}>
               <div className="font-bold text-nirmaan-black uppercase flex items-center gap-1.5">
-                <span>Detection Reason:</span>
+                <span>{reviewModalTeam.review_status === 'flagged_duplicate' ? 'Flagged Reason:' : 'Registration Review:'}</span>
               </div>
-              <p className="text-nirmaan-black/80">{reviewModalTeam.duplicate_notes || 'Potential duplicate match detected.'}</p>
+              <p className="text-nirmaan-black/80">
+                {reviewModalTeam.duplicate_notes || (
+                  reviewModalTeam.review_status === 'flagged_duplicate'
+                    ? 'Potential duplicate or altered login details detected.'
+                    : 'New team registration awaiting organizer review and approval before issuing QR pass.'
+                )}
+              </p>
             </div>
 
             {/* Side-by-side comparison */}
@@ -662,7 +555,7 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                   <p className="font-bold text-[10px] uppercase text-nirmaan-black/50">Members ({reviewModalTeam.members.length}):</p>
                   {reviewModalTeam.members.map((m) => (
                     <div key={m.id} className="text-[11px] text-nirmaan-black/80">
-                      • <span className="font-bold">{m.name}</span> ({m.email})
+                      • <span className="font-bold">{m.name}</span> ({m.email} / {m.phone})
                     </div>
                   ))}
                 </div>
@@ -686,14 +579,14 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                       <p className="font-bold text-[10px] uppercase text-nirmaan-black/50">Members ({matchedTeam.members.length}):</p>
                       {matchedTeam.members.map((m) => (
                         <div key={m.id} className="text-[11px] text-nirmaan-black/80">
-                          • <span className="font-bold">{m.name}</span> ({m.email})
+                          • <span className="font-bold">{m.name}</span> ({m.email} / {m.phone})
                         </div>
                       ))}
                     </div>
                   </>
                 ) : (
                   <div className="text-nirmaan-black/50 font-medium py-4">
-                    Matched team details not linked or from historical seed data.
+                    No matched collision team. Ready for single registration approval.
                   </div>
                 )}
               </div>
@@ -705,10 +598,10 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                 type="button"
                 disabled={reviewLoading}
                 onClick={() => handleReviewAction('approve')}
-                className="nirmaan-pill bg-nirmaan-green-bright text-nirmaan-black font-black text-xs py-2.5 px-4 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs"
+                className="nirmaan-pill bg-nirmaan-green-bright text-nirmaan-black font-black text-xs py-2.5 px-4 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                APPROVE (LEGITIMATE TEAM)
+                APPROVE REGISTRATION (UNLOCK QR)
               </button>
 
               {matchedTeam && (
@@ -716,7 +609,7 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                   type="button"
                   disabled={reviewLoading}
                   onClick={() => handleReviewAction('merge', matchedTeam.id)}
-                  className="nirmaan-pill bg-nirmaan-blue text-white font-black text-xs py-2.5 px-4 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs"
+                  className="nirmaan-pill bg-nirmaan-blue text-white font-black text-xs py-2.5 px-4 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
                 >
                   <GitMerge className="w-4 h-4" />
                   MERGE WITH MATCH
@@ -727,10 +620,10 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                 type="button"
                 disabled={reviewLoading}
                 onClick={() => handleReviewAction('reject')}
-                className="nirmaan-pill bg-nirmaan-red text-white font-black text-xs py-2.5 px-4 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs"
+                className="nirmaan-pill bg-nirmaan-red text-white font-black text-xs py-2.5 px-4 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
               >
                 <XCircle className="w-4 h-4" />
-                REJECT DUPLICATE
+                REJECT REGISTRATION
               </button>
             </div>
           </div>

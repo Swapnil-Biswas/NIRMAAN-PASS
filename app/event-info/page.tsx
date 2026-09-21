@@ -2,6 +2,7 @@ import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import SponsorGrid from '@/components/Sponsors/SponsorGrid';
+import OrganizersSection from '@/components/Organizers/OrganizersSection';
 import TimelineSection from '@/components/EventInfo/TimelineSection';
 import { getSchedule, getAnnouncements } from '@/lib/data/store';
 import AnnouncementList from '@/components/AnnouncementCard/AnnouncementList';
@@ -90,6 +91,11 @@ export default async function EventInfoPage() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Organizing Bodies Section */}
+        <div className="pt-6 border-t border-nirmaan-black/15">
+          <OrganizersSection />
         </div>
 
         {/* Official Sponsors Section */}
