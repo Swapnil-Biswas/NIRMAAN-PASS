@@ -10,7 +10,6 @@ import CoffeeServeModal from '@/components/Admin/CoffeeServeModal';
 
 export default function QRScanner() {
   const [purpose, setPurpose] = useState<ScanPurpose>('lunch');
-  const [manualToken, setManualToken] = useState('');
   const [scanning, setScanning] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -61,9 +60,7 @@ export default function QRScanner() {
         () => {}
       );
     } catch (err: any) {
-      console.warn('Camera failed to start:', err);
-      setScanning(false);
-      setErrorMsg('Camera access unavailable. You can use manual token or test presets below.');
+      setErrorMsg('Camera access unavailable. Please grant camera permission in your browser to scan QR passes.');
     }
   };
 
@@ -228,151 +225,135 @@ export default function QRScanner() {
     }, 3500);
   };
 
-  const getPurposeTheme = () => {
-    switch (purpose) {
-      case 'registration':
-        return { label: 'On-Desk Registration', bg: 'bg-nirmaan-amber', text: 'text-nirmaan-black', icon: Shield };
-      case 'breakfast':
-        return { label: 'Breakfast Serving', bg: 'bg-nirmaan-amber', text: 'text-nirmaan-black', icon: Sun };
-      case 'lunch':
-        return { label: 'Lunch Serving', bg: 'bg-nirmaan-orange', text: 'text-white', icon: Utensils };
-      case 'dinner':
-        return { label: 'Dinner Serving', bg: 'bg-nirmaan-purple', text: 'text-white', icon: Moon };
-      case 'coffee':
-        return { label: 'Coffee / Tea', bg: 'bg-nirmaan-blue', text: 'text-white', icon: Coffee };
-    }
-  };
+  const purposes: { key: ScanPurpose; label: string; icon: React.ComponentType<{ className?: string }>; activeColor: string }[] = [
+    { key: 'registration', label: 'Registration', icon: Shield, activeColor: 'bg-nirmaan-green-bright text-nirmaan-black' },
+    { key: 'breakfast', label: 'Breakfast', icon: Sun, activeColor: 'bg-nirmaan-amber text-nirmaan-black' },
+    { key: 'lunch', label: 'Lunch', icon: Utensils, activeColor: 'bg-nirmaan-orange text-white' },
+    { key: 'dinner', label: 'Dinner', icon: Moon, activeColor: 'bg-nirmaan-purple text-white' },
+    { key: 'coffee', label: 'Coffee', icon: Coffee, activeColor: 'bg-nirmaan-blue text-white' },
+  ];
 
-  const currentTheme = getPurposeTheme();
+  const currentTheme = purposes.find((p) => p.key === purpose) || purposes[0];
   const CurrentIcon = currentTheme.icon;
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-6">
-      {/* Purpose Selector Box */}
-      <div className="nirmaan-card p-6 border-2 border-nirmaan-black bg-nirmaan-cream-card">
-        <label className="block text-xs font-bold uppercase tracking-widest text-nirmaan-black/70 mb-2">
-          SELECT SCAN PURPOSE
-        </label>
-        <div className="relative">
-          <select
-            value={purpose}
-            onChange={(e) => {
-              setPurpose(e.target.value as ScanPurpose);
-              setErrorMsg(null);
-            }}
-            className="w-full appearance-none bg-white border-2 border-nirmaan-black/20 rounded-xl px-4 py-3.5 pr-12 font-display text-sm font-black uppercase text-nirmaan-black focus:border-nirmaan-black focus:outline-none cursor-pointer transition-colors hover:border-nirmaan-black/40"
-          >
-            <option value="registration">Registration</option>
-            <option value="breakfast">Breakfast</option>
-            <option value="lunch">Lunch</option>
-            <option value="dinner">Dinner</option>
-            <option value="coffee">Coffee / Tea</option>
-          </select>
-          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-nirmaan-black/50 pointer-events-none" />
-        </div>
+    <div className="w-full max-w-lg mx-auto space-y-3">
+      {/* Compact Quick-Switch Purpose Pills */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar justify-start sm:justify-center">
+        {purposes.map((p) => {
+          const Icon = p.icon;
+          const isSelected = purpose === p.key;
 
-        {/* Current Active Mode Banner */}
-        <div className={`mt-4 p-3.5 rounded-xl ${currentTheme.bg} ${currentTheme.text} flex items-center justify-between shadow-sm`}>
-          <div className="flex items-center gap-2">
-            <CurrentIcon className="w-5 h-5" />
-            <span className="font-display font-bold text-sm tracking-wide uppercase">
-              MODE: {currentTheme.label}
-            </span>
-          </div>
-          <span className="text-[11px] font-extrabold uppercase bg-white/20 px-2.5 py-0.5 rounded-full">
-            READY TO SCAN
-          </span>
-        </div>
+          return (
+            <button
+              key={p.key}
+              type="button"
+              onClick={() => {
+                setPurpose(p.key);
+                setErrorMsg(null);
+              }}
+              className={`nirmaan-pill text-xs font-black py-1.5 px-3 transition-all flex items-center gap-1.5 flex-shrink-0 cursor-pointer shadow-xs ${
+                isSelected
+                  ? `${p.activeColor} ring-2 ring-nirmaan-black scale-102`
+                  : 'bg-white text-nirmaan-black/70 hover:bg-nirmaan-cream border border-nirmaan-black/15'
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              <span>{p.label}</span>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Success Banner */}
+      {/* Success Notification */}
       {successMsg && (
-        <div className="bg-nirmaan-green-bright border-2 border-nirmaan-black p-4 rounded-2xl flex items-center justify-between shadow-lg animate-in slide-in-from-top duration-300">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-6 h-6 text-nirmaan-black stroke-[2.5]" />
+        <div className="bg-nirmaan-green-bright border-2 border-nirmaan-black p-3 rounded-2xl flex items-center justify-between shadow-md animate-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="w-5 h-5 text-nirmaan-black flex-shrink-0" />
             <div>
-              <p className="font-display font-black text-sm text-nirmaan-black uppercase">
-                OPERATION CONFIRMED
+              <p className="font-display font-black text-xs text-nirmaan-black uppercase">
+                CONFIRMED
               </p>
-              <p className="text-xs font-bold text-nirmaan-black/80">{successMsg}</p>
+              <p className="text-[11px] font-bold text-nirmaan-black/90">{successMsg}</p>
             </div>
           </div>
           <button
             onClick={() => setSuccessMsg(null)}
-            className="text-xs font-bold bg-nirmaan-black text-white px-3 py-1.5 rounded-full hover:bg-nirmaan-black/80"
+            className="text-[10px] font-bold bg-nirmaan-black text-white px-2.5 py-1 rounded-full hover:bg-nirmaan-black/80 flex-shrink-0"
           >
-            NEXT SCAN
+            OK
           </button>
         </div>
       )}
 
-      {/* Error Banner */}
+      {/* Error Notification */}
       {errorMsg && (
-        <div className="bg-nirmaan-red text-white p-4 rounded-2xl flex items-start gap-3 shadow-lg animate-in slide-in-from-top duration-200">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="font-display font-black text-sm uppercase">SCAN REJECTED</p>
-            <p className="text-xs font-medium text-white/90">{errorMsg}</p>
+        <div className="bg-nirmaan-red text-white p-3 rounded-2xl flex items-start justify-between gap-2 shadow-md animate-in slide-in-from-top duration-200">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-display font-black text-xs uppercase">SCAN FAILED</p>
+              <p className="text-[11px] font-medium text-white/90">{errorMsg}</p>
+            </div>
           </div>
           <button
             onClick={() => setErrorMsg(null)}
-            className="text-xs font-bold bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-md"
+            className="text-[10px] font-bold bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded flex-shrink-0"
           >
             DISMISS
           </button>
         </div>
       )}
 
-      {/* Camera & Scanner Viewport */}
-      <div className="nirmaan-card p-6 border-2 border-nirmaan-black bg-white flex flex-col items-center justify-center text-center">
-        <div id="qr-reader" className="w-full max-w-sm rounded-xl overflow-hidden mb-4 min-h-[50px]"></div>
+      {/* Primary Scanner Viewport Card — Front and Center */}
+      <div className="nirmaan-card p-4 sm:p-5 border-2 border-nirmaan-black bg-white flex flex-col items-center justify-center text-center shadow-sm">
+        {/* Active Mode Header */}
+        <div className="w-full flex items-center justify-between pb-3 mb-3 border-b border-nirmaan-black/10">
+          <div className="flex items-center gap-1.5 font-display text-xs font-black uppercase text-nirmaan-black">
+            <span className="w-2 h-2 rounded-full bg-nirmaan-green-bright animate-pulse" />
+            <CurrentIcon className="w-3.5 h-3.5 text-nirmaan-amber" />
+            <span>MODE: {currentTheme.label}</span>
+          </div>
+          <span className="text-[10px] font-bold uppercase text-nirmaan-black/50">
+            {scanning ? 'SCANNING...' : 'CAMERA IDLE'}
+          </span>
+        </div>
 
-        {scanning ? (
-          <button
-            onClick={stopCamera}
-            className="nirmaan-btn nirmaan-btn-outline text-xs py-3 w-full max-w-xs font-bold"
-          >
-            STOP CAMERA
-          </button>
-        ) : (
-          <button
-            onClick={startCamera}
-            disabled={loading}
-            className="nirmaan-btn nirmaan-btn-primary text-xs py-3.5 w-full max-w-xs font-black shadow-md"
-          >
-            <Camera className="w-4 h-4" />
-            START CAMERA SCANNER
-          </button>
-        )}
-      </div>
-
-      {/* Instant Manual Token Input & Test Presets */}
-      <div className="nirmaan-card p-6 border border-nirmaan-black/15 bg-nirmaan-cream-card">
-        <h3 className="font-display text-sm font-bold uppercase text-nirmaan-black mb-3">
-          INSTANT TOKEN LOOKUP / TEST PRESETS
-        </h3>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (manualToken.trim()) handleTokenScanned(manualToken);
-          }}
-          className="flex gap-2 mb-4"
+        {/* Camera Feed Target */}
+        <div
+          id="qr-reader"
+          className="w-full max-w-[290px] sm:max-w-xs rounded-2xl overflow-hidden bg-nirmaan-cream/40 border border-nirmaan-black/10 flex items-center justify-center min-h-[220px]"
         >
-          <input
-            type="text"
-            placeholder="Enter team QR token..."
-            value={manualToken}
-            onChange={(e) => setManualToken(e.target.value)}
-            className="flex-1 px-4 py-2.5 rounded-full border-2 border-nirmaan-black/20 focus:border-nirmaan-black outline-none font-mono text-xs"
-          />
-          <button
-            type="submit"
-            disabled={loading || !manualToken.trim()}
-            className="nirmaan-btn nirmaan-btn-dark text-xs px-5 py-2.5 font-bold"
-          >
-            {loading ? 'LOOKUP...' : 'SCAN'}
-          </button>
-        </form>
+          {!scanning && (
+            <div className="p-6 flex flex-col items-center justify-center text-nirmaan-black/40 space-y-2">
+              <Camera className="w-10 h-10 stroke-1 text-nirmaan-black/30" />
+              <p className="text-xs font-bold uppercase text-nirmaan-black/50">
+                Point Camera at Pass QR Code
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Scan Control Button */}
+        <div className="w-full pt-4">
+          {scanning ? (
+            <button
+              onClick={stopCamera}
+              className="nirmaan-btn nirmaan-btn-outline text-xs py-3 w-full font-bold shadow-xs cursor-pointer"
+            >
+              STOP CAMERA
+            </button>
+          ) : (
+            <button
+              onClick={startCamera}
+              disabled={loading}
+              className="nirmaan-btn nirmaan-btn-primary text-xs py-3.5 w-full font-black shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Camera className="w-4 h-4" />
+              <span>START CAMERA SCANNER</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Render Popups based on purpose and scanned team */}

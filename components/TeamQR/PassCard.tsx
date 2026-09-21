@@ -195,33 +195,33 @@ export default function PassCard({ team, members = [] }: PassCardProps) {
           </div>
         ) : (
           <>
-            {/* QR Code Presentation Box */}
-            <div className="bg-white p-6 rounded-2xl shadow-inner border border-nirmaan-black/10 flex flex-col items-center justify-center mb-6">
-              <div ref={qrRef} className="p-2 bg-white rounded-xl">
+            {/* Enhanced QR Code Presentation Box */}
+            <div className="bg-white p-6 sm:p-7 rounded-3xl shadow-sm border-2 border-nirmaan-black/10 flex flex-col items-center justify-center mb-6">
+              <div className="flex items-center gap-1.5 mb-4 text-[10px] font-black uppercase tracking-wider text-nirmaan-black/70 bg-nirmaan-cream px-3.5 py-1 rounded-full border border-nirmaan-black/10">
+                <span className="w-2 h-2 rounded-full bg-nirmaan-green-bright animate-pulse" />
+                <span>OFFICIAL DIGITAL PASS</span>
+              </div>
+
+              <div ref={qrRef} className="p-3 bg-white rounded-2xl border border-nirmaan-black/5 shadow-inner">
                 <QRCodeSVG
                   value={qrPayload}
-                  size={220}
+                  size={230}
                   level="H"
                   includeMargin={false}
-                  fgColor="#141414"
+                  fgColor="#111827"
                   bgColor="#FFFFFF"
                   imageSettings={{
                     src: NIRMAAN_QR_LOGO,
-                    height: 52,
-                    width: 52,
+                    height: 54,
+                    width: 54,
                     excavate: true,
                   }}
                 />
               </div>
 
-              <div className="mt-4 text-center">
-                <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-nirmaan-black/60">
-                  TOKEN ID
-                </p>
-                <p className="font-mono font-bold text-xs text-nirmaan-black bg-nirmaan-cream px-3 py-1 rounded-md mt-0.5 select-all">
-                  {team.qr_token}
-                </p>
-              </div>
+              <p className="text-[11px] font-bold text-nirmaan-black/50 mt-4 tracking-wide uppercase">
+                Scan for On-Desk Registration & Meals
+              </p>
             </div>
 
             {/* Mandatory Participant Instruction Banner */}
