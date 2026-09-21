@@ -238,31 +238,33 @@ export default function QRScanner() {
 
   return (
     <div className="w-full max-w-lg mx-auto space-y-3">
-      {/* Compact Quick-Switch Purpose Pills */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar justify-start sm:justify-center">
-        {purposes.map((p) => {
-          const Icon = p.icon;
-          const isSelected = purpose === p.key;
+      {/* Compact Quick-Switch Purpose Selector */}
+      <div className="w-full overflow-x-auto no-scrollbar py-1 px-1">
+        <div className="flex items-center justify-start sm:justify-center gap-2 min-w-max mx-auto px-1">
+          {purposes.map((p) => {
+            const Icon = p.icon;
+            const isSelected = purpose === p.key;
 
-          return (
-            <button
-              key={p.key}
-              type="button"
-              onClick={() => {
-                setPurpose(p.key);
-                setErrorMsg(null);
-              }}
-              className={`nirmaan-pill text-xs font-black py-1.5 px-3 transition-all flex items-center gap-1.5 flex-shrink-0 cursor-pointer shadow-xs ${
-                isSelected
-                  ? `${p.activeColor} ring-2 ring-nirmaan-black scale-102`
-                  : 'bg-white text-nirmaan-black/70 hover:bg-nirmaan-cream border border-nirmaan-black/15'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              <span>{p.label}</span>
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={p.key}
+                type="button"
+                onClick={() => {
+                  setPurpose(p.key);
+                  setErrorMsg(null);
+                }}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer ${
+                  isSelected
+                    ? `${p.activeColor} border-2 border-nirmaan-black shadow-sm scale-105`
+                    : 'bg-white text-nirmaan-black/75 hover:bg-nirmaan-cream border-2 border-nirmaan-black/15 shadow-xs'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>{p.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Success Notification */}

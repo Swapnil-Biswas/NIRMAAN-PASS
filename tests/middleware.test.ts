@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { middleware } from '@/middleware';
-import { updateSession } from '@/utils/supabase/middleware';
+import { updateSession } from '@/lib/supabase/middleware';
 
 describe('Middleware Invocation Resilience', () => {
   const originalEnv = { ...process.env };

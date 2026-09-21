@@ -3,9 +3,19 @@ import { processMealScan, processCoffeeScan, processRegistration, findTeamByToke
 import { sanitizeQRToken } from '@/lib/qr/token';
 import { ScanPurpose, MealType } from '@/types/database';
 import { verifyAdminSession } from '@/lib/auth/admin';
+import { checkRateLimit, getClientIp } from '@/lib/security/rateLimit';
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const rateLimit = checkRateLimit(`scan:${ip}`, 120, 60 * 1000); // 120 scans per minute
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { success: false, error_code: 'RATE_LIMITED', message: 'Scan rate limit exceeded. Please slow down.' },
+        { status: 429 }
+      );
+    }
+
     if (!verifyAdminSession(req)) {
       return NextResponse.json(
         { success: false, error_code: 'UNAUTHORIZED', message: 'Organizer authentication required' },

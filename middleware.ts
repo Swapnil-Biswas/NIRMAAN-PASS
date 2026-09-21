@@ -1,13 +1,23 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Next.js Routing Middleware
- * Clean pass-through ensuring zero edge runtime failures.
- * Participant and Admin authentication are securely handled by
- * server layout gates (AdminGate) and Route Handlers.
+ * Next.js Security & Routing Middleware
+ * Injects defense-in-depth security headers across all requests.
  */
 export function middleware(request: NextRequest) {
-  return NextResponse.next();
+  const response = NextResponse.next();
+
+  // Security Headers
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set(
+    'Permissions-Policy',
+    'camera=(self), microphone=(), geolocation=()'
+  );
+
+  return response;
 }
 
 export const config = {

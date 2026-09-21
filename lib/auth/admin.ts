@@ -26,7 +26,11 @@ export function getInactivityTimeoutMs(): number {
  * Returns a secure cryptographic secret for HMAC signing
  */
 function getSigningSecret(): string {
-  return process.env.ADMIN_SESSION_SECRET || getExpectedAdminCode() + '_secret_salt_2026';
+  return (
+    process.env.ADMIN_SESSION_SECRET ||
+    process.env.ADMIN_ACCESS_CODE ||
+    'nirmaan_pass_admin_session_secret_salt_2026'
+  );
 }
 
 export interface AdminSessionPayload {
@@ -112,21 +116,31 @@ export function verifyAdminSessionToken(token: string | undefined): boolean {
 }
 
 /**
+ * Helper to safely compare access codes in constant time
+ */
+export function safeCompareAdminCode(inputCode: string | undefined | null): boolean {
+  if (!inputCode || typeof inputCode !== 'string') return false;
+  const expected = getExpectedAdminCode();
+  const inputBuf = Buffer.from(inputCode);
+  const expectedBuf = Buffer.from(expected);
+  if (inputBuf.length !== expectedBuf.length) return false;
+  return timingSafeEqual(inputBuf, expectedBuf);
+}
+
+/**
  * Validate incoming request against admin session cookie or header
  */
 export function verifyAdminSession(req?: NextRequest): boolean {
-  const rawCode = getExpectedAdminCode();
-
   if (req) {
-    // 1. Direct header verification (for automated tests and server-to-server operations)
+    // 1. Direct header verification with constant-time comparison (for tests and authorized tools)
     const headerCode = req.headers.get('x-admin-code');
-    if (headerCode && headerCode === rawCode) {
+    if (headerCode && safeCompareAdminCode(headerCode)) {
       return true;
     }
 
     // 2. Cookie verification from request
     const cookie = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
-    if (cookie && (verifyAdminSessionToken(cookie) || cookie === rawCode)) {
+    if (cookie && verifyAdminSessionToken(cookie)) {
       return true;
     }
   }
@@ -135,7 +149,7 @@ export function verifyAdminSession(req?: NextRequest): boolean {
   try {
     const cookieStore = cookies();
     const cookie = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
-    if (cookie && (verifyAdminSessionToken(cookie) || cookie === rawCode)) {
+    if (cookie && verifyAdminSessionToken(cookie)) {
       return true;
     }
   } catch {}

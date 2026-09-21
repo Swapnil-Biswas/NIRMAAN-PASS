@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateTeamDetails, getAllTeams, findTeamById, findTeamByToken } from '@/lib/data/store';
+import { updateTeamDetails, getAllTeams, findTeamById } from '@/lib/data/store';
 import {
   isTrack,
   normalizeEmail,
@@ -9,36 +9,44 @@ import {
   detectTeamDuplicates,
   type RegistrationMemberInput,
 } from '@/lib/registration';
+import {
+  verifyTeamSessionToken,
+  createTeamSessionToken,
+  TEAM_COOKIE_NAME,
+  MAX_TEAM_SESSION_LIFETIME_MS,
+} from '@/lib/auth/session';
+import { checkRateLimit, getClientIp } from '@/lib/security/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const rateLimit = checkRateLimit(`team_update:${ip}`, 20, 60 * 1000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { success: false, message: 'Too many update requests. Please slow down.' },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const { teamId, token, teamName, college, track, leader, members } = body;
 
-    if (!teamId) {
+    if (!teamId || typeof teamId !== 'string') {
       return NextResponse.json(
-        { success: false, message: 'teamId is required' },
+        { success: false, message: 'Valid teamId is required' },
         { status: 400 }
       );
     }
 
-    // Verify team authentication either via session cookie or matching qr_token
+    // Verify authentication: Strict Session or Admin verification
     let authorized = false;
-    const sessionCookie = req.cookies.get('nirmaan_team_session')?.value;
+    const sessionCookie = req.cookies.get(TEAM_COOKIE_NAME)?.value;
     if (sessionCookie) {
-      try {
-        const parsed = JSON.parse(sessionCookie);
-        if (parsed.teamId === teamId || parsed.token === token) {
-          authorized = true;
-        }
-      } catch {}
-    }
-
-    if (!authorized && token) {
-      const teamByToken = await findTeamByToken(token);
-      if (teamByToken && teamByToken.id === teamId) {
+      const verified = verifyTeamSessionToken(sessionCookie);
+      // Strictly verify that authenticated session matches the target teamId
+      if (verified && verified.teamId === teamId) {
         authorized = true;
       }
     }
@@ -190,21 +198,23 @@ export async function POST(req: NextRequest) {
       members: result.members,
     });
 
-    // Update session cookie with updated name/email
+    // Update signed session cookie with updated name/email
     if (result.team) {
+      const signedToken = createTeamSessionToken({
+        teamId: result.team.id,
+        email: normalizedLeader.email,
+        token: result.team.qr_token,
+        team_name: result.team.team_name,
+      });
+
       response.cookies.set({
-        name: 'nirmaan_team_session',
-        value: JSON.stringify({
-          teamId: result.team.id,
-          email: normalizedLeader.email,
-          token: result.team.qr_token,
-          team_name: result.team.team_name,
-        }),
+        name: TEAM_COOKIE_NAME,
+        value: signedToken,
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
-        maxAge: 60 * 60 * 24 * 30,
+        maxAge: Math.floor(MAX_TEAM_SESSION_LIFETIME_MS / 1000),
       });
     }
 

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createTeamSessionToken, TEAM_COOKIE_NAME, MAX_TEAM_SESSION_LIFETIME_MS } from '@/lib/auth/session';
+import { checkRateLimit, getClientIp } from '@/lib/security/rateLimit';
 
 /**
  * POST /api/activate/link
@@ -6,9 +8,18 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const rateLimit = checkRateLimit(`activate_link:${ip}`, 10, 60 * 1000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { success: false, message: 'Too many requests. Please wait a minute and try again.' },
+        { status: 429 }
+      );
+    }
+
     const { email, auth_id } = await req.json();
 
-    if (!email || !auth_id) {
+    if (!email || !auth_id || typeof email !== 'string' || typeof auth_id !== 'string') {
       return NextResponse.json(
         { success: false, message: 'Email and auth_id are required.' },
         { status: 400 }
@@ -39,6 +50,20 @@ export async function POST(req: NextRequest) {
           .maybeSingle();
 
         if (member && !memberError) {
+          // Verify the team isn't already claimed by another auth_id
+          const { data: existingTeam } = await supabase
+            .from('teams')
+            .select('*')
+            .eq('id', member.team_id)
+            .maybeSingle();
+
+          if (existingTeam && existingTeam.auth_id && existingTeam.auth_id !== auth_id) {
+            return NextResponse.json(
+              { success: false, message: 'This team is already linked to another account. Please log in.' },
+              { status: 409 }
+            );
+          }
+
           // Update the team's auth_id in Supabase
           const { data: updatedTeam, error: updateError } = await supabase
             .from('teams')
@@ -55,16 +80,24 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Local/Mock Store link and fallback
-    const { getAllTeams } = await import('@/lib/data/store');
+    const { getAllTeams, findTeamById, updateTeamAuthId } = await import('@/lib/data/store');
     const allTeams = await getAllTeams();
     const mockTeam = allTeams.find((t) =>
       t.members.some((m) => m.email.toLowerCase() === cleanEmail)
     );
 
     if (mockTeam) {
+      const liveTeam = await findTeamById(mockTeam.id);
+      if (liveTeam && liveTeam.auth_id && liveTeam.auth_id !== auth_id) {
+        return NextResponse.json(
+          { success: false, message: 'This team is already linked to another account. Please log in.' },
+          { status: 409 }
+        );
+      }
+      await updateTeamAuthId(mockTeam.id, auth_id);
       mockTeam.auth_id = auth_id;
       if (!linkedTeam) {
-        linkedTeam = mockTeam;
+        linkedTeam = liveTeam ? { ...liveTeam, auth_id } : mockTeam;
       }
     }
 
@@ -75,6 +108,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const token = createTeamSessionToken({
+      teamId: linkedTeam.id,
+      email: cleanEmail,
+      token: linkedTeam.qr_token,
+      team_name: linkedTeam.team_name,
+    });
+
     const response = NextResponse.json({
       success: true,
       token: linkedTeam.qr_token,
@@ -82,20 +122,15 @@ export async function POST(req: NextRequest) {
       message: 'Team account activated and linked.',
     });
 
-    // Set team session cookie
+    // Set signed secure team session cookie
     response.cookies.set({
-      name: 'nirmaan_team_session',
-      value: JSON.stringify({
-        teamId: linkedTeam.id,
-        email: cleanEmail,
-        token: linkedTeam.qr_token,
-        team_name: linkedTeam.team_name,
-      }),
+      name: TEAM_COOKIE_NAME,
+      value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 2,
+      maxAge: Math.floor(MAX_TEAM_SESSION_LIFETIME_MS / 1000),
     });
 
     return response;

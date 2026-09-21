@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getExpectedAdminCode,
+  safeCompareAdminCode,
   createAdminSessionToken,
   verifyAdminSession,
   getInactivityTimeoutMs,
   ADMIN_COOKIE_NAME,
 } from '@/lib/auth/admin';
+import { checkRateLimit, getClientIp } from '@/lib/security/rateLimit';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -16,11 +18,19 @@ export const revalidate = 0;
  */
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const rateLimit = checkRateLimit(`admin_auth:${ip}`, 10, 60 * 1000); // 10 attempts per min
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { success: false, message: 'Too many authentication attempts. Please wait a minute and try again.' },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const { code } = body;
 
-    const expected = getExpectedAdminCode();
-    if (!code || typeof code !== 'string' || code.trim() !== expected) {
+    if (!code || typeof code !== 'string' || !safeCompareAdminCode(code.trim())) {
       return NextResponse.json(
         { success: false, message: 'Invalid Organizer Access Code. Access Denied.' },
         { status: 401 }

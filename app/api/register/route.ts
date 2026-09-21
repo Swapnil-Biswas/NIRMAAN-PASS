@@ -9,9 +9,20 @@ import {
   detectTeamDuplicates,
   type RegistrationMemberInput,
 } from '@/lib/registration';
+import { createTeamSessionToken, TEAM_COOKIE_NAME, MAX_TEAM_SESSION_LIFETIME_MS } from '@/lib/auth/session';
+import { checkRateLimit, getClientIp } from '@/lib/security/rateLimit';
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const rateLimit = checkRateLimit(`register:${ip}`, 10, 60 * 1000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { success: false, message: 'Too many registration attempts. Please wait a minute and try again.' },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const teamName = typeof body.teamName === 'string' ? body.teamName.trim() : '';
     const college = typeof body.college === 'string' ? body.college.trim() : '';
@@ -141,19 +152,21 @@ export async function POST(req: NextRequest) {
       message: 'Registration complete. Your team pass is ready.',
     });
 
+    const signedToken = createTeamSessionToken({
+      teamId: team.id,
+      email: normalizedLeader.email,
+      token: team.qr_token,
+      team_name: team.team_name,
+    });
+
     response.cookies.set({
-      name: 'nirmaan_team_session',
-      value: JSON.stringify({
-        teamId: team.id,
-        email: normalizedLeader.email,
-        token: team.qr_token,
-        team_name: team.team_name,
-      }),
+      name: TEAM_COOKIE_NAME,
+      value: signedToken,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge: Math.floor(MAX_TEAM_SESSION_LIFETIME_MS / 1000),
     });
 
     return response;

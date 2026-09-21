@@ -264,6 +264,28 @@ export async function findTeamById(teamId: string): Promise<Team | null> {
   return team ? { ...team } : null;
 }
 
+export async function updateTeamAuthId(teamId: string, authId: string): Promise<boolean> {
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { error } = await supabase
+        .from('teams')
+        .update({ auth_id: authId, updated_at: new Date().toISOString() })
+        .eq('id', teamId);
+      if (!error) return true;
+    } catch {}
+  }
+
+  const team = mockDb.teams.find((t) => t.id === teamId);
+  if (team) {
+    team.auth_id = authId;
+    team.updated_at = new Date().toISOString();
+    return true;
+  }
+  return false;
+}
+
 export async function getTeamMembers(teamId: string): Promise<Member[]> {
   if (hasSupabaseConfig()) {
     try {

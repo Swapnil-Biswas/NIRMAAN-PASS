@@ -42,8 +42,8 @@ export default function PassCard({ team, members = [] }: PassCardProps) {
         URL.revokeObjectURL(blobUrl);
         return;
       }
-      // White background with border
-      ctx.fillStyle = '#FFFFFF';
+      // Website background color (#F1EBDD)
+      ctx.fillStyle = '#F1EBDD';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 100, 100, 800, 800);
 
@@ -59,7 +59,7 @@ export default function PassCard({ team, members = [] }: PassCardProps) {
       };
 
       logoImg.onload = () => {
-        const logoSize = Math.round(800 * (52 / 220));
+        const logoSize = Math.round(800 * (66 / 240));
         const logoOffset = 500 - Math.round(logoSize / 2);
         ctx.drawImage(logoImg, logoOffset, logoOffset, logoSize, logoSize);
         saveFile();
@@ -76,7 +76,7 @@ export default function PassCard({ team, members = [] }: PassCardProps) {
   };
 
   const handleShare = async () => {
-    const shareText = `NIRMAAN 2026 Digital Pass for ${team.team_name}\nQR Token: ${team.qr_token}\nShow this QR at On-Desk Registration and all Food/Coffee counters.`;
+    const shareText = `NIRMAAN 2026 Digital Pass for ${team.team_name}\nShow this QR at On-Desk Registration and all Food/Coffee counters.`;
     
     if (navigator.share) {
       try {
@@ -99,7 +99,7 @@ export default function PassCard({ team, members = [] }: PassCardProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      alert('QR Token copied: ' + team.qr_token);
+      alert('QR Pass Link copied: ' + window.location.href);
     }
   };
 
@@ -196,30 +196,30 @@ export default function PassCard({ team, members = [] }: PassCardProps) {
         ) : (
           <>
             {/* Enhanced QR Code Presentation Box */}
-            <div className="bg-white p-6 sm:p-7 rounded-3xl shadow-sm border-2 border-nirmaan-black/10 flex flex-col items-center justify-center mb-6">
-              <div className="flex items-center gap-1.5 mb-4 text-[10px] font-black uppercase tracking-wider text-nirmaan-black/70 bg-nirmaan-cream px-3.5 py-1 rounded-full border border-nirmaan-black/10">
+            <div className="bg-nirmaan-cream p-6 sm:p-7 rounded-3xl shadow-sm border-2 border-nirmaan-black/15 flex flex-col items-center justify-center mb-6">
+              <div className="flex items-center gap-1.5 mb-4 text-[10px] font-black uppercase tracking-wider text-nirmaan-black/70 bg-white px-3.5 py-1 rounded-full border border-nirmaan-black/10 shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-nirmaan-green-bright animate-pulse" />
                 <span>OFFICIAL DIGITAL PASS</span>
               </div>
 
-              <div ref={qrRef} className="p-3 bg-white rounded-2xl border border-nirmaan-black/5 shadow-inner">
+              <div ref={qrRef} className="p-4 bg-nirmaan-cream rounded-2xl border-2 border-nirmaan-black/20 shadow-sm flex items-center justify-center">
                 <QRCodeSVG
                   value={qrPayload}
-                  size={230}
+                  size={240}
                   level="H"
                   includeMargin={false}
-                  fgColor="#111827"
-                  bgColor="#FFFFFF"
+                  fgColor="#141414"
+                  bgColor="#F1EBDD"
                   imageSettings={{
                     src: NIRMAAN_QR_LOGO,
-                    height: 54,
-                    width: 54,
+                    height: 66,
+                    width: 66,
                     excavate: true,
                   }}
                 />
               </div>
 
-              <p className="text-[11px] font-bold text-nirmaan-black/50 mt-4 tracking-wide uppercase">
+              <p className="text-[11px] font-bold text-nirmaan-black/60 mt-4 tracking-wide uppercase">
                 Scan for On-Desk Registration & Meals
               </p>
             </div>
