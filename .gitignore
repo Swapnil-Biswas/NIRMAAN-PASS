@@ -5,7 +5,10 @@ out
 *.tsbuildinfo
 
 # Environment secrets — never commit these
+.env
 .env.local
 .env.*.local
-.vercel
 .env*
+!.env.example
+.vercel
+
