@@ -34,7 +34,10 @@ module.exports = {
         'nirmaan': '0 8px 24px rgba(0,0,0,0.06)',
         'nirmaan-lg': '0 12px 32px rgba(0,0,0,0.08)',
         'nirmaan-solid': '4px 4px 0px #141414',
-      }
+      },
+      screens: {
+        'xs': '375px',
+      },
     },
   },
   plugins: [],

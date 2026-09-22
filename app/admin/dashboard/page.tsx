@@ -33,7 +33,7 @@ export default async function AdminDashboardPage() {
           </h1>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/admin/scanner"
             className="nirmaan-btn nirmaan-btn-primary text-xs py-2.5 px-4 font-black shadow-sm"

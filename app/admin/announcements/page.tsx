@@ -164,7 +164,7 @@ export default function AdminAnnouncementsPage() {
                         key={p.id}
                         type="button"
                         onClick={() => setPriority(p.id)}
-                        className={`nirmaan-pill py-2.5 justify-center text-[10px] font-black transition-all ${
+                        className={`nirmaan-pill py-2.5 justify-center text-[9px] sm:text-[10px] font-black transition-all ${
                           priority === p.id
                             ? `${p.color} ring-2 ring-nirmaan-black scale-102`
                             : 'bg-nirmaan-cream text-nirmaan-black opacity-70 border border-nirmaan-black/10'

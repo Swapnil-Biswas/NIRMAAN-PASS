@@ -76,8 +76,8 @@ export default function SocialsPage() {
               <ArrowLeft className="w-4 h-4" />
               BACK TO LOBBY
             </Link>
-            <h1 className="font-display text-4xl sm:text-5xl font-black uppercase text-nirmaan-black">
-              SOCIALS & COMMUNITIES
+            <h1 className="font-display text-2xl sm:text-5xl font-black uppercase text-nirmaan-black">
+              SOCIALS &amp; COMMUNITIES
             </h1>
             <p className="text-xs sm:text-sm font-semibold text-nirmaan-black/70 mt-1">
               Follow our organizing clubs & stay connected throughout NIRMAAN 2026

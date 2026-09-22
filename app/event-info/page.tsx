@@ -45,7 +45,7 @@ export default async function EventInfoPage() {
           <span className="nirmaan-pill bg-nirmaan-purple text-white text-xs mb-3 font-black">
             EVENT GUIDE & ESSENTIALS
           </span>
-          <h1 className="font-display text-4xl sm:text-5xl font-black uppercase text-nirmaan-black leading-tight">
+          <h1 className="font-display text-2xl sm:text-5xl font-black uppercase text-nirmaan-black leading-tight">
             NIRMAAN 2026 INFO
           </h1>
           <p className="text-sm sm:text-base font-semibold text-nirmaan-black/75 mt-2">

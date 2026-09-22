@@ -6,7 +6,7 @@ export default function Footer() {
   return (
     <footer className="w-full bg-nirmaan-black text-white py-6 border-t border-nirmaan-black mt-auto no-print">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
-        <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-2">
             <Link href="/" className="font-display text-lg font-black tracking-tight hover:text-nirmaan-amber transition-colors">
               nirmaan<span className="text-nirmaan-red">.</span>
@@ -34,7 +34,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 font-bold text-white/80">
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 font-bold text-white/80">
           <Link href="/pass" className="hover:text-nirmaan-amber transition-colors">
             My Pass
           </Link>
@@ -46,7 +46,7 @@ export default function Footer() {
           </Link>
 
           {/* Socials with Instagram and LinkedIn icons attached */}
-          <div className="flex items-center gap-2 pl-2 sm:border-l sm:border-white/20">
+          <div className="flex items-center gap-2 sm:pl-2 sm:border-l sm:border-white/20">
             <Link
               href="/socials"
               className="hover:text-nirmaan-amber transition-colors flex items-center gap-1.5"

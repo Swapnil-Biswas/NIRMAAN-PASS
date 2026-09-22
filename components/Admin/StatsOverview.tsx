@@ -97,7 +97,7 @@ export default function StatsOverview({ stats }: StatsOverviewProps) {
             </div>
 
             <div className="my-1">
-              <span className="font-display text-3xl sm:text-4xl font-black">
+              <span className="font-display text-2xl sm:text-4xl font-black">
                 {card.value}
               </span>
             </div>

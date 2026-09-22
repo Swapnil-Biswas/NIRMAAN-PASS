@@ -245,46 +245,44 @@ export default function RegisterPage() {
           <Link href="/" className="inline-flex items-center gap-2 nirmaan-pill bg-nirmaan-black text-white text-[10px] font-black">
             <Zap className="w-3 h-3 text-nirmaan-amber" /> NIRMAAN 2026
           </Link>
-          <h1 className="font-display text-3xl sm:text-4xl font-black uppercase tracking-tight text-nirmaan-black">
+          <h1 className="font-display text-2xl sm:text-4xl font-black uppercase tracking-tight text-nirmaan-black">
             REGISTER YOUR TEAM
           </h1>
           <p className="text-xs sm:text-sm font-semibold text-nirmaan-black/65 max-w-md mx-auto">
             Complete the 2-step registration to generate your official NIRMAAN 2026 Digital QR Pass.
           </p>
         </div>
-
-
         {/* 2-Step Progress Indicator */}
         <div className="flex items-center justify-between gap-2 max-w-md mx-auto px-2">
           {/* Step 1 Pill */}
           <div
             onClick={() => setCurrentStep(1)}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-full text-xs font-black uppercase transition-all cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 sm:px-3 rounded-full text-[11px] sm:text-xs font-black uppercase transition-all cursor-pointer ${
               currentStep === 1
                 ? 'bg-nirmaan-black text-white shadow-sm ring-2 ring-nirmaan-amber'
                 : 'bg-white text-nirmaan-black/70 border border-nirmaan-black/15'
             }`}
           >
-            <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px]">
+            <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] flex-shrink-0">
               1
             </span>
-            <span>Account Details</span>
+            <span className="truncate">Account</span>
           </div>
 
-          <div className="h-0.5 w-6 bg-nirmaan-black/20" />
+          <div className="h-0.5 w-4 sm:w-6 bg-nirmaan-black/20 flex-shrink-0" />
 
           {/* Step 2 Pill */}
           <div
-            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-full text-xs font-black uppercase transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 sm:px-3 rounded-full text-[11px] sm:text-xs font-black uppercase transition-all ${
               currentStep === 2
                 ? 'bg-nirmaan-black text-white shadow-sm ring-2 ring-nirmaan-amber'
                 : 'bg-white/60 text-nirmaan-black/40 border border-nirmaan-black/10'
             }`}
           >
-            <span className="w-5 h-5 rounded-full bg-nirmaan-black/10 flex items-center justify-center text-[10px]">
+            <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-nirmaan-black/10 flex items-center justify-center text-[10px] flex-shrink-0">
               2
             </span>
-            <span>Team & Track</span>
+            <span className="truncate">Team &amp; Track</span>
           </div>
         </div>
 

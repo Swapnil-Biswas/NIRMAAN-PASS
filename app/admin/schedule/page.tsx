@@ -258,8 +258,8 @@ export default function AdminSchedulePage() {
             BACK TO ADMIN DASHBOARD
           </Link>
           <div className="flex items-center gap-2">
-            <h1 className="font-display text-3xl font-black uppercase text-nirmaan-black">
-              SCHEDULE & TIMELINE
+            <h1 className="font-display text-2xl sm:text-3xl font-black uppercase text-nirmaan-black">
+              SCHEDULE &amp; TIMELINE
             </h1>
             <span className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black text-xs font-black">
               DYNAMIC
@@ -270,7 +270,7 @@ export default function AdminSchedulePage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={openAddModal}
             className="nirmaan-btn nirmaan-btn-primary text-xs py-2.5 px-4 font-black shadow-sm flex-1 sm:flex-none"
@@ -347,12 +347,12 @@ export default function AdminSchedulePage() {
             {schedule.map((item, idx) => (
               <div
                 key={item.id}
-                className="p-3.5 rounded-2xl bg-nirmaan-cream/40 border border-nirmaan-black/10 flex flex-col md:flex-row md:items-center justify-between gap-3 group transition-all hover:bg-nirmaan-cream/70 hover:border-nirmaan-black/25"
+                className="p-3 sm:p-3.5 rounded-2xl bg-nirmaan-cream/40 border border-nirmaan-black/10 flex items-center justify-between gap-2 group transition-all hover:bg-nirmaan-cream/70 hover:border-nirmaan-black/25"
               >
                 {/* Left info */}
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                   {/* Reorder Buttons */}
-                  <div className="flex flex-col gap-0.5">
+                  <div className="flex flex-col gap-0.5 flex-shrink-0">
                     <button
                       onClick={() => handleMove(idx, 'up')}
                       disabled={idx === 0 || actionLoading}
@@ -371,38 +371,38 @@ export default function AdminSchedulePage() {
                     </button>
                   </div>
 
-                  <span className="font-mono text-xs font-black text-nirmaan-black bg-white px-2.5 py-1 rounded-lg border border-nirmaan-black/10 shadow-xs flex-shrink-0">
+                  <span className="font-mono text-[11px] sm:text-xs font-black text-nirmaan-black bg-white px-2 py-1 rounded-lg border border-nirmaan-black/10 shadow-xs flex-shrink-0 whitespace-nowrap">
                     {item.time}
                   </span>
 
                   <div className="min-w-0">
-                    <p className="font-bold text-xs sm:text-sm text-nirmaan-black truncate">
+                    <p className="font-bold text-xs text-nirmaan-black line-clamp-2 sm:truncate">
                       {item.title}
                     </p>
                   </div>
                 </div>
 
-                {/* Right badge & actions */}
-                <div className="flex items-center justify-between md:justify-end gap-3 flex-shrink-0">
+                {/* Right badge &amp; actions */}
+                <div className="flex items-center gap-1.5 flex-shrink-0">
                   <span
                     className={`nirmaan-pill ${item.color} ${
                       item.text_color ||
                       (item.color.includes('amber') || item.color.includes('green-bright')
                         ? 'text-nirmaan-black'
                         : 'text-white')
-                    } text-[10px] font-black shadow-2xs`}
+                    } text-[9px] sm:text-[10px] font-black shadow-2xs hidden xs:inline-flex`}
                   >
                     {item.tag}
                   </span>
 
-                  <div className="flex items-center gap-1.5 border-l border-nirmaan-black/10 pl-2">
+                  <div className="flex items-center gap-1 border-l border-nirmaan-black/10 pl-1.5">
                     <button
                       onClick={() => openEditModal(item)}
                       disabled={actionLoading}
                       className="p-1.5 rounded-lg text-nirmaan-black/70 hover:text-nirmaan-blue hover:bg-white transition-all"
                       title="Edit item"
                     >
-                      <Pencil className="w-4 h-4" />
+                      <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(item.id, item.title)}
@@ -410,7 +410,7 @@ export default function AdminSchedulePage() {
                       className="p-1.5 rounded-lg text-nirmaan-black/70 hover:text-nirmaan-red hover:bg-white transition-all"
                       title="Delete item"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>

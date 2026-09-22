@@ -85,7 +85,7 @@ export default async function PassPage({ searchParams }: PassPageProps) {
         {/* Pass Section (Centered) */}
         <div className="max-w-xl mx-auto">
           {/* Top Header Controls */}
-          <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 mb-6">
             <Link
               href="/dashboard"
               className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-nirmaan-black/70 hover:text-nirmaan-black transition-colors"
@@ -96,7 +96,7 @@ export default async function PassPage({ searchParams }: PassPageProps) {
 
             <div className="flex items-center gap-2">
               <LiveRefresh intervalMs={5000} />
-              <span className="nirmaan-pill bg-white text-nirmaan-black border border-nirmaan-black/15 text-[11px] font-bold">
+              <span className="nirmaan-pill bg-white text-nirmaan-black border border-nirmaan-black/15 text-[11px] font-bold max-w-[140px] truncate">
                 {team.team_name}
               </span>
             </div>

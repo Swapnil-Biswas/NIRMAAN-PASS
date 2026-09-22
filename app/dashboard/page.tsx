@@ -100,7 +100,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 </span>
               )}
             </div>
-            <h1 className="font-display text-3xl sm:text-4xl font-black uppercase text-nirmaan-black">
+            <h1 className="font-display text-2xl sm:text-4xl font-black uppercase text-nirmaan-black break-words">
               {team.team_name}
             </h1>
             <p className="text-xs sm:text-sm font-semibold text-nirmaan-black/70">
@@ -111,7 +111,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             <LiveRefresh intervalMs={5000} />
             <EditTeamModal team={team} members={members} />
             <Link

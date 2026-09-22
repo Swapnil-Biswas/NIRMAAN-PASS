@@ -31,7 +31,7 @@ export default async function HomePage() {
             NIRMAAN 2026
           </div>
 
-          <h1 className="font-display text-3xl sm:text-5xl font-black uppercase text-nirmaan-black tracking-tight">
+          <h1 className="font-display text-2xl sm:text-5xl font-black uppercase text-nirmaan-black tracking-tight">
             PARTICIPANT PASS PORTAL
           </h1>
 
@@ -40,7 +40,7 @@ export default async function HomePage() {
           </p>
 
           {/* Quick Actions */}
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 pt-2">
             <Link
               href="/pass"
               className="nirmaan-btn nirmaan-btn-primary text-xs px-6 py-3 font-bold shadow-sm"
