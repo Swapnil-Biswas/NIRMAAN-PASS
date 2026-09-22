@@ -149,8 +149,9 @@ export default function MealServeModal({
                 'RECORDING...'
               ) : (
                 <>
-                  <CheckCircle2 className="w-4 h-4" />
-                  SERVE {theme.name} (+1)
+                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                  <span className="sm:hidden">SERVE (+1)</span>
+                  <span className="hidden sm:inline">SERVE {theme.name} (+1)</span>
                 </>
               )}
             </button>

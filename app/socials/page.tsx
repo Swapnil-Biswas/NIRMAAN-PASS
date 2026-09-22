@@ -129,23 +129,23 @@ export default function SocialsPage() {
                         rel="noopener noreferrer"
                         className="group flex items-center justify-between p-3.5 rounded-2xl bg-nirmaan-cream/40 hover:bg-nirmaan-cream border border-nirmaan-black/10 hover:border-nirmaan-black transition-all duration-150 hover:shadow-xs"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
                           <span
-                            className={`flex h-10 w-10 items-center justify-center rounded-xl bg-nirmaan-black text-white ${link.hoverColor} transition-colors shadow-xs`}
+                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-nirmaan-black text-white ${link.hoverColor} transition-colors shadow-xs`}
                           >
                             <Icon className="w-4 h-4" />
                           </span>
-                          <div>
-                            <span className="font-display text-sm uppercase font-black text-nirmaan-black block">
+                          <div className="min-w-0 flex-1">
+                            <span className="font-display text-sm uppercase font-black text-nirmaan-black block truncate">
                               {link.title}
                             </span>
-                            <span className="text-[11px] font-semibold text-nirmaan-black/50">
+                            <span className="text-[11px] font-semibold text-nirmaan-black/50 block truncate">
                               {link.handle}
                             </span>
                           </div>
                         </div>
 
-                        <ExternalLink className="w-4 h-4 text-nirmaan-black/30 group-hover:text-nirmaan-black transition-colors" />
+                        <ExternalLink className="w-4 h-4 text-nirmaan-black/30 group-hover:text-nirmaan-black transition-colors shrink-0 ml-2" />
                       </a>
                     );
                   })}

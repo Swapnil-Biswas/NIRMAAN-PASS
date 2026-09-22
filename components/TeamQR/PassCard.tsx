@@ -210,7 +210,7 @@ export default function PassCard({ team, members = [] }: PassCardProps) {
                   includeMargin={false}
                   fgColor="#141414"
                   bgColor="#F1EBDD"
-                  className="w-[190px] h-[190px] sm:w-[240px] sm:h-[240px] max-w-full"
+                  className="w-[170px] h-[170px] xs:w-[200px] xs:h-[200px] sm:w-[240px] sm:h-[240px] max-w-full"
                   imageSettings={{
                     src: NIRMAAN_QR_LOGO,
                     height: 52,

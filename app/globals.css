@@ -25,14 +25,15 @@
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
+html,
 body {
+  max-width: 100%;
+  overflow-x: hidden;
   background-color: var(--nirmaan-cream);
   color: var(--nirmaan-black);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Prevent horizontal scroll on mobile */
-  overflow-x: hidden;
 }
 
 /* Prevent iOS Safari input zoom (needs 16px equivalent) */

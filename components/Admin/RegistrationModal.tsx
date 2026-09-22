@@ -115,11 +115,11 @@ export default function RegistrationModal({
                       : 'bg-nirmaan-cream/50 border-nirmaan-black/10 opacity-70'
                   }`}
                 >
-                  <div>
-                    <p className="font-bold text-sm text-nirmaan-black">
+                  <div className="min-w-0 flex-1 mr-2">
+                    <p className="font-bold text-sm text-nirmaan-black truncate">
                       {member.name}
                     </p>
-                    <p className="text-xs text-nirmaan-black/60">
+                    <p className="text-xs text-nirmaan-black/60 truncate">
                       {member.phone} • {member.email}
                     </p>
                   </div>

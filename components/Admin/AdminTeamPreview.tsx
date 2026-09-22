@@ -155,29 +155,31 @@ export default function AdminTeamPreview({
       ) : (
         <div className="space-y-6">
           {/* View Tab Selector: Digital Pass vs Team Dashboard */}
-          <div className="flex items-center justify-center sm:justify-start gap-2 border-b border-nirmaan-black/10 pb-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-2 border-b border-nirmaan-black/10 pb-4">
             <button
               onClick={() => setActiveTab('pass')}
-              className={`nirmaan-pill text-xs font-bold transition-all py-2.5 px-5 flex items-center gap-2 ${
+              className={`nirmaan-pill text-xs font-bold transition-all py-2.5 px-4 sm:px-5 flex items-center justify-center gap-2 ${
                 activeTab === 'pass'
                   ? 'bg-nirmaan-blue text-white shadow-md'
                   : 'bg-white text-nirmaan-black/70 hover:bg-nirmaan-cream border border-nirmaan-black/10'
               }`}
             >
               <QrCode className="w-3.5 h-3.5" />
-              <span>DIGITAL PASS VIEW (/pass)</span>
+              <span className="sm:hidden">DIGITAL PASS</span>
+              <span className="hidden sm:inline">DIGITAL PASS VIEW (/pass)</span>
             </button>
 
             <button
               onClick={() => setActiveTab('dashboard')}
-              className={`nirmaan-pill text-xs font-bold transition-all py-2.5 px-5 flex items-center gap-2 ${
+              className={`nirmaan-pill text-xs font-bold transition-all py-2.5 px-4 sm:px-5 flex items-center justify-center gap-2 ${
                 activeTab === 'dashboard'
                   ? 'bg-nirmaan-amber text-nirmaan-black shadow-md'
                   : 'bg-white text-nirmaan-black/70 hover:bg-nirmaan-cream border border-nirmaan-black/10'
               }`}
             >
               <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>DASHBOARD VIEW (/dashboard)</span>
+              <span className="sm:hidden">DASHBOARD</span>
+              <span className="hidden sm:inline">DASHBOARD VIEW (/dashboard)</span>
             </button>
           </div>
 
@@ -188,13 +190,13 @@ export default function AdminTeamPreview({
               <PassCard team={currentTeam} members={currentTeam.members} />
 
               {/* Team Members Attendance Card */}
-              <div className="nirmaan-card p-6 bg-white border border-nirmaan-black/15">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-display text-sm font-black uppercase text-nirmaan-black flex items-center gap-2">
+              <div className="nirmaan-card p-4 sm:p-6 bg-white border border-nirmaan-black/15">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                  <h3 className="font-display text-xs sm:text-sm font-black uppercase text-nirmaan-black flex items-center gap-1.5 sm:gap-2">
                     <Users className="w-4 h-4 text-nirmaan-blue" />
-                    TEAM ROSTER & ATTENDANCE
+                    TEAM ROSTER &amp; ATTENDANCE
                   </h3>
-                  <span className="text-xs font-bold uppercase text-nirmaan-black/70 bg-nirmaan-cream px-2.5 py-1 rounded-full">
+                  <span className="text-[10px] sm:text-xs font-bold uppercase text-nirmaan-black/70 bg-nirmaan-cream px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full whitespace-nowrap">
                     {currentTeam.present_count} / {currentTeam.members.length} PRESENT
                   </span>
                 </div>
@@ -205,16 +207,16 @@ export default function AdminTeamPreview({
                       key={member.id}
                       className="p-3 rounded-xl bg-nirmaan-cream/40 border border-nirmaan-black/10 flex items-center justify-between"
                     >
-                      <div>
-                        <p className="font-bold text-xs text-nirmaan-black">{member.name}</p>
-                        <p className="text-[11px] text-nirmaan-black/60">{member.email}</p>
+                      <div className="min-w-0 flex-1 mr-2">
+                        <p className="font-bold text-xs text-nirmaan-black truncate">{member.name}</p>
+                        <p className="text-[11px] text-nirmaan-black/60 truncate">{member.email}</p>
                       </div>
                       {member.present ? (
-                        <span className="nirmaan-pill bg-nirmaan-green-bright text-nirmaan-black text-[10px] font-black">
+                        <span className="nirmaan-pill bg-nirmaan-green-bright text-nirmaan-black text-[10px] font-black shrink-0">
                           PRESENT
                         </span>
                       ) : (
-                        <span className="nirmaan-pill bg-nirmaan-black/10 text-nirmaan-black/60 text-[10px] font-bold">
+                        <span className="nirmaan-pill bg-nirmaan-black/10 text-nirmaan-black/60 text-[10px] font-bold shrink-0">
                           ABSENT
                         </span>
                       )}

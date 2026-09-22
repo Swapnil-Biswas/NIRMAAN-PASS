@@ -709,7 +709,7 @@ export default function RegisterPage() {
       {/* ================= REGISTRATION SUCCESS & APPROVAL MODAL ================= */}
       {showApprovalModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-nirmaan-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="nirmaan-card max-w-lg w-full bg-white border-2 border-nirmaan-black shadow-2xl p-6 sm:p-8 space-y-6 animate-in zoom-in-95 duration-200 text-center">
+          <div className="nirmaan-card max-w-lg w-full bg-white border-2 border-nirmaan-black shadow-2xl p-4 sm:p-8 space-y-5 sm:space-y-6 animate-in zoom-in-95 duration-200 text-center max-h-[92vh] overflow-y-auto">
             {/* Celebration Emblem */}
             <div className="w-16 h-16 rounded-full bg-nirmaan-green-bright border-2 border-nirmaan-black flex items-center justify-center mx-auto shadow-md">
               <Sparkles className="w-8 h-8 text-nirmaan-black" />

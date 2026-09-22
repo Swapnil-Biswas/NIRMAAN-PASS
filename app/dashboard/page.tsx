@@ -45,7 +45,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       <div className="min-h-screen bg-nirmaan-cream flex flex-col">
         <Navbar />
         <main className="flex-1 flex items-center justify-center p-4">
-          <div className="nirmaan-card p-8 text-center max-w-md w-full bg-white border border-nirmaan-black shadow-sm space-y-6">
+          <div className="nirmaan-card p-4 sm:p-8 text-center max-w-md w-full bg-white border border-nirmaan-black shadow-sm space-y-6">
             <div className="w-12 h-12 rounded-full bg-nirmaan-blue/20 flex items-center justify-center mx-auto text-nirmaan-blue">
               <LayoutDashboard className="w-6 h-6" />
             </div>
@@ -194,17 +194,17 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                     key={member.id}
                     className="p-3 rounded-xl bg-nirmaan-cream/40 border border-nirmaan-black/10 flex items-center justify-between"
                   >
-                    <div>
-                      <p className="font-bold text-xs text-nirmaan-black">{member.name}</p>
-                      <p className="text-[11px] text-nirmaan-black/60">{member.phone || 'Phone registered'}</p>
-                      <p className="text-[10px] text-nirmaan-black/40">{member.email}</p>
+                    <div className="min-w-0 flex-1 mr-2">
+                      <p className="font-bold text-xs text-nirmaan-black truncate">{member.name}</p>
+                      <p className="text-[11px] text-nirmaan-black/60 truncate">{member.phone || 'Phone registered'}</p>
+                      <p className="text-[10px] text-nirmaan-black/40 truncate">{member.email}</p>
                     </div>
                     {member.present ? (
-                      <span className="nirmaan-pill bg-nirmaan-green-bright text-nirmaan-black text-[10px] font-black">
+                      <span className="nirmaan-pill bg-nirmaan-green-bright text-nirmaan-black text-[10px] font-black shrink-0">
                         PRESENT
                       </span>
                     ) : (
-                      <span className="nirmaan-pill bg-nirmaan-black/10 text-nirmaan-black/60 text-[10px] font-bold">
+                      <span className="nirmaan-pill bg-nirmaan-black/10 text-nirmaan-black/60 text-[10px] font-bold shrink-0">
                         ABSENT
                       </span>
                     )}

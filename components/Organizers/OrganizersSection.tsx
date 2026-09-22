@@ -71,7 +71,7 @@ export default function OrganizersSection() {
   return (
     <div className="w-full">
       {/* Section Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="nirmaan-pill bg-nirmaan-black text-white text-[10px] font-black">
@@ -85,7 +85,7 @@ export default function OrganizersSection() {
         </div>
         <Link
           href="/socials"
-          className="text-xs font-bold text-nirmaan-black/70 hover:text-nirmaan-black inline-flex items-center gap-1 transition-colors"
+          className="text-xs font-bold text-nirmaan-black/70 hover:text-nirmaan-black inline-flex items-center gap-1 transition-colors self-start sm:self-auto"
         >
           <span>Connect with clubs</span>
           <ExternalLink className="w-3.5 h-3.5" />
@@ -129,26 +129,37 @@ export default function OrganizersSection() {
             </div>
 
             {/* Social Channels */}
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-4 sm:pt-5 mt-4 sm:mt-5 border-t border-nirmaan-black/10">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-4 sm:pt-5 mt-4 sm:mt-5 border-t border-nirmaan-black/10">
               <span className="text-[10px] sm:text-[11px] font-bold uppercase text-nirmaan-black/50 shrink-0">
                 Socials:
               </span>
-              {club.links.map((link, lIdx) => {
-                const Icon = link.icon;
-                return (
-                  <a
-                    key={lIdx}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-nirmaan-cream border border-nirmaan-black/10 hover:border-nirmaan-black text-nirmaan-black text-[11px] sm:text-xs font-bold transition-all hover:scale-105 whitespace-nowrap"
-                    title={link.title}
-                  >
-                    <Icon className="w-3 sm:w-3.5 h-3 sm:h-3.5 flex-shrink-0" />
-                    <span>{link.title}</span>
-                  </a>
-                );
-              })}
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                {club.links.map((link, lIdx) => {
+                  const Icon = link.icon;
+                  return (
+                    <a
+                      key={lIdx}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-nirmaan-cream border border-nirmaan-black/10 hover:border-nirmaan-black text-nirmaan-black text-[11px] sm:text-xs font-bold transition-all hover:scale-105 whitespace-nowrap"
+                      title={link.title}
+                    >
+                      <Icon className="w-3 sm:w-3.5 h-3 sm:h-3.5 flex-shrink-0" />
+                      <span>
+                        {link.title === 'WhatsApp Hub' ? (
+                          <>
+                            <span className="sm:hidden">WhatsApp</span>
+                            <span className="hidden sm:inline">WhatsApp Hub</span>
+                          </>
+                        ) : (
+                          link.title
+                        )}
+                      </span>
+                    </a>
+                  );
+                })}
+              </div>
             </div>
           </div>
         ))}
