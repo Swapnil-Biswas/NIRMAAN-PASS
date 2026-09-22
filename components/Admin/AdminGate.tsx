@@ -58,7 +58,7 @@ export default function AdminGate({ onUnlocked }: AdminGateProps) {
   return (
     <div className="min-h-screen bg-nirmaan-cream flex flex-col justify-center items-center p-4 sm:p-6">
       <div className="w-full max-w-md">
-        <div className="nirmaan-card p-8 bg-white border-2 border-nirmaan-black shadow-lg space-y-6">
+        <div className="nirmaan-card p-5 sm:p-8 bg-white border-2 border-nirmaan-black shadow-lg space-y-6">
           {/* Header */}
           <div className="text-center space-y-2">
             <div className="w-12 h-12 rounded-2xl bg-nirmaan-black text-white flex items-center justify-center mx-auto mb-3 shadow-sm">
@@ -70,7 +70,7 @@ export default function AdminGate({ onUnlocked }: AdminGateProps) {
               RESTRICTED ACCESS
             </div>
 
-            <h1 className="font-display text-2xl sm:text-3xl font-black uppercase text-nirmaan-black tracking-tight">
+            <h1 className="font-display text-xl sm:text-3xl font-black uppercase text-nirmaan-black tracking-tight">
               ORGANIZER CONSOLE
             </h1>
 

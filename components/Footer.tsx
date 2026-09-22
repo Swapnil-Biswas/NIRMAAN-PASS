@@ -14,27 +14,27 @@ export default function Footer() {
             <span className="text-white/60 font-medium">© 2026 NIRMAAN Hackathon.</span>
           </div>
 
-          <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] text-white/70">
+          <div className="flex flex-wrap justify-center items-center gap-1.5 sm:gap-2 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] sm:text-[11px] text-white/70 text-center">
             <span>Organized by</span>
             <div className="flex items-center gap-1.5 font-bold text-white">
               <img
                 src="/organizers/coding-club.png"
                 alt="Coding Club BMSIT"
-                className="w-4 h-4 rounded-full object-cover bg-black"
+                className="w-4 h-4 rounded-full object-cover bg-black flex-shrink-0"
               />
               <span className="hover:text-nirmaan-amber transition-colors">Coding Club</span>
-              <span>&</span>
+              <span>&amp;</span>
               <img
                 src="/organizers/alterino.jpg"
                 alt="Alterino BMSIT"
-                className="w-4 h-4 rounded-full object-cover bg-black"
+                className="w-4 h-4 rounded-full object-cover bg-black flex-shrink-0"
               />
               <span className="hover:text-nirmaan-orange transition-colors">Alterino</span>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 font-bold text-white/80">
+        <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-6 font-bold text-white/80">
           <Link href="/pass" className="hover:text-nirmaan-amber transition-colors">
             My Pass
           </Link>
@@ -46,7 +46,7 @@ export default function Footer() {
           </Link>
 
           {/* Socials with Instagram and LinkedIn icons attached */}
-          <div className="flex items-center gap-2 sm:pl-2 sm:border-l sm:border-white/20">
+          <div className="flex items-center gap-1.5 sm:gap-2 sm:pl-2 sm:border-l sm:border-white/20">
             <Link
               href="/socials"
               className="hover:text-nirmaan-amber transition-colors flex items-center gap-1.5"

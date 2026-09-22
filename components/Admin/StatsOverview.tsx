@@ -86,14 +86,14 @@ export default function StatsOverview({ stats }: StatsOverviewProps) {
         return (
           <div
             key={idx}
-            className={`nirmaan-card p-4 sm:p-5 flex flex-col justify-between ${card.bg} ${card.textColor} ${card.border ? 'border border-nirmaan-black/10' : 'shadow-md'
+            className={`nirmaan-card p-3 sm:p-5 flex flex-col justify-between ${card.bg} ${card.textColor} ${card.border ? 'border border-nirmaan-black/10' : 'shadow-md'
               }`}
           >
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <span className="text-[11px] font-display font-black tracking-wider uppercase opacity-80">
+            <div className="flex items-center justify-between gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+              <span className="text-[10px] sm:text-[11px] font-display font-black tracking-wider uppercase opacity-80">
                 {card.title}
               </span>
-              <Icon className="w-4 h-4 opacity-75" />
+              <Icon className="w-3.5 sm:w-4 h-3.5 sm:h-4 opacity-75 flex-shrink-0" />
             </div>
 
             <div className="my-1">
@@ -102,7 +102,7 @@ export default function StatsOverview({ stats }: StatsOverviewProps) {
               </span>
             </div>
 
-            <p className="text-[11px] font-medium opacity-75 mt-1">
+            <p className="text-[10px] sm:text-[11px] font-medium opacity-75 mt-0.5 sm:mt-1">
               {card.subtitle}
             </p>
           </div>

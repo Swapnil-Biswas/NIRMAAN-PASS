@@ -309,15 +309,15 @@ export default function AdminSchedulePage() {
       )}
 
       {/* Main Content Card */}
-      <div className="nirmaan-card p-6 sm:p-8 bg-white border-2 border-nirmaan-black shadow-sm">
-        <div className="flex items-center justify-between mb-6 pb-4 border-b border-nirmaan-black/10">
+      <div className="nirmaan-card p-4 sm:p-8 bg-white border-2 border-nirmaan-black shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-nirmaan-black/10">
           <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-nirmaan-orange" />
-            <h2 className="font-display text-lg font-black uppercase text-nirmaan-black">
+            <Calendar className="w-5 h-5 text-nirmaan-orange flex-shrink-0" />
+            <h2 className="font-display text-sm sm:text-lg font-black uppercase text-nirmaan-black">
               TIMELINE SEQUENCE ({schedule.length} EVENTS)
             </h2>
           </div>
-          <span className="text-xs font-bold text-nirmaan-black/50 uppercase tracking-wider">
+          <span className="text-[10px] sm:text-xs font-bold text-nirmaan-black/50 uppercase tracking-wider">
             25-HOUR RUNTIME
           </span>
         </div>
@@ -422,8 +422,8 @@ export default function AdminSchedulePage() {
 
       {/* Add / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-nirmaan-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="nirmaan-card p-6 sm:p-8 bg-white border-2 border-nirmaan-black shadow-2xl max-w-lg w-full space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-nirmaan-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="nirmaan-card p-4 sm:p-8 bg-white border-2 border-nirmaan-black shadow-2xl max-w-lg w-full space-y-4 sm:space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-nirmaan-black/10">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-nirmaan-orange" />

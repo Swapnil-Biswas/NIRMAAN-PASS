@@ -39,15 +39,15 @@ export default function TimelineSection({ initialSchedule }: TimelineSectionProp
   }, []);
 
   return (
-    <div className="nirmaan-card p-6 sm:p-8 bg-white border border-nirmaan-black/15 shadow-sm">
-      <div className="flex items-center justify-between mb-6 pb-4 border-b border-nirmaan-black/10">
+    <div className="nirmaan-card p-4 sm:p-8 bg-white border border-nirmaan-black/15 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-nirmaan-black/10">
         <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-nirmaan-orange" />
-          <h2 className="font-display text-xl font-black uppercase text-nirmaan-black">
-            EVENT TIMELINE & SCHEDULE
+          <Calendar className="w-5 h-5 text-nirmaan-orange flex-shrink-0" />
+          <h2 className="font-display text-sm sm:text-xl font-black uppercase text-nirmaan-black">
+            EVENT TIMELINE &amp; SCHEDULE
           </h2>
         </div>
-        <span className="text-xs font-black text-nirmaan-black/75 uppercase tracking-wider">
+        <span className="text-[10px] sm:text-xs font-black text-nirmaan-black/75 uppercase tracking-wider">
           25-HOUR RUNTIME
         </span>
       </div>

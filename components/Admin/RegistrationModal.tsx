@@ -44,15 +44,15 @@ export default function RegistrationModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-nirmaan-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-nirmaan-cream-card rounded-card-lg border-2 border-nirmaan-black max-w-lg w-full p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 bg-nirmaan-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-nirmaan-cream-card rounded-2xl border-2 border-nirmaan-black max-w-lg w-full p-4 sm:p-8 shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[92vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="flex items-start justify-between gap-3 mb-4">
           <div>
-            <span className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black text-[11px] mb-2 font-black">
+            <span className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black text-[10px] sm:text-[11px] mb-1.5 sm:mb-2 font-black">
               ON-DESK REGISTRATION
             </span>
-            <h2 className="font-display text-2xl font-black uppercase text-nirmaan-black leading-tight">
+            <h2 className="font-display text-xl sm:text-2xl font-black uppercase text-nirmaan-black leading-tight break-words">
               {team.team_name}
             </h2>
             <p className="text-xs font-semibold text-nirmaan-black/70">
@@ -140,30 +140,32 @@ export default function RegistrationModal({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3">
           <button
             onClick={onCancel}
             disabled={loading}
-            className="nirmaan-btn nirmaan-btn-outline w-1/3 text-xs py-3"
+            className="nirmaan-btn nirmaan-btn-outline w-1/3 text-xs py-3 cursor-pointer"
           >
             CANCEL
           </button>
           <button
             onClick={handleSave}
             disabled={loading}
-            className="nirmaan-btn nirmaan-btn-primary w-2/3 text-xs py-3 font-extrabold shadow-md"
+            className="nirmaan-btn nirmaan-btn-primary w-2/3 text-xs py-3 font-extrabold shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
           >
             {loading ? (
               'SAVING...'
             ) : team.checked_in ? (
               <>
-                <UserCheck className="w-4 h-4" />
-                UPDATE ATTENDANCE
+                <UserCheck className="w-4 h-4 flex-shrink-0" />
+                <span className="sm:hidden">UPDATE</span>
+                <span className="hidden sm:inline">UPDATE ATTENDANCE</span>
               </>
             ) : (
               <>
-                <ShieldCheck className="w-4 h-4" />
-                CONFIRM REGISTRATION
+                <ShieldCheck className="w-4 h-4 flex-shrink-0" />
+                <span className="sm:hidden">CONFIRM</span>
+                <span className="hidden sm:inline">CONFIRM REGISTRATION</span>
               </>
             )}
           </button>

@@ -90,12 +90,12 @@ export default function SocialsPage() {
           {clubs.map((club, idx) => (
             <div
               key={idx}
-              className="nirmaan-card p-6 sm:p-8 bg-white border-2 border-nirmaan-black/15 shadow-sm flex flex-col justify-between"
+              className="nirmaan-card p-4 sm:p-8 bg-white border-2 border-nirmaan-black/15 shadow-sm flex flex-col justify-between"
             >
               <div>
                 {/* Club Header with Logo */}
-                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-nirmaan-black/10">
-                  <div className="h-14 w-14 rounded-2xl bg-black border border-nirmaan-black/15 flex items-center justify-center p-1 overflow-hidden shrink-0 shadow-xs">
+                <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-nirmaan-black/10">
+                  <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl bg-black border border-nirmaan-black/15 flex items-center justify-center p-1 overflow-hidden shrink-0 shadow-xs">
                     <img
                       src={club.logo}
                       alt={club.name}
@@ -103,8 +103,8 @@ export default function SocialsPage() {
                     />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="font-display text-xl font-black uppercase text-nirmaan-black">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <h2 className="font-display text-lg sm:text-xl font-black uppercase text-nirmaan-black">
                         {club.name}
                       </h2>
                       <span className={`nirmaan-pill ${club.tagColor} text-white text-[9px] font-black px-2 py-0.5`}>

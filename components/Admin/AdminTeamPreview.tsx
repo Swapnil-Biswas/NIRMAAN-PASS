@@ -64,7 +64,7 @@ export default function AdminTeamPreview({
           <label className="text-[11px] font-bold uppercase text-nirmaan-black/60 hidden sm:inline whitespace-nowrap">
             Switch Team:
           </label>
-          <div className="relative flex-1 sm:w-72">
+          <div className="relative w-full sm:w-72">
             <select
               value={currentTeam?.id || ''}
               onChange={handleSelectTeam}
@@ -85,7 +85,7 @@ export default function AdminTeamPreview({
       </div>
 
       {/* Read-Only Notice Banner */}
-      <div className="bg-nirmaan-blue/10 border-2 border-nirmaan-blue/30 p-3.5 rounded-2xl flex items-center justify-between flex-wrap gap-2 text-xs">
+      <div className="bg-nirmaan-blue/10 border-2 border-nirmaan-blue/30 p-3 sm:p-3.5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-2 text-xs">
         <div className="flex items-center gap-2 font-bold text-nirmaan-blue">
           <Shield className="w-4 h-4 flex-shrink-0" />
           <span>
@@ -94,7 +94,7 @@ export default function AdminTeamPreview({
         </div>
         <Link
           href="/admin/scanner"
-          className="nirmaan-pill bg-nirmaan-red text-white text-[10px] font-black py-1 px-3 hover:opacity-90 transition-opacity"
+          className="nirmaan-pill bg-nirmaan-red text-white text-[10px] font-black py-1.5 px-3 hover:opacity-90 transition-opacity self-start sm:self-auto"
         >
           OPEN SCANNER DESK ➔
         </Link>

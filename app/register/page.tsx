@@ -287,7 +287,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Main Card Container */}
-        <div className="nirmaan-card bg-white border-2 border-nirmaan-black shadow-lg p-6 sm:p-8 space-y-6">
+        <div className="nirmaan-card bg-white border-2 border-nirmaan-black shadow-lg p-4 sm:p-8 space-y-6">
           {/* Error Message */}
           {error && (
             <div className="p-4 rounded-xl bg-nirmaan-red/10 border-2 border-nirmaan-red/30 text-nirmaan-red text-xs font-bold flex items-start gap-2.5 animate-in fade-in duration-200">
@@ -403,10 +403,11 @@ export default function RegisterPage() {
               <div className="pt-4 border-t border-nirmaan-black/10">
                 <button
                   type="submit"
-                  className="nirmaan-btn nirmaan-btn-primary w-full py-3.5 text-xs font-black tracking-wider flex items-center justify-center gap-2 shadow-md"
+                  className="nirmaan-btn nirmaan-btn-primary w-full py-3.5 text-xs font-black tracking-wider flex items-center justify-center gap-2 shadow-md cursor-pointer"
                 >
-                  <span>CONTINUE TO TEAM & MEMBER DETAILS</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span className="sm:hidden">CONTINUE TO DETAILS</span>
+                  <span className="hidden sm:inline">CONTINUE TO TEAM & MEMBER DETAILS</span>
+                  <ArrowRight className="w-4 h-4 flex-shrink-0" />
                 </button>
               </div>
 
@@ -680,20 +681,22 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="nirmaan-btn nirmaan-btn-primary flex-1 w-full py-3.5 text-xs font-black tracking-wider flex items-center justify-center gap-2 shadow-md disabled:opacity-50"
+                  className="nirmaan-btn nirmaan-btn-primary flex-1 w-full py-3.5 text-xs font-black tracking-wider flex items-center justify-center gap-2 shadow-md disabled:opacity-50 cursor-pointer"
                 >
                   {loading ? (
                     <span className="flex items-center gap-2">
-                      <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <svg className="w-4 h-4 animate-spin flex-shrink-0" viewBox="0 0 24 24" fill="none">
                         <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
                         <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" className="opacity-75" />
                       </svg>
-                      REGISTERING TEAM & GENERATING PASS...
+                      <span className="sm:hidden">GENERATING PASS...</span>
+                      <span className="hidden sm:inline">REGISTERING TEAM &amp; GENERATING PASS...</span>
                     </span>
                   ) : (
                     <>
-                      <ShieldCheck className="w-4 h-4" />
-                      <span>SUBMIT REGISTRATION & CREATE EVENT PASS</span>
+                      <ShieldCheck className="w-4 h-4 flex-shrink-0" />
+                      <span className="sm:hidden">SUBMIT REGISTRATION</span>
+                      <span className="hidden sm:inline">SUBMIT REGISTRATION &amp; CREATE EVENT PASS</span>
                     </>
                   )}
                 </button>

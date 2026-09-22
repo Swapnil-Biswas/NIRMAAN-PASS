@@ -101,7 +101,7 @@ export default function AdminAnnouncementsPage() {
               <ArrowLeft className="w-4 h-4" />
               BACK TO ADMIN DASHBOARD
             </Link>
-            <h1 className="font-display text-3xl font-black uppercase text-nirmaan-black">
+            <h1 className="font-display text-2xl sm:text-3xl font-black uppercase text-nirmaan-black">
               BROADCAST ANNOUNCEMENTS
             </h1>
           </div>
@@ -111,7 +111,7 @@ export default function AdminAnnouncementsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Form */}
           <div className="lg:col-span-6">
-            <div className="nirmaan-card p-6 sm:p-8 bg-white border-2 border-nirmaan-black shadow-sm">
+            <div className="nirmaan-card p-4 sm:p-8 bg-white border-2 border-nirmaan-black shadow-sm">
               <div className="flex items-center gap-2 mb-6">
                 <Megaphone className="w-5 h-5 text-nirmaan-red" />
                 <h2 className="font-display text-lg font-black uppercase text-nirmaan-black">

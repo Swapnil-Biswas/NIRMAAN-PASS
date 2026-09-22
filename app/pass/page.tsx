@@ -85,7 +85,7 @@ export default async function PassPage({ searchParams }: PassPageProps) {
         {/* Pass Section (Centered) */}
         <div className="max-w-xl mx-auto">
           {/* Top Header Controls */}
-          <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 mb-6">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
             <Link
               href="/dashboard"
               className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-nirmaan-black/70 hover:text-nirmaan-black transition-colors"
@@ -94,7 +94,7 @@ export default async function PassPage({ searchParams }: PassPageProps) {
               BACK TO DASHBOARD
             </Link>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
               <LiveRefresh intervalMs={5000} />
               <span className="nirmaan-pill bg-white text-nirmaan-black border border-nirmaan-black/15 text-[11px] font-bold max-w-[140px] truncate">
                 {team.team_name}
@@ -108,13 +108,13 @@ export default async function PassPage({ searchParams }: PassPageProps) {
           </div>
 
           {/* Team Members Attendance Card */}
-          <div className="nirmaan-card p-6 bg-white border border-nirmaan-black/15 max-w-md mx-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display text-sm font-black uppercase text-nirmaan-black flex items-center gap-2">
+          <div className="nirmaan-card p-4 sm:p-6 bg-white border border-nirmaan-black/15 max-w-md mx-auto">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <h3 className="font-display text-xs sm:text-sm font-black uppercase text-nirmaan-black flex items-center gap-1.5 sm:gap-2">
                 <Users className="w-4 h-4 text-nirmaan-blue" />
                 TEAM ROSTER & ATTENDANCE
               </h3>
-              <span className="text-xs font-bold uppercase text-nirmaan-black/70 bg-nirmaan-cream px-2.5 py-1 rounded-full">
+              <span className="text-[10px] sm:text-xs font-bold uppercase text-nirmaan-black/70 bg-nirmaan-cream px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full whitespace-nowrap">
                 {presentCount} / {members.length} PRESENT
               </span>
             </div>

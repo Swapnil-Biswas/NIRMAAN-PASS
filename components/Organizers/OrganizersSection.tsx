@@ -97,12 +97,12 @@ export default function OrganizersSection() {
         {organizers.map((club, idx) => (
           <div
             key={idx}
-            className="nirmaan-card p-6 lg:p-8 bg-white border-2 border-nirmaan-black/10 flex flex-col justify-between shadow-xs hover:border-nirmaan-black/30 transition-all"
+            className="nirmaan-card p-4 sm:p-6 lg:p-8 bg-white border-2 border-nirmaan-black/10 flex flex-col justify-between shadow-xs hover:border-nirmaan-black/30 transition-all"
           >
             <div>
               {/* Header Badge */}
-              <div className="flex items-center justify-between gap-2 mb-5">
-                <span className={`nirmaan-pill ${club.tagColor} ${club.textColor} text-xs font-black`}>
+              <div className="flex items-center justify-between gap-2 mb-4 sm:mb-5">
+                <span className={`nirmaan-pill ${club.tagColor} ${club.textColor} text-[11px] sm:text-xs font-black`}>
                   {club.role}
                 </span>
                 <span className="text-[11px] font-bold text-nirmaan-black/50 hidden sm:inline">
@@ -111,26 +111,26 @@ export default function OrganizersSection() {
               </div>
 
               {/* Club Logo Presentation Box */}
-              <div className="h-32 lg:h-36 w-full rounded-2xl flex items-center justify-center p-4 mb-5 bg-black border border-nirmaan-black/10 overflow-hidden shadow-inner">
+              <div className="h-28 sm:h-32 lg:h-36 w-full rounded-2xl flex items-center justify-center p-3 sm:p-4 mb-4 sm:mb-5 bg-black border border-nirmaan-black/10 overflow-hidden shadow-inner">
                 <img
                   src={club.logo}
                   alt={club.name}
-                  className="max-h-24 lg:max-h-28 max-w-[85%] object-contain filter drop-shadow-md rounded-lg"
+                  className="max-h-20 sm:max-h-24 lg:max-h-28 max-w-[85%] object-contain filter drop-shadow-md rounded-lg"
                 />
               </div>
 
               {/* Title & Description */}
-              <h4 className="font-display text-xl lg:text-2xl font-black uppercase text-nirmaan-black">
+              <h4 className="font-display text-lg sm:text-xl lg:text-2xl font-black uppercase text-nirmaan-black">
                 {club.name}
               </h4>
-              <p className="text-xs lg:text-sm font-medium text-nirmaan-black/70 leading-relaxed mt-2">
+              <p className="text-xs lg:text-sm font-medium text-nirmaan-black/70 leading-relaxed mt-1.5 sm:mt-2">
                 {club.description}
               </p>
             </div>
 
             {/* Social Channels */}
-            <div className="flex items-center gap-2 pt-5 mt-5 border-t border-nirmaan-black/10">
-              <span className="text-[11px] font-bold uppercase text-nirmaan-black/50 mr-1">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-4 sm:pt-5 mt-4 sm:mt-5 border-t border-nirmaan-black/10">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase text-nirmaan-black/50 shrink-0">
                 Socials:
               </span>
               {club.links.map((link, lIdx) => {
@@ -141,10 +141,10 @@ export default function OrganizersSection() {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-nirmaan-cream border border-nirmaan-black/10 hover:border-nirmaan-black text-nirmaan-black text-xs font-bold transition-all hover:scale-105"
+                    className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-nirmaan-cream border border-nirmaan-black/10 hover:border-nirmaan-black text-nirmaan-black text-[11px] sm:text-xs font-bold transition-all hover:scale-105 whitespace-nowrap"
                     title={link.title}
                   >
-                    <Icon className="w-3.5 h-3.5" />
+                    <Icon className="w-3 sm:w-3.5 h-3 sm:h-3.5 flex-shrink-0" />
                     <span>{link.title}</span>
                   </a>
                 );

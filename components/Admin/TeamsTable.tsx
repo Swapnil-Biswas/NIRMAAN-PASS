@@ -495,19 +495,19 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
 
       {/* Duplicate Review Modal */}
       {reviewModalTeam && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-nirmaan-black/60 backdrop-blur-xs">
-          <div className="bg-white border-2 border-nirmaan-black rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl overflow-y-auto max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-nirmaan-black/60 backdrop-blur-xs">
+          <div className="bg-white border-2 border-nirmaan-black rounded-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex items-center justify-between border-b border-nirmaan-black/10 pb-3">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-nirmaan-amber" />
-                <h3 className="font-display text-base font-black uppercase text-nirmaan-black">
+                <AlertTriangle className="w-5 h-5 text-nirmaan-amber flex-shrink-0" />
+                <h3 className="font-display text-sm sm:text-base font-black uppercase text-nirmaan-black">
                   DUPLICATE REGISTRATION REVIEW
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setReviewModalTeam(null)}
-                className="text-nirmaan-black/50 hover:text-nirmaan-black font-bold text-lg px-2"
+                className="text-nirmaan-black/50 hover:text-nirmaan-black font-bold text-lg px-2 cursor-pointer"
               >
                 ✕
               </button>
@@ -600,8 +600,9 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                 onClick={() => handleReviewAction('approve')}
                 className="nirmaan-pill bg-nirmaan-green-bright text-nirmaan-black font-black text-xs py-2.5 px-4 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
               >
-                <CheckCircle2 className="w-4 h-4" />
-                APPROVE REGISTRATION (UNLOCK QR)
+                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                <span className="sm:hidden">APPROVE REGISTRATION</span>
+                <span className="hidden sm:inline">APPROVE REGISTRATION (UNLOCK QR)</span>
               </button>
 
               {matchedTeam && (

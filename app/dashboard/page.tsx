@@ -88,7 +88,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* Top Control Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="nirmaan-pill bg-nirmaan-blue text-white text-[10px] font-black">
@@ -111,12 +111,12 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <LiveRefresh intervalMs={5000} />
             <EditTeamModal team={team} members={members} />
             <Link
               href={`/pass?token=${team.qr_token}`}
-              className="nirmaan-btn nirmaan-btn-primary text-xs py-2.5 px-4 font-bold shadow-xs flex items-center gap-1.5"
+              className="nirmaan-btn nirmaan-btn-primary text-xs py-2 px-3.5 sm:py-2.5 sm:px-4 font-bold shadow-xs flex items-center justify-center gap-1.5 flex-1 sm:flex-none"
             >
               <span>VIEW FULL PASS</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -164,7 +164,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           {/* Right: Team Members & Announcements */}
           <div className="lg:col-span-7 space-y-8">
             {/* Team Roster Card */}
-            <div className="nirmaan-card p-6 bg-white border border-nirmaan-black/15 shadow-sm">
+            <div className="nirmaan-card p-4 sm:p-6 bg-white border border-nirmaan-black/15 shadow-sm">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <div>
                   <h3 className="font-display text-base font-black uppercase text-nirmaan-black flex items-center gap-2">

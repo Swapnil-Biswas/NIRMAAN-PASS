@@ -40,10 +40,10 @@ export default async function HomePage() {
           </p>
 
           {/* Quick Actions */}
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 pt-2 max-w-xs sm:max-w-none mx-auto">
             <Link
               href="/pass"
-              className="nirmaan-btn nirmaan-btn-primary text-xs px-6 py-3 font-bold shadow-sm"
+              className="nirmaan-btn nirmaan-btn-primary text-xs px-6 py-3 font-bold shadow-sm w-full sm:w-auto flex items-center justify-center gap-2"
             >
               <QrCode className="w-4 h-4" />
               VIEW MY PASS
@@ -52,7 +52,7 @@ export default async function HomePage() {
             {userTeam ? (
               <Link
                 href="/dashboard"
-                className="nirmaan-btn nirmaan-btn-dark text-xs px-6 py-3 font-bold shadow-sm flex items-center gap-2"
+                className="nirmaan-btn nirmaan-btn-dark text-xs px-6 py-3 font-bold shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto"
               >
                 <LayoutDashboard className="w-4 h-4 text-nirmaan-amber" />
                 <span>TEAM DASHBOARD</span>
@@ -60,7 +60,7 @@ export default async function HomePage() {
             ) : (
               <Link
                 href="/register"
-                className="nirmaan-btn nirmaan-btn-dark text-xs px-6 py-3 font-bold shadow-sm flex items-center gap-2"
+                className="nirmaan-btn nirmaan-btn-dark text-xs px-6 py-3 font-bold shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto"
               >
                 <LogIn className="w-4 h-4 text-nirmaan-amber" />
                 <span>REGISTER TEAM</span>
@@ -71,7 +71,7 @@ export default async function HomePage() {
 
         {/* Quick Pass Lookup Card / Active Team Card */}
         {userTeam ? (
-          <div className="nirmaan-card p-6 bg-white border border-nirmaan-black/15 max-w-xl mx-auto text-center space-y-3 shadow-xs">
+          <div className="nirmaan-card p-4 sm:p-6 bg-white border border-nirmaan-black/15 max-w-xl mx-auto text-center space-y-3 shadow-xs">
             <div className="inline-flex items-center gap-1.5 bg-nirmaan-green-bright/20 border border-nirmaan-green-dark/30 px-3 py-1 rounded-full text-nirmaan-green-dark text-[11px] font-black uppercase">
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>LOGGED IN AS {userTeam.team.team_name}</span>
@@ -79,24 +79,24 @@ export default async function HomePage() {
             <p className="text-xs font-semibold text-nirmaan-black/70">
               {userTeam.team.college} • {userTeam.members.length} Members Registered
             </p>
-            <div className="flex items-center justify-center gap-3 pt-1">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 sm:gap-3 pt-1">
               <Link
                 href="/pass"
-                className="nirmaan-pill bg-nirmaan-blue text-white text-xs py-2 px-4 font-bold shadow-xs hover:opacity-90 inline-flex items-center gap-1"
+                className="nirmaan-pill bg-nirmaan-blue text-white text-xs py-2 px-4 font-bold shadow-xs hover:opacity-90 inline-flex items-center justify-center gap-1 w-full sm:w-auto"
               >
                 <span>Go to My Pass</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <Link
                 href="/dashboard"
-                className="nirmaan-pill bg-nirmaan-cream text-nirmaan-black border border-nirmaan-black/15 text-xs py-2 px-4 font-bold hover:bg-nirmaan-cream-card inline-flex items-center gap-1"
+                className="nirmaan-pill bg-nirmaan-cream text-nirmaan-black border border-nirmaan-black/15 text-xs py-2 px-4 font-bold hover:bg-nirmaan-cream-card inline-flex items-center justify-center gap-1 w-full sm:w-auto"
               >
                 <span>Team Dashboard</span>
               </Link>
             </div>
           </div>
         ) : (
-          <div className="nirmaan-card p-6 bg-white border border-nirmaan-black/15 max-w-xl mx-auto text-center space-y-3 shadow-xs">
+          <div className="nirmaan-card p-4 sm:p-6 bg-white border border-nirmaan-black/15 max-w-xl mx-auto text-center space-y-3 shadow-xs">
             <p className="text-[11px] font-bold uppercase text-nirmaan-black/60 tracking-wider">
               ENTER YOUR TEAM LEADER EMAIL TO ACCESS YOUR PASS:
             </p>

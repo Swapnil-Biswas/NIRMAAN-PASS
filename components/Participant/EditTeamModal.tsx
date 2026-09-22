@@ -207,13 +207,13 @@ export default function EditTeamModal({
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-nirmaan-black/60 backdrop-blur-xs">
-          <div className="bg-white border-2 border-nirmaan-black rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl overflow-y-auto max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-nirmaan-black/60 backdrop-blur-xs">
+          <div className="bg-white border-2 border-nirmaan-black rounded-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-2xl overflow-y-auto max-h-[90vh]">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-nirmaan-black/10 pb-3">
               <div className="flex items-center gap-2">
-                <Edit3 className="w-5 h-5 text-nirmaan-blue" />
-                <h3 className="font-display text-lg font-black uppercase text-nirmaan-black">
+                <Edit3 className="w-5 h-5 text-nirmaan-blue flex-shrink-0" />
+                <h3 className="font-display text-base sm:text-lg font-black uppercase text-nirmaan-black">
                   EDIT TEAM DETAILS
                 </h3>
               </div>
@@ -433,19 +433,19 @@ export default function EditTeamModal({
               </div>
 
               {/* Form Actions */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-nirmaan-black/10">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-4 border-t border-nirmaan-black/10">
                 <button
                   type="button"
                   disabled={loading}
                   onClick={handleClose}
-                  className="px-4 py-2 text-xs font-bold uppercase text-nirmaan-black/60 hover:text-nirmaan-black cursor-pointer"
+                  className="px-4 py-2.5 text-xs font-bold uppercase text-nirmaan-black/60 hover:text-nirmaan-black cursor-pointer text-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="nirmaan-btn nirmaan-btn-primary text-xs py-2.5 px-6 font-black shadow-xs flex items-center gap-2 cursor-pointer"
+                  className="nirmaan-btn nirmaan-btn-primary text-xs py-2.5 px-6 font-black shadow-xs flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
                 >
                   {loading ? (
                     <>

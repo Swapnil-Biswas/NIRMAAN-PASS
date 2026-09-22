@@ -75,16 +75,16 @@ function LoginForm() {
               </span>
             </div>
           </Link>
-          <h1 className="font-display text-3xl sm:text-4xl font-black uppercase text-nirmaan-black">
+          <h1 className="font-display text-2xl sm:text-4xl font-black uppercase text-nirmaan-black">
             ACCESS TEAM PASS
           </h1>
-          <p className="text-sm text-nirmaan-black/60 font-medium">
+          <p className="text-xs sm:text-sm text-nirmaan-black/60 font-medium">
             Enter the team leader email used during registration
           </p>
         </div>
 
         {/* Login Form */}
-        <div className="nirmaan-card p-6 sm:p-8 bg-white border-2 border-nirmaan-black/10">
+        <div className="nirmaan-card p-4 sm:p-8 bg-white border-2 border-nirmaan-black/10">
           {error && (
             <div className="bg-nirmaan-red/10 border border-nirmaan-red/30 text-nirmaan-red p-3.5 rounded-xl font-bold text-xs mb-6 flex items-center gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />

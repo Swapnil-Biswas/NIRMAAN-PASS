@@ -71,10 +71,10 @@ export default async function EventInfoPage() {
         </div>
 
         {/* FAQ Section */}
-        <div className="nirmaan-card p-6 sm:p-8 bg-white border border-nirmaan-black/15 shadow-sm">
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-nirmaan-black/10">
-            <HelpCircle className="w-5 h-5 text-nirmaan-blue" />
-            <h2 className="font-display text-xl font-black uppercase text-nirmaan-black">
+        <div className="nirmaan-card p-4 sm:p-8 bg-white border border-nirmaan-black/15 shadow-sm">
+          <div className="flex items-center gap-2 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-nirmaan-black/10">
+            <HelpCircle className="w-5 h-5 text-nirmaan-blue flex-shrink-0" />
+            <h2 className="font-display text-base sm:text-xl font-black uppercase text-nirmaan-black">
               FREQUENTLY ASKED QUESTIONS
             </h2>
           </div>

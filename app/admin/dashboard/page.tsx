@@ -28,29 +28,29 @@ export default async function AdminDashboardPage() {
             </span>
             <LiveRefresh intervalMs={4000} />
           </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-black uppercase text-nirmaan-black">
-            EVENT OVERVIEW & STATS
+          <h1 className="font-display text-2xl sm:text-4xl font-black uppercase text-nirmaan-black">
+            EVENT OVERVIEW &amp; STATS
           </h1>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/admin/scanner"
-            className="nirmaan-btn nirmaan-btn-primary text-xs py-2.5 px-4 font-black shadow-sm"
+            className="nirmaan-btn nirmaan-btn-primary text-xs py-2 px-3.5 sm:py-2.5 sm:px-4 font-black shadow-sm"
           >
             <QrCode className="w-4 h-4" />
             OPEN SCANNER
           </Link>
           <Link
             href="/admin/announcements"
-            className="nirmaan-btn nirmaan-btn-dark text-xs py-2.5 px-4 font-black shadow-sm"
+            className="nirmaan-btn nirmaan-btn-dark text-xs py-2 px-3.5 sm:py-2.5 sm:px-4 font-black shadow-sm"
           >
             <Megaphone className="w-4 h-4 text-nirmaan-amber" />
             BROADCAST
           </Link>
           <Link
             href="/admin/schedule"
-            className="nirmaan-btn bg-white hover:bg-nirmaan-cream text-nirmaan-black border border-nirmaan-black/20 text-xs py-2.5 px-4 font-black shadow-sm"
+            className="nirmaan-btn bg-white hover:bg-nirmaan-cream text-nirmaan-black border border-nirmaan-black/20 text-xs py-2 px-3.5 sm:py-2.5 sm:px-4 font-black shadow-sm"
           >
             <Calendar className="w-4 h-4 text-nirmaan-blue" />
             SCHEDULE
@@ -64,8 +64,8 @@ export default async function AdminDashboardPage() {
       {/* Teams Table Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl font-bold uppercase text-nirmaan-black">
-            PARTICIPATING TEAMS & CONSUMPTION LOG
+          <h2 className="font-display text-base sm:text-xl font-bold uppercase text-nirmaan-black">
+            PARTICIPATING TEAMS &amp; CONSUMPTION LOG
           </h2>
         </div>
 

@@ -54,7 +54,7 @@ export default function AnnouncementList({ announcements }: AnnouncementListProp
         return (
           <div
             key={ann.id}
-            className={`nirmaan-card p-5 bg-white border-l-4 ${badge.border} shadow-sm transition-transform hover:-translate-y-0.5`}
+            className={`nirmaan-card p-4 sm:p-5 bg-white border-l-4 ${badge.border} shadow-sm transition-transform hover:-translate-y-0.5`}
           >
             <div className="flex items-center justify-between gap-2 mb-2">
               <span className={`nirmaan-pill ${badge.bg} ${badge.text} text-[10px] font-black`}>
@@ -66,10 +66,10 @@ export default function AnnouncementList({ announcements }: AnnouncementListProp
               </div>
             </div>
 
-            <h4 className="font-display text-base font-black uppercase text-nirmaan-black mb-1">
+            <h4 className="font-display text-sm sm:text-base font-black uppercase text-nirmaan-black mb-1">
               {ann.title}
             </h4>
-            <p className="text-sm font-medium text-nirmaan-black/80 leading-relaxed">
+            <p className="text-xs sm:text-sm font-medium text-nirmaan-black/80 leading-relaxed">
               {ann.message}
             </p>
           </div>
