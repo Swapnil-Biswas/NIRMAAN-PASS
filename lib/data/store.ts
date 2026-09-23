@@ -338,32 +338,36 @@ export async function getAllTeams(): Promise<(Team & { members: Member[]; presen
       const teamsError = teamsRes.error;
 
       if (!teamsError && Array.isArray(teams)) {
-        return teams.map((team: Team) => {
-          const teamMembers = (members || []).filter((m: Member) => m.team_id === team.id);
-          const present = teamMembers.filter((m: Member) => m.present).length;
-          return {
-            ...team,
-            members: teamMembers,
-            present_count: present,
-            total_members: teamMembers.length,
-          };
-        });
+        return teams
+          .map((team: Team) => {
+            const teamMembers = (members || []).filter((m: Member) => m.team_id === team.id);
+            const present = teamMembers.filter((m: Member) => m.present).length;
+            return {
+              ...team,
+              members: teamMembers,
+              present_count: present,
+              total_members: teamMembers.length,
+            };
+          })
+          .sort((a, b) => a.team_name.localeCompare(b.team_name, undefined, { sensitivity: 'base' }));
       }
     } catch {
       // Fallback
     }
   }
 
-  return mockDb.teams.map((team) => {
-    const teamMembers = mockDb.members.filter((m) => m.team_id === team.id);
-    const present = teamMembers.filter((m) => m.present).length;
-    return {
-      ...team,
-      members: teamMembers,
-      present_count: present,
-      total_members: teamMembers.length,
-    };
-  });
+  return mockDb.teams
+    .map((team) => {
+      const teamMembers = mockDb.members.filter((m) => m.team_id === team.id);
+      const present = teamMembers.filter((m) => m.present).length;
+      return {
+        ...team,
+        members: teamMembers,
+        present_count: present,
+        total_members: teamMembers.length,
+      };
+    })
+    .sort((a, b) => a.team_name.localeCompare(b.team_name, undefined, { sensitivity: 'base' }));
 }
 
 // -----------------------------------------------------------------------------

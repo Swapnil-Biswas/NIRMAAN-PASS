@@ -7,11 +7,11 @@ console.log('--- NIRMAAN-PASS DATABASE STATUS CHECK ---');
 
 if (!url || url.includes('placeholder') || url.includes('your-project')) {
   console.log('ℹ️  No remote Supabase database URL configured in .env.local.');
-  console.log('✅ The application is running in STANDALONE LOCAL MODE using the verified 289-team dataset.');
+  console.log('✅ The application is running in STANDALONE LOCAL MODE using the verified 50-team dataset.');
   console.log('\nTo connect a new Supabase database:');
   console.log('1. Run supabase/complete_database_migration.sql in your Supabase SQL Editor.');
-  console.log('2. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local.');
-  console.log('3. Re-run this script: node scripts/check_supabase.mjs\n');
+  console.log('2. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local.');
+  console.log('3. Push all team data: npm run db:push\n');
   process.exit(0);
 }
 

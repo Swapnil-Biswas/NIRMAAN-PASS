@@ -69,7 +69,7 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
       return !t.checked_in;
     }
     return true;
-  });
+  }).sort((a, b) => a.team_name.localeCompare(b.team_name, undefined, { sensitivity: 'base' }));
 
   const totalPages = pageSize === 0 ? 1 : Math.max(1, Math.ceil(filteredTeams.length / pageSize));
   const currentPage = Math.min(page, totalPages);

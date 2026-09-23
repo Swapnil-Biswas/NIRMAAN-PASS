@@ -73,11 +73,14 @@ export default function AdminTeamPreview({
               <option value="" disabled>
                 -- Select a team --
               </option>
-              {allTeams.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.team_name} ({t.college})
-                </option>
-              ))}
+              {allTeams
+                .slice()
+                .sort((a, b) => a.team_name.localeCompare(b.team_name, undefined, { sensitivity: 'base' }))
+                .map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.team_name} ({t.college})
+                  </option>
+                ))}
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-nirmaan-black/50 pointer-events-none" />
           </div>
