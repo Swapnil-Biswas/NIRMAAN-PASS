@@ -16,7 +16,7 @@ import { checkRateLimit, getClientIp } from '@/lib/security/rateLimit';
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIp(req);
-    const rateLimit = checkRateLimit(`scan:${ip}`, 120, 60 * 1000); // 120 scans per minute
+    const rateLimit = checkRateLimit(`scan:${ip}`, 600, 60 * 1000); // 600 scans per minute for high-concurrency queues
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { success: false, error_code: 'RATE_LIMITED', message: 'Scan rate limit exceeded. Please slow down.' },

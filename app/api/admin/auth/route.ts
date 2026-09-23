@@ -19,7 +19,7 @@ export const revalidate = 0;
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIp(req);
-    const rateLimit = checkRateLimit(`admin_auth:${ip}`, 10, 60 * 1000); // 10 attempts per min
+    const rateLimit = checkRateLimit(`admin_auth:${ip}`, 30, 60 * 1000); // 30 attempts per min
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { success: false, message: 'Too many authentication attempts. Please wait a minute and try again.' },

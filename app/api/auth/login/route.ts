@@ -9,10 +9,10 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIp(req);
-    const rateLimit = checkRateLimit(`login:${ip}`, 15, 60 * 1000); // 15 attempts per min
-    if (!rateLimit.allowed) {
+    const ipRateLimit = checkRateLimit(`login_ip:${ip}`, 300, 60 * 1000); // 300 attempts per min per venue IP
+    if (!ipRateLimit.allowed) {
       return NextResponse.json(
-        { success: false, message: 'Too many login attempts. Please wait a minute and try again.' },
+        { success: false, message: 'Too many login attempts from this network. Please wait a minute and try again.' },
         { status: 429 }
       );
     }
@@ -27,6 +27,13 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanEmail = normalizeEmail(email);
+    const emailRateLimit = checkRateLimit(`login_email:${cleanEmail}`, 15, 60 * 1000); // 15 attempts per min per email
+    if (!emailRateLimit.allowed) {
+      return NextResponse.json(
+        { success: false, message: 'Too many login attempts for this email. Please wait a minute and try again.' },
+        { status: 429 }
+      );
+    }
     const teams = await getAllTeams();
     const matchedTeam = teams.find((t) =>
       t.members.some((m) => m?.email && normalizeEmail(m.email) === cleanEmail)
