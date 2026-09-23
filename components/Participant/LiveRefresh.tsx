@@ -8,12 +8,13 @@ interface LiveRefreshProps {
   intervalMs?: number;
 }
 
-export default function LiveRefresh({ intervalMs = 6000 }: LiveRefreshProps) {
+export default function LiveRefresh({ intervalMs = 15000 }: LiveRefreshProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
   const triggerRefresh = () => {
+    if (isPending) return;
     startTransition(() => {
       router.refresh();
       setLastRefreshed(new Date());
@@ -21,9 +22,11 @@ export default function LiveRefresh({ intervalMs = 6000 }: LiveRefreshProps) {
   };
 
   useEffect(() => {
-    // 1. Polling interval
+    // 1. Polling interval only when tab is active/visible
     const timer = setInterval(() => {
-      triggerRefresh();
+      if (document.visibilityState === 'visible' && !isPending) {
+        triggerRefresh();
+      }
     }, intervalMs);
 
     // 2. Refresh immediately when window/tab regains focus
@@ -41,7 +44,7 @@ export default function LiveRefresh({ intervalMs = 6000 }: LiveRefreshProps) {
       window.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleVisibilityChange);
     };
-  }, [intervalMs]);
+  }, [intervalMs, isPending]);
 
   return (
     <div className="flex items-center gap-1.5 text-[11px] font-bold text-nirmaan-black/60 bg-white/70 border border-nirmaan-black/10 px-2.5 py-1 rounded-full shadow-xs">

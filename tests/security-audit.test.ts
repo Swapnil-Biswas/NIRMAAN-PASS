@@ -42,7 +42,7 @@ describe('Production Security Hardening & Audit Verification', () => {
     attackerTeam = await createTeam({
       teamName: 'Attacker Team Beta',
       college: 'BMSIT',
-      track: 'AI & Next-Gen Intelligence',
+      track: 'Deep Tech & Edge AI',
       leader: { name: 'Attacker Leader', email: attackerEmail, phone: '9988776644' },
       members: [],
     });

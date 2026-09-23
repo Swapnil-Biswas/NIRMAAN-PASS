@@ -24,10 +24,13 @@ export function createClient(cookieStoreParam?: Awaited<ReturnType<typeof cookie
     },
     global: {
       fetch: (url: RequestInfo | URL, init?: RequestInit) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
         return fetch(url, {
           ...init,
+          signal: init?.signal || controller.signal,
           cache: 'no-store',
-        });
+        }).finally(() => clearTimeout(timeoutId));
       },
     },
   });

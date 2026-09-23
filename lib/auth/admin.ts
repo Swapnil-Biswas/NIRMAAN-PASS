@@ -10,7 +10,7 @@ export const DEFAULT_INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000;
 export const MAX_SESSION_LIFETIME_MS = 4 * 60 * 60 * 1000;
 
 export function getExpectedAdminCode(): string {
-  return process.env.ADMIN_ACCESS_CODE || 'NIRMAAN2026_ADMIN';
+  return process.env.ADMIN_ACCESS_CODE || 'nirmaan2026_admin';
 }
 
 export function getInactivityTimeoutMs(): number {

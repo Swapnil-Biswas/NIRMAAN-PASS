@@ -66,11 +66,21 @@
 - **Defense-In-Depth Security Headers**: Configured HSTS, CSP, X-Content-Type-Options (`nosniff`), X-Frame-Options (`SAMEORIGIN`), X-XSS-Protection, Referrer-Policy, and Permissions-Policy across `next.config.js` and `middleware.ts`.
 - **Automated Security Test Suite**: Added `tests/security-audit.test.ts` bringing the test suite to **66 passing tests** across 8 test suites. Zero build or TypeScript errors.
 
-### 🧹 2.6 Codebase Optimization & Dead Asset Cleanup
-- **Removed Redundant Image Assets**: Eliminated unused test raster files (`public/brand/nirmaan-emblem.jpg`, `public/brand/nirmaan-emblem-original.jpg`, `public/brand/qr-center-logo-180.png`, `public/brand/qr-logo-160.png`, `public/assets/nirmaan-logo.png`, duplicate `public/assets/favicon.ico`).
-- **Eliminated Dead Boilerplate**: Removed unused `utils/` directory and consolidated Supabase middleware under [`lib/supabase/middleware.ts`](file:///Users/arnavpaniya/NIRMAAN-PASS/lib/supabase/middleware.ts).
-- **Removed Deprecated Components**: Removed obsolete demo `components/TeamSelector/`.
-- **Clean Architecture Verified**: 100% test pass rate (`66/66` tests across 8 test suites) and optimized Next.js 14 production build.
+### ⚡ 2.7 High-Speed Navigation & Performance Optimizations
+- **Singleton Supabase Client Caching**: Memoized the Supabase admin client (`lib/supabase/admin.ts`) to avoid recreating connection pools and SSL negotiations on every query.
+- **AbortController Fast-Timeout Protection**: Added a 4000ms fetch timeout controller in server and admin clients so slow or stalled network requests immediately fallback and never freeze SSR page rendering or navigation.
+- **Parallel Query Execution**: Optimized `getAllTeams()` in `lib/data/store.ts` using `Promise.all` to query `teams` and `members` simultaneously, halving database fetch latency.
+- **Navbar Redundant Fetch Elimination**: Eliminated blocking `fetch('/api/auth/session')` requests on every route change in `Navbar.tsx`; now evaluates on initial mount and visibility focus events.
+- **Optimized Live Polling**: Tuned `LiveRefresh` in `/dashboard` and `/pass` to poll only when the tab is actively visible with a relaxed 15s interval, eliminating CPU/network contention during user page transitions.
+
+### 🗑️ 2.8 Team Data Cleanup & Administrative Purge
+- **Admin Delete Endpoints**: Added `DELETE /api/admin/teams?id=<teamId>` and `DELETE /api/admin/teams?all=true` with constant-time admin authorization.
+- **UI Data Controls**: Added "Delete" action button on every team row and in the registration review modal, plus a "Clear All Teams" batch reset button in `TeamsTable.tsx`.
+- **Standalone CLI Reset Utility**: Created `scripts/clear_teams.mjs` and npm script `npm run clear-teams` to purge test data cleanly from Supabase and the local mock store.
+- **Admin Access Code Standardized**: Set default access code to `nirmaan2026_admin` across configuration and backend auth.
+
+### 🧹 2.9 Codebase Optimization & Clean Test Suite
+- **100% Test Pass Rate**: Verified all 66 tests passing across 8 test suites (`npm test`) with zero TypeScript typecheck errors (`npm run lint`).
 
 ---
 

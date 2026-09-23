@@ -314,13 +314,15 @@ export async function getAllTeams(): Promise<(Team & { members: Member[]; presen
     try {
       const { createAdminClient } = await import('../supabase/admin');
       const supabase = createAdminClient();
-      const { data: teams, error: teamsError } = await supabase.from('teams').select('*').order('created_at', { ascending: true });
-      const { data: members } = await supabase
-        .from('members')
-        .select('*')
-        .order('created_at', { ascending: true });
+      const [teamsRes, membersRes] = await Promise.all([
+        supabase.from('teams').select('*').order('created_at', { ascending: true }),
+        supabase.from('members').select('*').order('created_at', { ascending: true }),
+      ]);
+      const teams = teamsRes.data;
+      const members = membersRes.data;
+      const teamsError = teamsRes.error;
 
-      if (!teamsError && teams && teams.length > 0) {
+      if (!teamsError && Array.isArray(teams)) {
         return teams.map((team: Team) => {
           const teamMembers = (members || []).filter((m: Member) => m.team_id === team.id);
           const present = teamMembers.filter((m: Member) => m.present).length;
@@ -848,6 +850,52 @@ export async function updateTeamDetails(
     team: { ...team },
     members: updatedMembers.map((m) => ({ ...m })),
   };
+}
+
+export async function deleteTeam(teamId: string): Promise<boolean> {
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      await supabase.from('members').delete().eq('team_id', teamId);
+      const { error } = await supabase.from('teams').delete().eq('id', teamId);
+      if (error) {
+        console.error('[Supabase] deleteTeam error:', error);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.error('[Supabase] deleteTeam exception:', e);
+      return false;
+    }
+  }
+
+  mockDb.members = mockDb.members.filter((m) => m.team_id !== teamId);
+  mockDb.teams = mockDb.teams.filter((t) => t.id !== teamId);
+  return true;
+}
+
+export async function deleteAllTeams(): Promise<boolean> {
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      await supabase.from('members').delete().neq('id', 'placeholder');
+      const { error } = await supabase.from('teams').delete().neq('id', 'placeholder');
+      if (error) {
+        console.error('[Supabase] deleteAllTeams error:', error);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.error('[Supabase] deleteAllTeams exception:', e);
+      return false;
+    }
+  }
+
+  mockDb.members = [];
+  mockDb.teams = [];
+  return true;
 }
 
 export async function getEventStatistics(): Promise<EventStatistics> {

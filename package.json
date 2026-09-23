@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "clear-teams": "node scripts/clear_teams.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

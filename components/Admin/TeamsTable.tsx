@@ -1,6 +1,5 @@
-'use client';
-
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   ShieldCheck,
   AlertTriangle,
@@ -17,6 +16,7 @@ import {
   Users,
   UserCheck,
   Clock,
+  Trash2,
 } from 'lucide-react';
 import { Team, Member, TeamReviewStatus } from '@/types/database';
 import Link from 'next/link';
@@ -34,6 +34,7 @@ interface TeamsTableProps {
 }
 
 export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsTableProps) {
+  const router = useRouter();
   const [teams, setTeams] = useState<TeamRowData[]>(initialTeams);
   const [search, setSearch] = useState('');
   const [pageSize, setPageSize] = useState<number>(25);
@@ -42,6 +43,7 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
   const [reviewModalTeam, setReviewModalTeam] = useState<TeamRowData | null>(null);
   const [registrationModalTeam, setRegistrationModalTeam] = useState<TeamRowData | null>(null);
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
   const [checkInLoading, setCheckInLoading] = useState(false);
   const [reviewError, setReviewError] = useState('');
 
@@ -199,6 +201,54 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
     }
   };
 
+  const handleDeleteTeam = async (teamId: string, teamName: string) => {
+    if (!window.confirm(`Are you sure you want to permanently delete team "${teamName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    setDeleteLoading(teamId);
+    try {
+      const res = await fetch(`/api/admin/teams?id=${encodeURIComponent(teamId)}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to delete team');
+      }
+
+      setTeams((prev) => prev.filter((t) => t.id !== teamId));
+      router.refresh();
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete team');
+    } finally {
+      setDeleteLoading(null);
+    }
+  };
+
+  const handleClearAllTeams = async () => {
+    if (!window.confirm('⚠️ DANGER: Are you sure you want to delete ALL teams and consumption logs? This will reset all event statistics and cannot be undone.')) {
+      return;
+    }
+
+    setDeleteLoading('all');
+    try {
+      const res = await fetch('/api/admin/teams?all=true', {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to clear all teams');
+      }
+
+      setTeams([]);
+      router.refresh();
+    } catch (err: any) {
+      alert(err.message || 'Failed to clear all teams');
+    } finally {
+      setDeleteLoading(null);
+    }
+  };
+
   const exportToExcel = () => {
     const escapeCSV = (val: string) => {
       if (val.includes(',') || val.includes('"') || val.includes('\n')) {
@@ -279,6 +329,18 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
             <Download className="w-3.5 h-3.5" />
             EXPORT
           </button>
+          {teams.length > 0 && (
+            <button
+              type="button"
+              disabled={deleteLoading !== null}
+              onClick={handleClearAllTeams}
+              className="nirmaan-pill bg-nirmaan-red text-white text-[10px] font-black py-2 px-3 hover:opacity-90 transition-opacity shadow-xs flex-shrink-0 disabled:opacity-50"
+              title="Delete all teams and reset event statistics"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>{deleteLoading === 'all' ? 'CLEARING...' : 'CLEAR ALL TEAMS'}</span>
+            </button>
+          )}
         </div>
 
         <div className="flex items-center justify-between sm:justify-end gap-3 text-xs font-bold text-nirmaan-black/70">
@@ -484,6 +546,17 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                         <span>View Pass</span>
                         <span>➔</span>
                       </Link>
+
+                      <button
+                        type="button"
+                        disabled={deleteLoading === team.id}
+                        onClick={() => handleDeleteTeam(team.id, team.team_name)}
+                        className="nirmaan-pill bg-nirmaan-red/10 hover:bg-nirmaan-red hover:text-white text-nirmaan-red text-[10px] py-1 px-2 font-bold border border-nirmaan-red/30 transition-colors shadow-xs inline-flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                        title={`Delete ${team.team_name}`}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span className="hidden sm:inline">{deleteLoading === team.id ? 'Deleting...' : 'Delete'}</span>
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -619,12 +692,16 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
 
               <button
                 type="button"
-                disabled={reviewLoading}
-                onClick={() => handleReviewAction('reject')}
-                className="nirmaan-pill bg-nirmaan-red text-white font-black text-xs py-2.5 px-4 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                disabled={reviewLoading || deleteLoading === reviewModalTeam.id}
+                onClick={async () => {
+                  const teamToDelete = reviewModalTeam;
+                  setReviewModalTeam(null);
+                  await handleDeleteTeam(teamToDelete.id, teamToDelete.team_name);
+                }}
+                className="nirmaan-pill bg-nirmaan-black text-white font-black text-xs py-2.5 px-4 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
               >
-                <XCircle className="w-4 h-4" />
-                REJECT REGISTRATION
+                <Trash2 className="w-4 h-4 text-nirmaan-red" />
+                DELETE
               </button>
             </div>
           </div>
