@@ -111,7 +111,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           </div>
 
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-            <LiveRefresh intervalMs={5000} />
             <EditTeamModal team={team} members={members} />
             <Link
               href={`/pass?token=${team.qr_token}`}

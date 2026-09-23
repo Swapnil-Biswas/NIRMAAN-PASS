@@ -26,37 +26,22 @@ export default function Navbar() {
   useEffect(() => {
     let mounted = true;
 
-    const checkSession = () => {
-      fetch('/api/auth/session')
-        .then((res) => res.json())
-        .then((data) => {
-          if (!mounted) return;
-          setIsLoggedIn(Boolean(data.loggedIn));
-          setUserEmail(data.email || null);
-        })
-        .catch(() => {
-          if (!mounted) return;
-          setIsLoggedIn(false);
-        });
-    };
-
-    checkSession();
-
-    const handleFocus = () => {
-      if (document.visibilityState === 'visible') {
-        checkSession();
-      }
-    };
-
-    window.addEventListener('visibilitychange', handleFocus);
-    window.addEventListener('focus', handleFocus);
+    fetch('/api/auth/session')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!mounted) return;
+        setIsLoggedIn(Boolean(data.loggedIn));
+        setUserEmail(data.email || null);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setIsLoggedIn(false);
+      });
 
     return () => {
       mounted = false;
-      window.removeEventListener('visibilitychange', handleFocus);
-      window.removeEventListener('focus', handleFocus);
     };
-  }, []);
+  }, [pathname]);
 
   // Close mobile sidebar on route change
   useEffect(() => {

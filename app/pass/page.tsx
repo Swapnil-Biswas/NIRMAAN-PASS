@@ -94,7 +94,6 @@ export default async function PassPage({ searchParams }: PassPageProps) {
             </Link>
 
             <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
-              <LiveRefresh intervalMs={5000} />
               <span className="nirmaan-pill bg-white text-nirmaan-black border border-nirmaan-black/15 text-[11px] font-bold max-w-[140px] truncate">
                 {team.team_name}
               </span>
