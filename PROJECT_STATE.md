@@ -14,18 +14,17 @@
 ### Core Architecture Principle:
 > **"One Team. One QR. Clear Stage Separation."**
 
-1. **Stage 1: Pre-Event Registration Review & Approval**
-   - Participants register their team details.
-   - The anti-duplicate detection engine flags suspicious changes, duplicate emails, phones, names, or multiple login IDs.
-   - Teams enter a **Pending Approval** or **Flagged Review** state.
-   - **QR passes are withheld/gated** until organizers inspect and approve the registration in the Admin Console.
-   - Once approved, the team's official **Digital QR Pass** is unlocked on their pass view and dashboard.
+1. **Stage 1: Pre-Loaded Official Hackathon Roster & Direct Pass Access**
+   - 50 shortlisted teams and 184 participants are pre-loaded directly from `Nirmaan_Hackathon_Teams.xlsx`.
+   - Public registration forms and approval gates are removed.
+   - Team leaders sign in directly using their registered email to view and save their Digital QR Pass.
+   - Passes are immediately active without waiting for approval.
 
-2. **Stage 2: Event-Day On-Desk Registration & Attendance Check-In**
-   - Participating teams present their approved digital QR pass at the BMSIT registration desk on event day.
-   - Desk staff scan the QR code via the **High-Speed Queue Scanner** (`/admin/scanner`).
+2. **Stage 2: Event-Day On-Desk Attendance & Food Operations**
+   - Participating teams present their digital QR pass at the venue desk on event day.
+   - Desk staff scan the QR code via the **High-Speed Queue Scanner** (`/admin/scanner`) or Table modal.
    - Staff mark physical attendance (**Present** / **Absent**) for each registered member.
-   - The verified present headcount caps meal allocations (Breakfast, Lunch, Dinner) while coffee/tea remains unlimited.
+   - The verified present headcount caps meal allocations (Breakfast, Lunch, Dinner) while coffee/tea and unlimited events track dynamically.
 
 ---
 
@@ -67,6 +66,13 @@
 - **Dynamic QR Scanner Integration**: Custom events appear directly alongside baseline modes in the Scanner mode selector bar with accent colors, icons, and a dedicated `CustomServeModal`.
 - **Database & In-Memory Store**: Added Supabase migration `20260105000000_custom_scan_events.sql` and full standalone mock DB support with atomic record tracking.
 - **Automated Test Coverage**: 71/71 tests passing across 9 test suites including `tests/custom-events.test.ts`.
+
+### 📋 2.6 Pre-Loaded Official Roster & Direct Leader Email Login
+- **Database Ingestion**: Fed all 50 hackathon teams and 184 participants from `Nirmaan_Hackathon_Teams.xlsx` into `lib/data/seeded_teams.json` and store.
+- **Approval System Removal**: Removed registration gating and approval workflows. All official teams have immediately active digital QR passes.
+- **Leader Email Authentication**: Team leaders enter their registered email at `/login` or via the homepage pass lookup to instantly access, download, and share their team's Digital QR Pass.
+- **Streamlined Admin Console**: Upgraded `TeamsTable.tsx` to focus on On-Desk physical attendance, member roster, meal consumption metrics, CSV exports, and individual team pass inspection.
+
 
 
 ### 🔒 2.5 Full Production Security Hardening & Audit Complete

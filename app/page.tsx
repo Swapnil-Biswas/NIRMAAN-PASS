@@ -59,11 +59,11 @@ export default async function HomePage() {
               </Link>
             ) : (
               <Link
-                href="/register"
+                href="/login"
                 className="nirmaan-btn nirmaan-btn-dark text-xs px-6 py-3 font-bold shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto"
               >
                 <LogIn className="w-4 h-4 text-nirmaan-amber" />
-                <span>REGISTER TEAM</span>
+                <span>TEAM LOGIN</span>
               </Link>
             )}
           </div>

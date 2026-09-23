@@ -69,9 +69,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 Team Login
               </Link>
               <span className="text-nirmaan-black/20">•</span>
-              <Link href="/register" className="text-nirmaan-black/70 hover:underline flex items-center gap-1">
-                <KeyRound className="w-3.5 h-3.5" />
-                Register Team
+              <Link href="/" className="text-nirmaan-black/70 hover:underline flex items-center gap-1">
+                Back to Home
               </Link>
             </div>
           </div>
@@ -123,20 +122,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </Link>
           </div>
         </div>
-
-        {/* Approval Notice Banner if Registration is Pending */}
-        {team.review_status === 'pending' || team.review_status === 'flagged_duplicate' ? (
-          <div className="mb-8 p-4 sm:p-5 rounded-2xl bg-nirmaan-amber/15 border-2 border-nirmaan-amber text-nirmaan-black space-y-2 animate-in fade-in duration-200">
-            <div className="flex items-center gap-2 font-display text-xs sm:text-sm font-black uppercase text-nirmaan-black">
-              <Clock className="w-4 h-4 text-nirmaan-amber flex-shrink-0" />
-              <span>REGISTRATION STATUS: AWAITING ORGANIZER APPROVAL</span>
-            </div>
-            <p className="text-xs sm:text-sm font-medium text-nirmaan-black/85 leading-relaxed">
-              Your team registration has been submitted and is currently being reviewed by the NIRMAAN 2026 organizing team.
-              Once approved, your official <strong>Digital QR Pass</strong> will unlock automatically. Present your QR Pass at the venue desk on event day for on-desk registration and food coupons.
-            </p>
-          </div>
-        ) : null}
 
         {/* Food & Beverage Entitlement Grid */}
         <div className="mb-10">

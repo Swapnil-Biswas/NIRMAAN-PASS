@@ -169,17 +169,19 @@ describe('Admin Security & Route Protection', () => {
   });
 });
 
-describe('Dummy Data Absence Verification', () => {
-  it('seeded dataset starts completely clean with 0 initial teams', () => {
-    expect(seededDataset.teams.length).toBe(0);
+describe('Official Shortlist Dataset Verification', () => {
+  it('seeded dataset contains 50 official hackathon teams', () => {
+    expect(seededDataset.teams.length).toBe(50);
   });
 
-  it('seeded dataset starts completely clean with 0 initial members', () => {
-    expect(seededDataset.members.length).toBe(0);
+  it('seeded dataset contains 184 official team members', () => {
+    expect(seededDataset.members.length).toBe(184);
   });
 
-  it('does not contain any fake teams', () => {
-    expect(seededDataset.teams).toEqual([]);
-    expect(seededDataset.members).toEqual([]);
+  it('contains valid team leader emails for authentication', () => {
+    const leaderEmails = seededDataset.members.filter((m: any) => m.is_leader).map((m: any) => m.email);
+    expect(leaderEmails.length).toBe(50);
+    expect(leaderEmails).toContain('1nt24cs238.sagar@nmit.ac.in');
+    expect(leaderEmails).toContain('vamshikrishms@gmail.com');
   });
 });

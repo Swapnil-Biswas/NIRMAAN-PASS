@@ -140,16 +140,16 @@ function LoginForm() {
           </form>
         </div>
 
-        {/* Footer Links */}
-        <div className="text-center space-y-3">
+        {/* Footer Note */}
+        <div className="text-center space-y-2">
           <p className="text-xs text-nirmaan-black/50 font-medium">
-            Haven&apos;t registered your team yet?
+            Team data is loaded directly from the official NIRMAAN 2026 shortlist.
           </p>
           <Link
-            href="/register"
-            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-nirmaan-blue hover:text-nirmaan-blue/80 transition-colors"
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase text-nirmaan-black/70 hover:text-nirmaan-black transition-colors"
           >
-            REGISTER YOUR TEAM
+            RETURN TO HOMEPAGE
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>

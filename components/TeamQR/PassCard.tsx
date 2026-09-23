@@ -152,50 +152,7 @@ export default function PassCard({ team, members = [] }: PassCardProps) {
           )}
         </div>
 
-        {/* Status Check: Pending Approval / Rejected vs Approved */}
-        {team.review_status === 'pending' || team.review_status === 'flagged_duplicate' ? (
-          <div className="bg-white p-5 sm:p-8 rounded-2xl shadow-inner border-2 border-dashed border-nirmaan-amber flex flex-col items-center justify-center text-center mb-6 space-y-4">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-nirmaan-amber/20 border-2 border-nirmaan-amber flex items-center justify-center text-nirmaan-black animate-pulse">
-              <AlertTriangle className="w-7 h-7 sm:w-8 sm:h-8 text-nirmaan-amber" />
-            </div>
-
-            <div className="space-y-1.5 max-w-sm">
-              <span className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black text-[10px] font-black uppercase">
-                AWAITING ORGANIZER APPROVAL
-              </span>
-              <h3 className="font-display text-base sm:text-lg font-black uppercase text-nirmaan-black pt-1">
-                REGISTRATION UNDER REVIEW
-              </h3>
-              <p className="text-xs font-semibold text-nirmaan-black/70 leading-relaxed">
-                Your team registration is currently being verified by the NIRMAAN 2026 Organizing Committee.
-              </p>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-nirmaan-cream/60 border border-nirmaan-black/10 text-left w-full space-y-1">
-              <p className="text-[11px] font-black uppercase text-nirmaan-black flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-nirmaan-blue" />
-                ON-DESK REGISTRATION PASS
-              </p>
-              <p className="text-[11px] text-nirmaan-black/70 leading-normal">
-                Once approved, your official <strong>Digital QR Pass</strong> will be unlocked here. You must present that QR Pass at the venue desk on event day for physical registration & food coupons.
-              </p>
-            </div>
-          </div>
-        ) : team.review_status === 'rejected' || team.review_status === 'merged' ? (
-          <div className="bg-white p-5 sm:p-8 rounded-2xl border-2 border-nirmaan-red/30 flex flex-col items-center justify-center text-center mb-6 space-y-3">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-nirmaan-red/10 border border-nirmaan-red/30 flex items-center justify-center text-nirmaan-red">
-              <AlertTriangle className="w-6 h-6 sm:w-7 sm:h-7" />
-            </div>
-            <h3 className="font-display text-sm sm:text-base font-black uppercase text-nirmaan-red">
-              {team.review_status === 'merged' ? 'DUPLICATE TEAM MERGED' : 'REGISTRATION REJECTED'}
-            </h3>
-            <p className="text-xs font-medium text-nirmaan-black/70 max-w-xs">
-              {team.duplicate_notes || 'This registration is inactive. Please contact the NIRMAAN help desk for assistance.'}
-            </p>
-          </div>
-        ) : (
-          <>
-            {/* Enhanced QR Code Presentation Box */}
+        {/* Enhanced QR Code Presentation Box */}
             <div className="bg-nirmaan-cream p-4 sm:p-7 rounded-2xl sm:rounded-3xl shadow-sm border-2 border-nirmaan-black/15 flex flex-col items-center justify-center mb-5 sm:mb-6">
               <div className="flex items-center gap-1.5 mb-3.5 sm:mb-4 text-[10px] font-black uppercase tracking-wider text-nirmaan-black/70 bg-white px-3 sm:px-3.5 py-1 rounded-full border border-nirmaan-black/10 shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-nirmaan-green-bright animate-pulse" />
@@ -264,8 +221,6 @@ export default function PassCard({ team, members = [] }: PassCardProps) {
                 )}
               </button>
             </div>
-          </>
-        )}
       </div>
     </div>
   );

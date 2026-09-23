@@ -30,6 +30,7 @@ export interface Member {
   email: string;
   normalized_email?: string;
   present: boolean;
+  is_leader?: boolean;
   created_at: string;
 }
 

@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ShieldCheck,
-  AlertTriangle,
   Eye,
   Utensils,
   Coffee,
@@ -12,15 +11,13 @@ import {
   Moon,
   Download,
   CheckCircle2,
-  XCircle,
-  GitMerge,
-  Filter,
   Users,
   UserCheck,
-  Clock,
   Trash2,
+  Phone,
+  Mail,
 } from 'lucide-react';
-import { Team, Member, TeamReviewStatus } from '@/types/database';
+import { Team, Member } from '@/types/database';
 import Link from 'next/link';
 import RegistrationModal from '@/components/Admin/RegistrationModal';
 
@@ -41,40 +38,35 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
   const [search, setSearch] = useState('');
   const [pageSize, setPageSize] = useState<number>(25);
   const [page, setPage] = useState<number>(1);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'flagged' | 'approved' | 'merged_rejected'>('all');
-  const [reviewModalTeam, setReviewModalTeam] = useState<TeamRowData | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'checked_in' | 'not_checked_in'>('all');
   const [registrationModalTeam, setRegistrationModalTeam] = useState<TeamRowData | null>(null);
-  const [reviewLoading, setReviewLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
   const [checkInLoading, setCheckInLoading] = useState(false);
-  const [reviewError, setReviewError] = useState('');
 
   // Keep local state in sync if prop updates
   React.useEffect(() => {
     setTeams(initialTeams);
   }, [initialTeams]);
 
-  const pendingCount = teams.filter((t) => t.review_status === 'pending').length;
-  const flaggedCount = teams.filter((t) => t.review_status === 'flagged_duplicate').length;
+  const checkedInCount = teams.filter((t) => t.checked_in).length;
+  const notCheckedInCount = teams.filter((t) => !t.checked_in).length;
 
   const filteredTeams = teams.filter((t) => {
+    const leader = t.members.find((m) => m.is_leader) || t.members[0];
     const matchesSearch =
       t.team_name.toLowerCase().includes(search.toLowerCase()) ||
-      t.college.toLowerCase().includes(search.toLowerCase());
+      t.college.toLowerCase().includes(search.toLowerCase()) ||
+      (leader?.name && leader.name.toLowerCase().includes(search.toLowerCase())) ||
+      (leader?.email && leader.email.toLowerCase().includes(search.toLowerCase())) ||
+      (leader?.phone && leader.phone.includes(search));
 
     if (!matchesSearch) return false;
 
-    if (statusFilter === 'pending') {
-      return t.review_status === 'pending';
+    if (statusFilter === 'checked_in') {
+      return t.checked_in;
     }
-    if (statusFilter === 'flagged') {
-      return t.review_status === 'flagged_duplicate';
-    }
-    if (statusFilter === 'approved') {
-      return !t.review_status || t.review_status === 'approved';
-    }
-    if (statusFilter === 'merged_rejected') {
-      return t.review_status === 'merged' || t.review_status === 'rejected';
+    if (statusFilter === 'not_checked_in') {
+      return !t.checked_in;
     }
     return true;
   });
@@ -91,32 +83,6 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
     setPage(1);
   };
 
-  const handleQuickApprove = async (teamId: string) => {
-    setReviewLoading(true);
-    try {
-      const res = await fetch('/api/admin/teams/review', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'approve',
-          teamId,
-          notes: 'Approved by organizer via teams table',
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Failed to approve team');
-      }
-      setTeams((prev) =>
-        prev.map((t) => (t.id === teamId ? { ...t, review_status: 'approved' } : t))
-      );
-    } catch (err: any) {
-      alert(err.message || 'Failed to approve team');
-    } finally {
-      setReviewLoading(false);
-    }
-  };
-
   const handleCheckInConfirm = async (presentMemberIds: string[]) => {
     if (!registrationModalTeam) return;
     setCheckInLoading(true);
@@ -126,13 +92,14 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           qr_token: registrationModalTeam.qr_token,
-          purpose: 'registration',
+          action: 'registration',
           present_member_ids: presentMemberIds,
         }),
       });
+
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Failed to complete registration check-in');
+        throw new Error(data.message || 'On-desk check-in failed');
       }
 
       setTeams((prev) =>
@@ -152,54 +119,13 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
           return t;
         })
       );
+
       setRegistrationModalTeam(null);
+      router.refresh();
     } catch (err: any) {
-      alert(err.message || 'Error saving registration check-in');
+      alert(err.message || 'Error completing on-desk check-in');
     } finally {
       setCheckInLoading(false);
-    }
-  };
-
-  const handleReviewAction = async (action: 'approve' | 'reject' | 'merge', matchedTeamId?: string) => {
-    if (!reviewModalTeam) return;
-    setReviewLoading(true);
-    setReviewError('');
-
-    try {
-      const res = await fetch('/api/admin/teams/review', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action,
-          teamId: reviewModalTeam.id,
-          primaryTeamId: matchedTeamId || reviewModalTeam.duplicate_match_team_id,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || `Failed to ${action} team`);
-      }
-
-      // Update state locally
-      setTeams((prev) =>
-        prev.map((t) => {
-          if (t.id === reviewModalTeam.id) {
-            return {
-              ...t,
-              review_status: action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'merged',
-              merged_into_team_id: action === 'merge' ? (matchedTeamId || reviewModalTeam.duplicate_match_team_id || null) : t.merged_into_team_id,
-            };
-          }
-          return t;
-        })
-      );
-
-      setReviewModalTeam(null);
-    } catch (err: any) {
-      setReviewError(err.message || 'Error processing review action');
-    } finally {
-      setReviewLoading(false);
     }
   };
 
@@ -263,35 +189,40 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
       'Team Name',
       'College',
       'Track',
-      'Review Status',
+      'Leader Name',
+      'Leader Email',
+      'Leader Phone',
       'Status',
       'Total Members',
       'Present Count',
-      'Member Names',
-      'Member Emails',
-      'Member Phones',
+      'Member Names & Phones',
       'Breakfast Served',
       'Lunch Served',
       'Dinner Served',
       'Coffee / Tea Served',
+      'Notes',
     ];
 
-    const rows = filteredTeams.map((team) => [
-      escapeCSV(team.team_name),
-      escapeCSV(team.college),
-      escapeCSV(team.track || 'N/A'),
-      team.review_status || 'approved',
-      team.checked_in ? 'Checked In' : 'Unregistered',
-      String(team.total_members),
-      String(team.present_count),
-      escapeCSV(team.members.map((m) => m.name).join('; ')),
-      escapeCSV(team.members.map((m) => m.email).join('; ')),
-      escapeCSV(team.members.map((m) => m.phone).join('; ')),
-      String(team.breakfast_count),
-      String(team.lunch_count),
-      String(team.dinner_count),
-      String(team.coffee_count),
-    ]);
+    const rows = filteredTeams.map((team) => {
+      const leader = team.members.find((m) => m.is_leader) || team.members[0];
+      return [
+        escapeCSV(team.team_name),
+        escapeCSV(team.college),
+        escapeCSV(team.track || 'Open Innovation'),
+        escapeCSV(leader?.name || ''),
+        escapeCSV(leader?.email || ''),
+        escapeCSV(leader?.phone || ''),
+        team.checked_in ? 'Checked In' : 'Not Checked In',
+        String(team.total_members),
+        String(team.present_count),
+        escapeCSV(team.members.map((m) => `${m.name} (${m.phone})`).join('; ')),
+        String(team.breakfast_count),
+        String(team.lunch_count),
+        String(team.dinner_count),
+        String(team.coffee_count),
+        escapeCSV(team.duplicate_notes || ''),
+      ];
+    });
 
     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
     const BOM = '\uFEFF';
@@ -306,27 +237,70 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
     URL.revokeObjectURL(url);
   };
 
-  const matchedTeam = reviewModalTeam?.duplicate_match_team_id
-    ? teams.find((t) => t.id === reviewModalTeam.duplicate_match_team_id)
-    : null;
-
   return (
     <div className="w-full space-y-4">
-      {/* Search & Pagination Controls */}
+      {/* Filter Tabs & Search Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2 w-full max-w-md">
+        {/* Filter Pills */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              setStatusFilter('all');
+              setPage(1);
+            }}
+            className={`nirmaan-pill text-xs py-1.5 px-3 font-bold transition-colors cursor-pointer ${
+              statusFilter === 'all'
+                ? 'bg-nirmaan-black text-white'
+                : 'bg-white text-nirmaan-black border border-nirmaan-black/15 hover:bg-nirmaan-cream'
+            }`}
+          >
+            All Teams ({teams.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setStatusFilter('checked_in');
+              setPage(1);
+            }}
+            className={`nirmaan-pill text-xs py-1.5 px-3 font-bold transition-colors cursor-pointer ${
+              statusFilter === 'checked_in'
+                ? 'bg-nirmaan-green-dark text-white'
+                : 'bg-white text-nirmaan-black border border-nirmaan-black/15 hover:bg-nirmaan-cream'
+            }`}
+          >
+            Checked In ({checkedInCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setStatusFilter('not_checked_in');
+              setPage(1);
+            }}
+            className={`nirmaan-pill text-xs py-1.5 px-3 font-bold transition-colors cursor-pointer ${
+              statusFilter === 'not_checked_in'
+                ? 'bg-nirmaan-amber text-nirmaan-black'
+                : 'bg-white text-nirmaan-black border border-nirmaan-black/15 hover:bg-nirmaan-cream'
+            }`}
+          >
+            Not Checked In ({notCheckedInCount})
+          </button>
+        </div>
+
+        {/* Search & Actions */}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <input
             type="text"
-            placeholder="Search team by name or college..."
+            placeholder="Search by team, college, leader, email..."
             value={search}
             onChange={handleSearchChange}
-            className="flex-1 px-4 py-2 rounded-full border border-nirmaan-black/20 bg-white font-medium text-xs outline-none focus:border-nirmaan-black"
+            className="flex-1 sm:w-72 px-4 py-2 rounded-full border border-nirmaan-black/20 bg-white font-medium text-xs outline-none focus:border-nirmaan-black"
           />
           <button
             type="button"
             onClick={exportToExcel}
             className="nirmaan-pill bg-nirmaan-green-dark text-white text-[10px] font-black py-2 px-3 hover:opacity-90 transition-opacity shadow-xs flex-shrink-0"
-            title="Export to Excel (CSV)"
+            title="Export to CSV"
           >
             <Download className="w-3.5 h-3.5" />
             EXPORT
@@ -340,16 +314,19 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
               title="Delete all teams and reset event statistics"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              <span>{deleteLoading === 'all' ? 'CLEARING...' : 'CLEAR ALL TEAMS'}</span>
+              <span>{deleteLoading === 'all' ? 'CLEARING...' : 'CLEAR'}</span>
             </button>
           )}
         </div>
+      </div>
 
-        <div className="flex items-center justify-between sm:justify-end gap-3 text-xs font-bold text-nirmaan-black/70">
-          <span className="hidden md:inline">
-            {filteredTeams.length} of {teams.length} teams
-          </span>
+      {/* Pagination & Count Header */}
+      <div className="flex items-center justify-between text-xs font-bold text-nirmaan-black/70 px-1">
+        <span>
+          Showing {filteredTeams.length} of {teams.length} teams
+        </span>
 
+        <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-full border border-nirmaan-black/15 shadow-xs">
             <span className="text-[10px] uppercase text-nirmaan-black/50">Rows:</span>
             <select
@@ -399,318 +376,159 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
           <table className="w-full text-left text-xs">
             <thead className="bg-nirmaan-cream border-b border-nirmaan-black/10 text-nirmaan-black uppercase font-display font-bold">
               <tr>
-                <th className="p-3.5">Team & College</th>
-                <th className="p-3.5">Registration Status</th>
-                <th className="p-3.5 text-center">On-Desk Check-In</th>
+                <th className="p-3.5">Team &amp; College</th>
+                <th className="p-3.5">Leader &amp; Contact</th>
+                <th className="p-3.5 text-center">Roster</th>
+                <th className="p-3.5 text-center">Desk Check-In</th>
                 <th className="p-3.5 text-center">Breakfast</th>
                 <th className="p-3.5 text-center">Lunch</th>
                 <th className="p-3.5 text-center">Dinner</th>
-                <th className="p-3.5 text-center">Coffee / Tea</th>
+                <th className="p-3.5 text-center">Coffee</th>
                 <th className="p-3.5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-nirmaan-black/5 font-medium">
               {filteredTeams.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-10 text-center text-nirmaan-black/50 font-bold space-y-1">
+                  <td colSpan={9} className="p-10 text-center text-nirmaan-black/50 font-bold space-y-1">
                     <p className="text-sm text-nirmaan-black/70 font-black uppercase">
-                      {search ? `No teams found matching "${search}"` : 'No teams found in this category'}
+                      {search ? `No teams found matching "${search}"` : 'No teams found'}
                     </p>
                     <p className="text-xs font-medium text-nirmaan-black/50">
-                      {search ? 'Try clearing your search query.' : 'Teams will appear here as they register.'}
+                      Try clearing your search query or adjusting filters.
                     </p>
                   </td>
                 </tr>
               ) : (
-                paginatedTeams.map((team) => (
-                  <tr key={team.id} className="hover:bg-nirmaan-cream/40 transition-colors">
-                    <td className="p-3.5">
-                      <div className="font-bold text-sm text-nirmaan-black flex items-center gap-1.5">
-                        <span>{team.team_name}</span>
-                        {team.review_status === 'flagged_duplicate' && (
-                          <span className="bg-nirmaan-amber/20 text-nirmaan-black text-[9px] px-1.5 py-0.5 rounded font-black border border-nirmaan-amber/40">
-                            FLAGGED
+                paginatedTeams.map((team) => {
+                  const leader = team.members.find((m) => m.is_leader) || team.members[0];
+                  return (
+                    <tr key={team.id} className="hover:bg-nirmaan-cream/40 transition-colors">
+                      {/* Team & College */}
+                      <td className="p-3.5">
+                        <div className="font-bold text-sm text-nirmaan-black">
+                          {team.team_name}
+                        </div>
+                        <div className="text-[11px] text-nirmaan-black/60 leading-snug">
+                          {team.college}
+                        </div>
+                        {team.duplicate_notes && (
+                          <div className="text-[10px] text-nirmaan-amber font-semibold mt-0.5 line-clamp-1">
+                            Note: {team.duplicate_notes}
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Leader & Contact */}
+                      <td className="p-3.5">
+                        <div className="font-bold text-xs text-nirmaan-black">
+                          {leader?.name || 'N/A'}
+                        </div>
+                        {leader?.email && (
+                          <div className="text-[11px] text-nirmaan-black/70 flex items-center gap-1">
+                            <Mail className="w-3 h-3 text-nirmaan-black/40 flex-shrink-0" />
+                            <span className="truncate max-w-[180px]">{leader.email}</span>
+                          </div>
+                        )}
+                        {leader?.phone && (
+                          <div className="text-[11px] text-nirmaan-black/60 flex items-center gap-1">
+                            <Phone className="w-3 h-3 text-nirmaan-black/40 flex-shrink-0" />
+                            <span>{leader.phone}</span>
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Roster count */}
+                      <td className="p-3.5 text-center">
+                        <span className="nirmaan-pill bg-nirmaan-black/5 text-nirmaan-black text-[10px] font-bold">
+                          {team.total_members} Members
+                        </span>
+                      </td>
+
+                      {/* Desk Check-In */}
+                      <td className="p-3.5 text-center">
+                        {team.checked_in ? (
+                          <span className="inline-flex items-center gap-1 bg-nirmaan-green-bright/20 text-nirmaan-green-dark border border-nirmaan-green-dark/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+                            <ShieldCheck className="w-3 h-3" />
+                            <span>{team.present_count}/{team.total_members} Present</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 bg-nirmaan-black/5 text-nirmaan-black/50 text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
+                            <span>Not Checked In</span>
                           </span>
                         )}
-                      </div>
-                      <div className="text-[11px] text-nirmaan-black/60">
-                        {team.college}
-                      </div>
-                      {team.duplicate_notes && (
-                        <div className="text-[10px] text-nirmaan-amber font-semibold mt-0.5 line-clamp-1">
-                          Note: {team.duplicate_notes}
-                        </div>
-                      )}
-                    </td>
+                      </td>
 
-                    <td className="p-3.5">
-                      {team.review_status === 'pending' ? (
+                      {/* Breakfast */}
+                      <td className="p-3.5 text-center">
+                        <span className="font-bold">{team.breakfast_count}</span>
+                        <span className="text-nirmaan-black/40 text-[10px]">
+                          /{team.checked_in ? team.present_count : team.total_members}
+                        </span>
+                      </td>
+
+                      {/* Lunch */}
+                      <td className="p-3.5 text-center">
+                        <span className="font-bold">{team.lunch_count}</span>
+                        <span className="text-nirmaan-black/40 text-[10px]">
+                          /{team.checked_in ? team.present_count : team.total_members}
+                        </span>
+                      </td>
+
+                      {/* Dinner */}
+                      <td className="p-3.5 text-center">
+                        <span className="font-bold">{team.dinner_count}</span>
+                        <span className="text-nirmaan-black/40 text-[10px]">
+                          /{team.checked_in ? team.present_count : team.total_members}
+                        </span>
+                      </td>
+
+                      {/* Coffee */}
+                      <td className="p-3.5 text-center font-bold text-nirmaan-blue">
+                        {team.coffee_count}
+                      </td>
+
+                      {/* Actions */}
+                      <td className="p-3.5 text-right space-x-1.5 whitespace-nowrap">
                         <button
                           type="button"
-                          onClick={() => setReviewModalTeam(team)}
-                          className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black text-[10px] font-black hover:opacity-90 transition-opacity flex items-center gap-1 cursor-pointer"
-                          title="Click to review details and approve QR Pass"
+                          onClick={() => setRegistrationModalTeam(team)}
+                          className="nirmaan-pill bg-nirmaan-amber hover:opacity-90 text-nirmaan-black text-[10px] py-1 px-2.5 font-black shadow-xs inline-flex items-center gap-1 cursor-pointer"
+                          title="Mark on-desk physical attendance"
                         >
-                          <Clock className="w-3 h-3 text-nirmaan-black" />
-                          <span>PENDING APPROVAL</span>
+                          <UserCheck className="w-3 h-3" />
+                          <span>{team.checked_in ? 'Edit Attendance' : 'Desk Check-In'}</span>
                         </button>
-                      ) : team.review_status === 'flagged_duplicate' ? (
+
+                        <Link
+                          href={`/admin/dashboard/pass?teamId=${team.id}`}
+                          className="nirmaan-pill bg-nirmaan-cream hover:bg-nirmaan-black hover:text-white text-nirmaan-black text-[10px] py-1 px-2.5 border border-nirmaan-black/15 transition-colors shadow-xs inline-flex items-center gap-1"
+                          title="View Team Pass & QR"
+                        >
+                          <span>Pass</span>
+                          <span>➔</span>
+                        </Link>
+
                         <button
                           type="button"
-                          onClick={() => setReviewModalTeam(team)}
-                          className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black text-[10px] font-black hover:opacity-90 transition-opacity flex items-center gap-1"
-                          title="Suspicious or duplicate login detected - review required"
+                          disabled={deleteLoading === team.id}
+                          onClick={() => handleDeleteTeam(team.id, team.team_name)}
+                          className="nirmaan-pill bg-nirmaan-red/10 hover:bg-nirmaan-red hover:text-white text-nirmaan-red text-[10px] py-1 px-2 font-bold border border-nirmaan-red/30 transition-colors shadow-xs inline-flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                          title={`Delete ${team.team_name}`}
                         >
-                          <AlertTriangle className="w-3 h-3" />
-                          <span>REVIEW REQUIRED</span>
+                          <Trash2 className="w-3 h-3" />
                         </button>
-                      ) : team.review_status === 'rejected' ? (
-                        <span className="nirmaan-pill bg-nirmaan-red text-white text-[10px] font-black">
-                          <XCircle className="w-3 h-3" />
-                          <span>REJECTED</span>
-                        </span>
-                      ) : team.review_status === 'merged' ? (
-                        <span className="nirmaan-pill bg-nirmaan-black/20 text-nirmaan-black/80 text-[10px] font-bold">
-                          <GitMerge className="w-3 h-3" />
-                          <span>MERGED</span>
-                        </span>
-                      ) : (
-                        <span className="nirmaan-pill bg-nirmaan-green-bright/20 text-nirmaan-green-dark border border-nirmaan-green-dark/30 text-[10px] font-black">
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>APPROVED</span>
-                        </span>
-                      )}
-                    </td>
-
-                    <td className="p-3.5 text-center">
-                      {team.checked_in ? (
-                        <span className="inline-flex items-center gap-1 bg-nirmaan-green-bright/20 text-nirmaan-green-dark border border-nirmaan-green-dark/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
-                          <ShieldCheck className="w-3 h-3" />
-                          <span>{team.present_count}/{team.total_members} Present</span>
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 bg-nirmaan-black/5 text-nirmaan-black/50 text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
-                          <span>Not Checked In</span>
-                        </span>
-                      )}
-                    </td>
-
-                    <td className="p-3.5 text-center">
-                      <span className="font-bold">
-                        {team.breakfast_count}
-                      </span>
-                      <span className="text-nirmaan-black/40 text-[10px]">
-                        /{team.checked_in ? team.present_count : team.total_members}
-                      </span>
-                    </td>
-
-                    <td className="p-3.5 text-center">
-                      <span className="font-bold">
-                        {team.lunch_count}
-                      </span>
-                      <span className="text-nirmaan-black/40 text-[10px]">
-                        /{team.checked_in ? team.present_count : team.total_members}
-                      </span>
-                    </td>
-
-                    <td className="p-3.5 text-center">
-                      <span className="font-bold">
-                        {team.dinner_count}
-                      </span>
-                      <span className="text-nirmaan-black/40 text-[10px]">
-                        /{team.checked_in ? team.present_count : team.total_members}
-                      </span>
-                    </td>
-
-                    <td className="p-3.5 text-center font-bold text-nirmaan-blue">
-                      {team.coffee_count} cups
-                    </td>
-
-                    <td className="p-3.5 text-right space-x-1.5 whitespace-nowrap">
-                      {team.review_status === 'pending' || team.review_status === 'flagged_duplicate' ? (
-                        <button
-                          type="button"
-                          disabled={reviewLoading}
-                          onClick={() => setReviewModalTeam(team)}
-                          className="nirmaan-pill bg-nirmaan-green-bright hover:opacity-90 text-nirmaan-black text-[10px] py-1 px-2.5 font-black shadow-xs inline-flex items-center gap-1 cursor-pointer"
-                          title="Review Registration Details & Approve QR Pass"
-                        >
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>Review & Approve</span>
-                        </button>
-                      ) : null}
-
-                      <Link
-                        href={`/admin/dashboard/pass?teamId=${team.id}`}
-                        className="nirmaan-pill bg-nirmaan-cream hover:bg-nirmaan-black hover:text-white text-nirmaan-black text-[10px] py-1 px-2.5 border border-nirmaan-black/15 transition-colors shadow-xs inline-flex items-center gap-1"
-                        title="View Team Pass & Details"
-                      >
-                        <span>View Pass</span>
-                        <span>➔</span>
-                      </Link>
-
-                      <button
-                        type="button"
-                        disabled={deleteLoading === team.id}
-                        onClick={() => handleDeleteTeam(team.id, team.team_name)}
-                        className="nirmaan-pill bg-nirmaan-red/10 hover:bg-nirmaan-red hover:text-white text-nirmaan-red text-[10px] py-1 px-2 font-bold border border-nirmaan-red/30 transition-colors shadow-xs inline-flex items-center gap-1 cursor-pointer disabled:opacity-50"
-                        title={`Delete ${team.team_name}`}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        <span className="hidden sm:inline">{deleteLoading === team.id ? 'Deleting...' : 'Delete'}</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Duplicate Review Modal */}
-      {reviewModalTeam && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-nirmaan-black/60 backdrop-blur-xs">
-          <div className="bg-white border-2 border-nirmaan-black rounded-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-2xl overflow-y-auto max-h-[90vh]">
-            <div className="flex items-center justify-between border-b border-nirmaan-black/10 pb-3">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-nirmaan-amber flex-shrink-0" />
-                <h3 className="font-display text-sm sm:text-base font-black uppercase text-nirmaan-black">
-                  DUPLICATE REGISTRATION REVIEW
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setReviewModalTeam(null)}
-                className="text-nirmaan-black/50 hover:text-nirmaan-black font-bold text-lg px-2 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            {reviewError && (
-              <div className="p-3 bg-nirmaan-red/10 border border-nirmaan-red/30 rounded-xl text-xs font-bold text-nirmaan-red">
-                {reviewError}
-              </div>
-            )}
-
-            {/* Flag / Review Reason Banner */}
-            <div className={`p-3.5 rounded-xl text-xs font-medium space-y-1 ${
-              reviewModalTeam.review_status === 'flagged_duplicate'
-                ? 'bg-nirmaan-amber/15 border border-nirmaan-amber/40 text-nirmaan-black'
-                : 'bg-nirmaan-blue/10 border border-nirmaan-blue/30 text-nirmaan-black'
-            }`}>
-              <div className="font-bold text-nirmaan-black uppercase flex items-center gap-1.5">
-                <span>{reviewModalTeam.review_status === 'flagged_duplicate' ? 'Flagged Reason:' : 'Registration Review:'}</span>
-              </div>
-              <p className="text-nirmaan-black/80">
-                {reviewModalTeam.duplicate_notes || (
-                  reviewModalTeam.review_status === 'flagged_duplicate'
-                    ? 'Potential duplicate or altered login details detected.'
-                    : 'New team registration awaiting organizer review and approval before issuing QR pass.'
-                )}
-              </p>
-            </div>
-
-            {/* Side-by-side comparison */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              {/* Flagged Team */}
-              <div className="p-4 rounded-xl border-2 border-nirmaan-amber/50 bg-nirmaan-cream/30 space-y-2.5">
-                <span className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black text-[9px] font-black">
-                  NEW REGISTRATION (UNDER REVIEW)
-                </span>
-                <div>
-                  <h4 className="font-display font-black text-sm uppercase text-nirmaan-black">
-                    {reviewModalTeam.team_name}
-                  </h4>
-                  <p className="text-nirmaan-black/60 font-semibold">{reviewModalTeam.college}</p>
-                  <p className="text-[11px] text-nirmaan-blue font-bold mt-0.5">{reviewModalTeam.track || 'Track not specified'}</p>
-                </div>
-                <div className="space-y-1 pt-1 border-t border-nirmaan-black/10">
-                  <p className="font-bold text-[10px] uppercase text-nirmaan-black/50">Members ({reviewModalTeam.members.length}):</p>
-                  {reviewModalTeam.members.map((m) => (
-                    <div key={m.id} className="text-[11px] text-nirmaan-black/80">
-                      • <span className="font-bold">{m.name}</span> ({m.email} / {m.phone})
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Matched Existing Team (if available) */}
-              <div className="p-4 rounded-xl border border-nirmaan-black/15 bg-white space-y-2.5">
-                <span className="nirmaan-pill bg-nirmaan-blue text-white text-[9px] font-black">
-                  MATCHED EXISTING TEAM
-                </span>
-                {matchedTeam ? (
-                  <>
-                    <div>
-                      <h4 className="font-display font-black text-sm uppercase text-nirmaan-black">
-                        {matchedTeam.team_name}
-                      </h4>
-                      <p className="text-nirmaan-black/60 font-semibold">{matchedTeam.college}</p>
-                      <p className="text-[11px] text-nirmaan-blue font-bold mt-0.5">{matchedTeam.track || 'Track not specified'}</p>
-                    </div>
-                    <div className="space-y-1 pt-1 border-t border-nirmaan-black/10">
-                      <p className="font-bold text-[10px] uppercase text-nirmaan-black/50">Members ({matchedTeam.members.length}):</p>
-                      {matchedTeam.members.map((m) => (
-                        <div key={m.id} className="text-[11px] text-nirmaan-black/80">
-                          • <span className="font-bold">{m.name}</span> ({m.email} / {m.phone})
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-nirmaan-black/50 font-medium py-4">
-                    No matched collision team. Ready for single registration approval.
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-nirmaan-black/10">
-              <button
-                type="button"
-                disabled={reviewLoading}
-                onClick={() => handleReviewAction('approve')}
-                className="nirmaan-pill bg-nirmaan-green-bright text-nirmaan-black font-black text-xs py-2.5 px-4 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
-              >
-                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                <span className="sm:hidden">APPROVE REGISTRATION</span>
-                <span className="hidden sm:inline">APPROVE REGISTRATION (UNLOCK QR)</span>
-              </button>
-
-              {matchedTeam && (
-                <button
-                  type="button"
-                  disabled={reviewLoading}
-                  onClick={() => handleReviewAction('merge', matchedTeam.id)}
-                  className="nirmaan-pill bg-nirmaan-blue text-white font-black text-xs py-2.5 px-4 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
-                >
-                  <GitMerge className="w-4 h-4" />
-                  MERGE WITH MATCH
-                </button>
-              )}
-
-              <button
-                type="button"
-                disabled={reviewLoading || deleteLoading === reviewModalTeam.id}
-                onClick={async () => {
-                  const teamToDelete = reviewModalTeam;
-                  setReviewModalTeam(null);
-                  await handleDeleteTeam(teamToDelete.id, teamToDelete.team_name);
-                }}
-                className="nirmaan-pill bg-nirmaan-black text-white font-black text-xs py-2.5 px-4 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
-              >
-                <Trash2 className="w-4 h-4 text-nirmaan-red" />
-                DELETE
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* On-Desk Registration & Check-In Approval Modal */}
+      {/* On-Desk Registration & Check-In Attendance Modal */}
       {registrationModalTeam && (
         <RegistrationModal
           team={registrationModalTeam}
@@ -723,5 +541,3 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
     </div>
   );
 }
-
-

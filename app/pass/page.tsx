@@ -64,9 +64,8 @@ export default async function PassPage({ searchParams }: PassPageProps) {
                 Team Login
               </Link>
               <span className="text-nirmaan-black/20">•</span>
-              <Link href="/register" className="text-nirmaan-black/70 hover:underline flex items-center gap-1">
-                <KeyRound className="w-3.5 h-3.5" />
-                Register Team
+              <Link href="/" className="text-nirmaan-black/70 hover:underline flex items-center gap-1">
+                Back to Home
               </Link>
             </div>
           </div>
