@@ -8,7 +8,7 @@ export async function GET() {
   try {
     const schedule = await getSchedule();
     const response = NextResponse.json({ success: true, schedule });
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    response.headers.set('Cache-Control', 'public, max-age=10, s-maxage=15, stale-while-revalidate=60');
     return response;
   } catch (error: any) {
     return NextResponse.json(

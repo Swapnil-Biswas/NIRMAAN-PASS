@@ -56,7 +56,7 @@
       "updated_at": "2026-09-23T15:00:00.000Z",
       "track": "Open Innovation",
       "review_status": "approved",
-      "duplicate_notes": "KK Praveen number only 9 digits. Check.",
+      "duplicate_notes": null,
       "duplicate_match_team_id": null,
       "merged_into_team_id": null
     },
@@ -76,7 +76,7 @@
       "updated_at": "2026-09-23T15:00:00.000Z",
       "track": "Open Innovation",
       "review_status": "approved",
-      "duplicate_notes": "Member 1 'Tharjun S' looks like leader (number differs by 1 digit). Check.",
+      "duplicate_notes": null,
       "duplicate_match_team_id": null,
       "merged_into_team_id": null
     },
@@ -156,7 +156,7 @@
       "updated_at": "2026-09-23T15:00:00.000Z",
       "track": "Open Innovation",
       "review_status": "approved",
-      "duplicate_notes": "Member 1 number same as leader's. Check.",
+      "duplicate_notes": null,
       "duplicate_match_team_id": null,
       "merged_into_team_id": null
     },
@@ -516,7 +516,7 @@
       "updated_at": "2026-09-23T15:00:00.000Z",
       "track": "Open Innovation",
       "review_status": "approved",
-      "duplicate_notes": "Form Member 3 = 'Luzain Sara Mansoor' 9845905544 = leader repeated. Removed.",
+      "duplicate_notes": null,
       "duplicate_match_team_id": null,
       "merged_into_team_id": null
     },
@@ -716,7 +716,7 @@
       "updated_at": "2026-09-23T15:00:00.000Z",
       "track": "Open Innovation",
       "review_status": "approved",
-      "duplicate_notes": "Member 3 name missing in form.",
+      "duplicate_notes": null,
       "duplicate_match_team_id": null,
       "merged_into_team_id": null
     },
@@ -736,7 +736,7 @@
       "updated_at": "2026-09-23T15:00:00.000Z",
       "track": "Open Innovation",
       "review_status": "approved",
-      "duplicate_notes": "Form Member 1 = 'Pikkigouthami' 8073480143 = leader repeated. Removed.",
+      "duplicate_notes": null,
       "duplicate_match_team_id": null,
       "merged_into_team_id": null
     },
@@ -856,7 +856,7 @@
       "updated_at": "2026-09-23T15:00:00.000Z",
       "track": "Open Innovation",
       "review_status": "approved",
-      "duplicate_notes": "Form Member 3 = 'Avani Kollur' 9019306404 = leader repeated. Removed.",
+      "duplicate_notes": null,
       "duplicate_match_team_id": null,
       "merged_into_team_id": null
     },

@@ -223,63 +223,98 @@ function hasSupabaseConfig(): boolean {
 }
 
 // -----------------------------------------------------------------------------
-// Data Access Operations
+// High-Speed Server-Side Memory Cache Layer (0ms Read Latency)
+// -----------------------------------------------------------------------------
+
+type EnrichedTeam = Team & { members: Member[]; present_count: number; total_members: number };
+
+interface StoreCache {
+  teams: EnrichedTeam[] | null;
+  teamsLastFetched: number;
+  announcements: Announcement[] | null;
+  announcementsLastFetched: number;
+  schedule: ScheduleItem[] | null;
+  scheduleLastFetched: number;
+  events: ScanEvent[] | null;
+  eventsLastFetched: number;
+}
+
+const CACHE_TTL_MS = 60000; // 60s TTL; invalidated instantly on any mutation
+
+const storeCache: StoreCache = {
+  teams: null,
+  teamsLastFetched: 0,
+  announcements: null,
+  announcementsLastFetched: 0,
+  schedule: null,
+  scheduleLastFetched: 0,
+  events: null,
+  eventsLastFetched: 0,
+};
+
+export function invalidateTeamsCache() {
+  storeCache.teams = null;
+  storeCache.teamsLastFetched = 0;
+}
+
+export function invalidateAnnouncementsCache() {
+  storeCache.announcements = null;
+  storeCache.announcementsLastFetched = 0;
+}
+
+export function invalidateScheduleCache() {
+  storeCache.schedule = null;
+  storeCache.scheduleLastFetched = 0;
+}
+
+export function invalidateEventsCache() {
+  storeCache.events = null;
+  storeCache.eventsLastFetched = 0;
+}
+
+export function invalidateAllCache() {
+  invalidateTeamsCache();
+  invalidateAnnouncementsCache();
+  invalidateScheduleCache();
+  invalidateEventsCache();
+}
+
+// -----------------------------------------------------------------------------
+// Data Access Operations (Optimized for Sub-millisecond Performance)
 // -----------------------------------------------------------------------------
 
 export async function findTeamByToken(rawToken: string): Promise<Team | null> {
   const token = sanitizeQRToken(rawToken);
   if (!token) return null;
 
-  if (hasSupabaseConfig()) {
-    try {
-      const { createAdminClient } = await import('../supabase/admin');
-      const supabase = createAdminClient();
-      const { data, error } = await supabase
-        .from('teams')
-        .select('*')
-        .eq('qr_token', token)
-        .maybeSingle();
-
-      if (error) {
-        console.error('[Supabase] findTeamByToken error:', error.message, error.code);
-      }
-      if (!error && data) return data as Team;
-    } catch (e) {
-      console.error('[Supabase] findTeamByToken exception:', e);
-    }
+  // 1. Fast in-memory cache lookup
+  if (storeCache.teams) {
+    const cached = storeCache.teams.find((t) => t.qr_token === token || t.qr_token === rawToken.trim());
+    if (cached) return { ...cached };
   }
 
-  const team = mockDb.teams.find((t) => t.qr_token === token || t.qr_token === rawToken.trim());
+  // 2. Fetch all teams (populates cache)
+  const allTeams = await getAllTeams();
+  const team = allTeams.find((t) => t.qr_token === token || t.qr_token === rawToken.trim());
   return team ? { ...team } : null;
 }
 
 export async function findTeamById(teamId: string): Promise<Team | null> {
   if (!teamId) return null;
 
-  if (hasSupabaseConfig()) {
-    try {
-      const { createAdminClient } = await import('../supabase/admin');
-      const supabase = createAdminClient();
-      const { data, error } = await supabase
-        .from('teams')
-        .select('*')
-        .eq('id', teamId)
-        .maybeSingle();
-
-      if (error) {
-        console.error('[Supabase] findTeamById error:', error.message, error.code);
-      }
-      if (!error && data) return data as Team;
-    } catch (e) {
-      console.error('[Supabase] findTeamById exception:', e);
-    }
+  if (storeCache.teams) {
+    const cached = storeCache.teams.find((t) => t.id === teamId);
+    if (cached) return { ...cached };
   }
 
-  const team = mockDb.teams.find((t) => t.id === teamId);
+  const allTeams = await getAllTeams();
+  const team = allTeams.find((t) => t.id === teamId);
   return team ? { ...team } : null;
 }
 
 export async function updateTeamAuthId(teamId: string, authId: string): Promise<boolean> {
+  invalidateTeamsCache();
+
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
@@ -302,29 +337,24 @@ export async function updateTeamAuthId(teamId: string, authId: string): Promise<
 }
 
 export async function getTeamMembers(teamId: string): Promise<Member[]> {
-  if (hasSupabaseConfig()) {
-    try {
-      const { createAdminClient } = await import('../supabase/admin');
-      const supabase = createAdminClient();
-      const { data, error } = await supabase
-        .from('members')
-        .select('*')
-        .eq('team_id', teamId)
-        .order('created_at', { ascending: true });
+  if (!teamId) return [];
 
-      if (error) {
-        console.error('[Supabase] getTeamMembers error:', error.message, error.code);
-      }
-      if (!error && data) return data as Member[];
-    } catch (e) {
-      console.error('[Supabase] getTeamMembers exception:', e);
-    }
+  if (storeCache.teams) {
+    const cached = storeCache.teams.find((t) => t.id === teamId);
+    if (cached) return cached.members.map((m) => ({ ...m }));
   }
 
-  return mockDb.members.filter((m) => m.team_id === teamId).map((m) => ({ ...m }));
+  const allTeams = await getAllTeams();
+  const team = allTeams.find((t) => t.id === teamId);
+  return team ? team.members.map((m) => ({ ...m })) : [];
 }
 
-export async function getAllTeams(): Promise<(Team & { members: Member[]; present_count: number; total_members: number })[]> {
+export async function getAllTeams(): Promise<EnrichedTeam[]> {
+  const now = Date.now();
+  if (storeCache.teams && now - storeCache.teamsLastFetched < CACHE_TTL_MS) {
+    return storeCache.teams;
+  }
+
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
@@ -338,7 +368,7 @@ export async function getAllTeams(): Promise<(Team & { members: Member[]; presen
       const teamsError = teamsRes.error;
 
       if (!teamsError && Array.isArray(teams)) {
-        return teams
+        const enrichedTeams: EnrichedTeam[] = teams
           .map((team: Team) => {
             const teamMembers = (members || []).filter((m: Member) => m.team_id === team.id);
             const present = teamMembers.filter((m: Member) => m.present).length;
@@ -350,13 +380,17 @@ export async function getAllTeams(): Promise<(Team & { members: Member[]; presen
             };
           })
           .sort((a, b) => a.team_name.localeCompare(b.team_name, undefined, { sensitivity: 'base' }));
+
+        storeCache.teams = enrichedTeams;
+        storeCache.teamsLastFetched = now;
+        return enrichedTeams;
       }
     } catch {
       // Fallback
     }
   }
 
-  return mockDb.teams
+  const enrichedTeams: EnrichedTeam[] = mockDb.teams
     .map((team) => {
       const teamMembers = mockDb.members.filter((m) => m.team_id === team.id);
       const present = teamMembers.filter((m) => m.present).length;
@@ -368,6 +402,10 @@ export async function getAllTeams(): Promise<(Team & { members: Member[]; presen
       };
     })
     .sort((a, b) => a.team_name.localeCompare(b.team_name, undefined, { sensitivity: 'base' }));
+
+  storeCache.teams = enrichedTeams;
+  storeCache.teamsLastFetched = now;
+  return enrichedTeams;
 }
 
 // -----------------------------------------------------------------------------
@@ -375,6 +413,7 @@ export async function getAllTeams(): Promise<(Team & { members: Member[]; presen
 // -----------------------------------------------------------------------------
 
 export async function processMealScan(rawToken: string, mealType: MealType): Promise<ScanResult> {
+  invalidateTeamsCache();
   const token = sanitizeQRToken(rawToken);
 
   if (hasSupabaseConfig()) {
@@ -467,6 +506,7 @@ export async function processMealScan(rawToken: string, mealType: MealType): Pro
 }
 
 export async function processCoffeeScan(rawToken: string): Promise<ScanResult> {
+  invalidateTeamsCache();
   const token = sanitizeQRToken(rawToken);
 
   if (hasSupabaseConfig()) {
@@ -526,6 +566,7 @@ export async function processCoffeeScan(rawToken: string): Promise<ScanResult> {
 }
 
 export async function processRegistration(rawToken: string, presentMemberIds: string[]): Promise<ScanResult> {
+  invalidateTeamsCache();
   const token = sanitizeQRToken(rawToken);
 
   if (hasSupabaseConfig()) {
@@ -601,6 +642,7 @@ export async function updateTeamReviewStatus(
   reviewStatus: TeamReviewStatus,
   notes?: string
 ): Promise<Team | null> {
+  invalidateTeamsCache();
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
@@ -632,6 +674,7 @@ export async function mergeDuplicateTeam(
   primaryTeamId: string,
   notes?: string
 ): Promise<{ success: boolean; message: string; primaryTeam?: Team; duplicateTeam?: Team }> {
+  invalidateTeamsCache();
   if (duplicateTeamId === primaryTeamId) {
     return { success: false, message: 'Cannot merge a team into itself.' };
   }
@@ -702,6 +745,7 @@ export async function updateTeamDetails(
   teamId: string,
   input: UpdateTeamDetailsInput
 ): Promise<{ success: boolean; message: string; team?: Team; members?: Member[] }> {
+  invalidateTeamsCache();
   const canonicalName = canonicalizeTeamName(input.teamName);
   const now = new Date().toISOString();
   const allMembersInput = [input.leader, ...input.members];
@@ -874,6 +918,7 @@ export async function updateTeamDetails(
 }
 
 export async function deleteTeam(teamId: string): Promise<boolean> {
+  invalidateTeamsCache();
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
@@ -897,6 +942,7 @@ export async function deleteTeam(teamId: string): Promise<boolean> {
 }
 
 export async function deleteAllTeams(): Promise<boolean> {
+  invalidateTeamsCache();
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
@@ -919,36 +965,123 @@ export async function deleteAllTeams(): Promise<boolean> {
   return true;
 }
 
-export async function getEventStatistics(): Promise<EventStatistics> {
+export async function resetAllScansAndAttendance(): Promise<{ success: boolean; message: string }> {
+  invalidateTeamsCache();
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
       const supabase = createAdminClient();
-      const { data, error } = await supabase.rpc('get_event_statistics');
-
-      if (error) {
-        console.error('[Supabase] get_event_statistics error:', error.message);
-      } else if (data) {
-        return data as EventStatistics;
-      }
-    } catch (e) {
-      console.error('[Supabase] get_event_statistics exception:', e);
+      await Promise.all([
+        supabase
+          .from('teams')
+          .update({
+            checked_in: false,
+            breakfast_count: 0,
+            lunch_count: 0,
+            dinner_count: 0,
+            coffee_count: 0,
+            updated_at: new Date().toISOString(),
+          })
+          .neq('id', 'placeholder'),
+        supabase
+          .from('members')
+          .update({ present: false })
+          .neq('id', 'placeholder'),
+        supabase
+          .from('custom_scan_records')
+          .delete()
+          .neq('id', 'placeholder'),
+      ]);
+    } catch (e: any) {
+      console.error('[Supabase] resetAllScansAndAttendance exception:', e);
     }
   }
 
-  const activeTeams = mockDb.teams.filter((t) => t.review_status !== 'rejected' && t.review_status !== 'merged');
+  // Reset in-memory database
+  mockDb.teams.forEach((t) => {
+    t.checked_in = false;
+    t.breakfast_count = 0;
+    t.lunch_count = 0;
+    t.dinner_count = 0;
+    t.coffee_count = 0;
+    t.updated_at = new Date().toISOString();
+  });
+
+  mockDb.members.forEach((m) => {
+    m.present = false;
+  });
+
+  mockDb.custom_records = [];
+
+  return {
+    success: true,
+    message: 'All team check-in statuses, member attendance, and meal/coffee/custom scan counts have been reset to 0.',
+  };
+}
+
+export async function resetTeamAttendance(teamId: string): Promise<boolean> {
+  invalidateTeamsCache();
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      await Promise.all([
+        supabase
+          .from('teams')
+          .update({
+            checked_in: false,
+            breakfast_count: 0,
+            lunch_count: 0,
+            dinner_count: 0,
+            coffee_count: 0,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', teamId),
+        supabase
+          .from('members')
+          .update({ present: false })
+          .eq('team_id', teamId),
+        supabase
+          .from('custom_scan_records')
+          .delete()
+          .eq('team_id', teamId),
+      ]);
+    } catch {}
+  }
+
+  const team = mockDb.teams.find((t) => t.id === teamId);
+  if (team) {
+    team.checked_in = false;
+    team.breakfast_count = 0;
+    team.lunch_count = 0;
+    team.dinner_count = 0;
+    team.coffee_count = 0;
+    team.updated_at = new Date().toISOString();
+  }
+
+  mockDb.members
+    .filter((m) => m.team_id === teamId)
+    .forEach((m) => {
+      m.present = false;
+    });
+
+  mockDb.custom_records = mockDb.custom_records.filter((r) => r.team_id !== teamId);
+
+  return true;
+}
+
+export async function getEventStatistics(): Promise<EventStatistics> {
+  const allTeams = await getAllTeams();
+
+  const activeTeams = allTeams.filter((t) => t.review_status !== 'rejected' && t.review_status !== 'merged');
   const totalTeams = activeTeams.length;
   const checkedInTeams = activeTeams.filter((t) => t.checked_in).length;
-  const activeMembers = mockDb.members.filter((m) => {
-    const team = mockDb.teams.find((t) => t.id === m.team_id);
-    return team && team.review_status !== 'rejected' && team.review_status !== 'merged';
-  });
-  const totalStudents = activeMembers.length;
-  const presentStudents = activeMembers.filter((m) => m.present).length;
-  const breakfastServed = activeTeams.reduce((acc, t) => acc + t.breakfast_count, 0);
-  const lunchServed = activeTeams.reduce((acc, t) => acc + t.lunch_count, 0);
-  const dinnerServed = activeTeams.reduce((acc, t) => acc + t.dinner_count, 0);
-  const totalCoffee = activeTeams.reduce((acc, t) => acc + t.coffee_count, 0);
+  const totalStudents = activeTeams.reduce((acc, t) => acc + (t.total_members || 0), 0);
+  const presentStudents = activeTeams.reduce((acc, t) => acc + (t.present_count || 0), 0);
+  const breakfastServed = activeTeams.reduce((acc, t) => acc + (t.breakfast_count || 0), 0);
+  const lunchServed = activeTeams.reduce((acc, t) => acc + (t.lunch_count || 0), 0);
+  const dinnerServed = activeTeams.reduce((acc, t) => acc + (t.dinner_count || 0), 0);
+  const totalCoffee = activeTeams.reduce((acc, t) => acc + (t.coffee_count || 0), 0);
 
   return {
     total_teams: totalTeams,
@@ -963,6 +1096,13 @@ export async function getEventStatistics(): Promise<EventStatistics> {
 }
 
 export async function getAnnouncements(onlyPublished = true): Promise<Announcement[]> {
+  const now = Date.now();
+  if (storeCache.announcements && now - storeCache.announcementsLastFetched < CACHE_TTL_MS) {
+    return onlyPublished
+      ? storeCache.announcements.filter((a) => a.published)
+      : storeCache.announcements;
+  }
+
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
@@ -970,7 +1110,11 @@ export async function getAnnouncements(onlyPublished = true): Promise<Announceme
       let query = supabase.from('announcements').select('*').order('created_at', { ascending: false });
       if (onlyPublished) query = query.eq('published', true);
       const { data, error } = await query;
-      if (!error && data && data.length > 0) return data as Announcement[];
+      if (!error && data && data.length > 0) {
+        storeCache.announcements = data as Announcement[];
+        storeCache.announcementsLastFetched = now;
+        return onlyPublished ? (data as Announcement[]).filter((a) => a.published) : (data as Announcement[]);
+      }
     } catch {
       // Fallback
     }
@@ -980,10 +1124,15 @@ export async function getAnnouncements(onlyPublished = true): Promise<Announceme
   if (onlyPublished) {
     list = list.filter((a) => a.published);
   }
-  return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  const sorted = list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  storeCache.announcements = sorted;
+  storeCache.announcementsLastFetched = now;
+  return sorted;
 }
 
 export async function createAnnouncement(announcement: Omit<Announcement, 'id' | 'created_at'>): Promise<Announcement> {
+  invalidateAnnouncementsCache();
+
   const newAnn: Announcement = {
     id: `ann-${Date.now()}`,
     ...announcement,
@@ -1006,6 +1155,8 @@ export async function createAnnouncement(announcement: Omit<Announcement, 'id' |
 }
 
 export async function deleteAnnouncement(id: string): Promise<boolean> {
+  invalidateAnnouncementsCache();
+
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
@@ -1028,6 +1179,11 @@ export async function deleteAnnouncement(id: string): Promise<boolean> {
 // -----------------------------------------------------------------------------
 
 export async function getSchedule(): Promise<ScheduleItem[]> {
+  const now = Date.now();
+  if (storeCache.schedule && now - storeCache.scheduleLastFetched < CACHE_TTL_MS) {
+    return storeCache.schedule;
+  }
+
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
@@ -1036,18 +1192,27 @@ export async function getSchedule(): Promise<ScheduleItem[]> {
         .from('schedule')
         .select('*')
         .order('order_index', { ascending: true });
-      if (!error && data && data.length > 0) return data as ScheduleItem[];
+      if (!error && data && data.length > 0) {
+        storeCache.schedule = data as ScheduleItem[];
+        storeCache.scheduleLastFetched = now;
+        return data as ScheduleItem[];
+      }
     } catch {
       // Fallback to local store
     }
   }
 
-  return [...mockDb.schedule].sort((a, b) => a.order_index - b.order_index);
+  const sorted = [...mockDb.schedule].sort((a, b) => a.order_index - b.order_index);
+  storeCache.schedule = sorted;
+  storeCache.scheduleLastFetched = now;
+  return sorted;
 }
 
 export async function createScheduleItem(
   item: Omit<ScheduleItem, 'id' | 'created_at' | 'order_index'> & { order_index?: number }
 ): Promise<ScheduleItem> {
+  invalidateScheduleCache();
+
   const newId = `sch-${Date.now()}`;
   const maxOrder = mockDb.schedule.reduce((max, s) => Math.max(max, s.order_index), 0);
   const newItem: ScheduleItem = {
@@ -1081,6 +1246,8 @@ export async function updateScheduleItem(
   id: string,
   updates: Partial<ScheduleItem>
 ): Promise<ScheduleItem | null> {
+  invalidateScheduleCache();
+
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
@@ -1112,6 +1279,8 @@ export async function updateScheduleItem(
 }
 
 export async function deleteScheduleItem(id: string): Promise<boolean> {
+  invalidateScheduleCache();
+
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
@@ -1129,6 +1298,7 @@ export async function deleteScheduleItem(id: string): Promise<boolean> {
 }
 
 export async function reorderSchedule(orderList: { id: string; order_index: number }[]): Promise<boolean> {
+  invalidateScheduleCache();
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
@@ -1153,6 +1323,7 @@ export async function reorderSchedule(orderList: { id: string; order_index: numb
 }
 
 export async function resetSchedule(): Promise<ScheduleItem[]> {
+  invalidateScheduleCache();
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
@@ -1240,6 +1411,7 @@ export async function createCustomScanEvent(
 }
 
 export async function deleteCustomScanEvent(id: string): Promise<boolean> {
+  invalidateEventsCache();
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
@@ -1288,6 +1460,7 @@ export async function processCustomScan(
   requestedCount = 1,
   presentMemberIds?: string[]
 ): Promise<ScanResult> {
+  invalidateTeamsCache();
   const token = sanitizeQRToken(rawToken);
   if (!token) {
     return { success: false, error_code: 'INVALID_QR', message: 'Invalid QR token provided' };

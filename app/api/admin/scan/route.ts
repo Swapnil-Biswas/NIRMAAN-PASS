@@ -78,8 +78,10 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const effectivePurpose = purpose || (action && action !== 'lookup' ? action : null);
+
     // Execute scan action based on purpose or event_id
-    const targetEventId = event_id || (purpose && !['registration', 'breakfast', 'lunch', 'dinner', 'coffee'].includes(purpose) ? purpose : null);
+    const targetEventId = event_id || (effectivePurpose && !['registration', 'breakfast', 'lunch', 'dinner', 'coffee'].includes(effectivePurpose) ? effectivePurpose : null);
     if (targetEventId) {
       const requestedCount = typeof count === 'number' && count > 0 ? count : 1;
       const memberIds = Array.isArray(present_member_ids) ? present_member_ids : undefined;
@@ -87,18 +89,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(result, { status: result.success ? 200 : 400 });
     }
 
-    if (purpose === 'registration') {
+    if (effectivePurpose === 'registration') {
       const memberIds = Array.isArray(present_member_ids) ? present_member_ids : [];
       const result = await processRegistration(cleanToken, memberIds);
       return NextResponse.json(result, { status: result.success ? 200 : 400 });
     }
 
-    if (purpose === 'breakfast' || purpose === 'lunch' || purpose === 'dinner') {
-      const result = await processMealScan(cleanToken, purpose as MealType);
+    if (effectivePurpose === 'breakfast' || effectivePurpose === 'lunch' || effectivePurpose === 'dinner') {
+      const result = await processMealScan(cleanToken, effectivePurpose as MealType);
       return NextResponse.json(result, { status: result.success ? 200 : 400 });
     }
 
-    if (purpose === 'coffee') {
+    if (effectivePurpose === 'coffee') {
       const result = await processCoffeeScan(cleanToken);
       return NextResponse.json(result, { status: result.success ? 200 : 400 });
     }

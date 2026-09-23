@@ -24,6 +24,7 @@ interface DashboardPageProps {
 }
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+  const announcementsPromise = getAnnouncements(true);
   let team: Team | null = null;
   let members: Member[] = [];
 
@@ -38,7 +39,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     }
   }
 
-  const announcements = await getAnnouncements(true);
+  const announcements = await announcementsPromise;
 
   if (!team) {
     return (

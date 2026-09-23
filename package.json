@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "clear-teams": "node scripts/clear_teams.mjs",
     "db:push": "node scripts/push_to_supabase.mjs",
-    "db:check": "node scripts/check_supabase.mjs"
+    "db:check": "node scripts/check_supabase.mjs",
+    "db:reset-scans": "node scripts/reset_scans.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

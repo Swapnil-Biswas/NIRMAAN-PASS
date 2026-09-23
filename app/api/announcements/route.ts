@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     const all = searchParams.get('all') === 'true';
     const announcements = await getAnnouncements(!all);
     const response = NextResponse.json({ success: true, announcements });
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    response.headers.set('Cache-Control', 'public, max-age=5, s-maxage=10, stale-while-revalidate=59');
     return response;
   } catch (error: any) {
     return NextResponse.json(

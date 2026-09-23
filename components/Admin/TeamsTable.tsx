@@ -16,6 +16,7 @@ import {
   Trash2,
   Phone,
   Mail,
+  RotateCcw,
 } from 'lucide-react';
 import { Team, Member } from '@/types/database';
 import Link from 'next/link';
@@ -41,6 +42,7 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
   const [statusFilter, setStatusFilter] = useState<'all' | 'checked_in' | 'not_checked_in'>('all');
   const [registrationModalTeam, setRegistrationModalTeam] = useState<TeamRowData | null>(null);
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+  const [resetLoading, setResetLoading] = useState(false);
   const [checkInLoading, setCheckInLoading] = useState(false);
 
   // Keep local state in sync if prop updates
@@ -92,6 +94,7 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           qr_token: registrationModalTeam.qr_token,
+          purpose: 'registration',
           action: 'registration',
           present_member_ids: presentMemberIds,
         }),
@@ -121,7 +124,6 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
       );
 
       setRegistrationModalTeam(null);
-      router.refresh();
     } catch (err: any) {
       alert(err.message || 'Error completing on-desk check-in');
     } finally {
@@ -145,7 +147,6 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
       }
 
       setTeams((prev) => prev.filter((t) => t.id !== teamId));
-      router.refresh();
     } catch (err: any) {
       alert(err.message || 'Failed to delete team');
     } finally {
@@ -169,11 +170,50 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
       }
 
       setTeams([]);
-      router.refresh();
     } catch (err: any) {
       alert(err.message || 'Failed to clear all teams');
     } finally {
       setDeleteLoading(null);
+    }
+  };
+
+  const handleResetAllScans = async () => {
+    if (
+      !window.confirm(
+        '⚠️ Are you sure you want to reset all scans and attendance back to 0? All meal counters and check-in statuses will be reset.'
+      )
+    ) {
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      const res = await fetch('/api/admin/reset-scans', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to reset scans');
+      }
+
+      setTeams((prev) =>
+        prev.map((t) => ({
+          ...t,
+          checked_in: false,
+          breakfast_count: 0,
+          lunch_count: 0,
+          dinner_count: 0,
+          coffee_count: 0,
+          present_count: 0,
+          members: t.members.map((m) => ({ ...m, present: false })),
+        }))
+      );
+      alert('All scans and attendance have been reset.');
+    } catch (err: any) {
+      alert(err.message || 'Failed to reset scans');
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -308,6 +348,18 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
           {teams.length > 0 && (
             <button
               type="button"
+              disabled={resetLoading}
+              onClick={handleResetAllScans}
+              className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black text-[10px] font-black py-2 px-3 hover:opacity-90 transition-opacity shadow-xs flex-shrink-0 disabled:opacity-50"
+              title="Reset all attendance and meal scans back to 0"
+            >
+              <RotateCcw className={`w-3.5 h-3.5 ${resetLoading ? 'animate-spin' : ''}`} />
+              <span>{resetLoading ? 'RESETTING...' : 'RESET SCANS'}</span>
+            </button>
+          )}
+          {teams.length > 0 && (
+            <button
+              type="button"
               disabled={deleteLoading !== null}
               onClick={handleClearAllTeams}
               className="nirmaan-pill bg-nirmaan-red text-white text-[10px] font-black py-2 px-3 hover:opacity-90 transition-opacity shadow-xs flex-shrink-0 disabled:opacity-50"
@@ -412,11 +464,6 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                         <div className="text-[11px] text-nirmaan-black/60 leading-snug">
                           {team.college}
                         </div>
-                        {team.duplicate_notes && (
-                          <div className="text-[10px] text-nirmaan-amber font-semibold mt-0.5 line-clamp-1">
-                            Note: {team.duplicate_notes}
-                          </div>
-                        )}
                       </td>
 
                       {/* Leader & Contact */}

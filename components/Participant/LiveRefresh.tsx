@@ -8,7 +8,7 @@ interface LiveRefreshProps {
   intervalMs?: number;
 }
 
-export default function LiveRefresh({ intervalMs = 15000 }: LiveRefreshProps) {
+export default function LiveRefresh({ intervalMs = 45000 }: LiveRefreshProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
