@@ -55,8 +55,31 @@ export interface ScheduleItem {
   created_at?: string;
 }
 
-export type ScanPurpose = 'registration' | 'breakfast' | 'lunch' | 'dinner' | 'coffee';
+export type ScanPurpose = 'registration' | 'breakfast' | 'lunch' | 'dinner' | 'coffee' | string;
 export type MealType = 'breakfast' | 'lunch' | 'dinner';
+export type LimitRule = 'once_per_team' | 'per_present_member' | 'unlimited';
+
+export interface ScanEvent {
+  id: string;
+  title: string;
+  description?: string | null;
+  limit_rule: LimitRule;
+  color: string;
+  text_color?: string;
+  icon?: string;
+  active: boolean;
+  order_index?: number;
+  created_at: string;
+}
+
+export interface ScanEventRecord {
+  id: string;
+  event_id: string;
+  team_id: string;
+  count: number;
+  present_member_ids?: string[] | null;
+  scanned_at: string;
+}
 
 export interface ScanResult {
   success: boolean;
@@ -64,9 +87,12 @@ export interface ScanResult {
     | 'INVALID_QR'
     | 'NOT_CHECKED_IN'
     | 'MEAL_LIMIT_REACHED'
+    | 'LIMIT_REACHED'
+    | 'ALREADY_COMPLETED'
     | 'NO_PRESENT_MEMBERS'
     | 'ALREADY_REGISTERED'
     | 'INVALID_MEAL_TYPE'
+    | 'INVALID_EVENT'
     | 'UNAUTHORIZED'
     | 'SERVER_ERROR'
     | 'TOKEN_REVOKED'
@@ -78,6 +104,8 @@ export interface ScanResult {
   college?: string;
   checked_in?: boolean;
   meal_type?: MealType | string;
+  event_id?: string;
+  event_title?: string;
   present_count?: number;
   current_count?: number;
   new_count?: number;

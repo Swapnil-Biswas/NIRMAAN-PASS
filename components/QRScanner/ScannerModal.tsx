@@ -1,22 +1,56 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { QrCode, Camera, CheckCircle2, AlertCircle, RefreshCw, Sparkles, Shield, Utensils, Sun, Moon, Coffee, ChevronDown } from 'lucide-react';
-import { ScanPurpose, Team, Member, ScanResult, MealType } from '@/types/database';
+import {
+  QrCode,
+  Camera,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
+  Sparkles,
+  Shield,
+  Utensils,
+  Sun,
+  Moon,
+  Coffee,
+  Plus,
+  Award,
+  Users,
+  Layers,
+} from 'lucide-react';
+import { ScanPurpose, Team, Member, ScanResult, MealType, ScanEvent, ScanEventRecord } from '@/types/database';
 import { sanitizeQRToken } from '@/lib/qr/token';
 import RegistrationModal from '@/components/Admin/RegistrationModal';
 import MealServeModal from '@/components/Admin/MealServeModal';
 import CoffeeServeModal from '@/components/Admin/CoffeeServeModal';
+import CustomServeModal from '@/components/Admin/CustomServeModal';
+import CustomEventModal from '@/components/Admin/CustomEventModal';
+
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  Sparkles,
+  Utensils,
+  ShieldCheck: Shield,
+  Shield,
+  Coffee,
+  Award,
+  Users,
+  Sun,
+  Moon,
+  Layers,
+};
 
 export default function QRScanner() {
   const [purpose, setPurpose] = useState<ScanPurpose>('lunch');
   const [scanning, setScanning] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [customEvents, setCustomEvents] = useState<ScanEvent[]>([]);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
 
   // Scanned team context
   const [activeToken, setActiveToken] = useState<string | null>(null);
   const [scannedTeam, setScannedTeam] = useState<Team | null>(null);
   const [scannedMembers, setScannedMembers] = useState<Member[]>([]);
+  const [scannedCustomRecords, setScannedCustomRecords] = useState<ScanEventRecord[]>([]);
 
   // Feedback states
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -24,6 +58,20 @@ export default function QRScanner() {
 
   // Scanner camera ref
   const html5QrCodeRef = useRef<any>(null);
+
+  const fetchCustomEvents = async () => {
+    try {
+      const res = await fetch('/api/admin/events');
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setCustomEvents(data.events || []);
+      }
+    } catch {}
+  };
+
+  useEffect(() => {
+    fetchCustomEvents();
+  }, []);
 
   const startCamera = async () => {
     try {
@@ -106,7 +154,7 @@ export default function QRScanner() {
       const res = await fetch('/api/admin/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ qr_token: token, action: 'lookup' }),
+        body: JSON.stringify({ qr_token: token, action: 'lookup', purpose }),
       });
 
       const data = await res.json();
@@ -115,11 +163,13 @@ export default function QRScanner() {
         setActiveToken(null);
         setScannedTeam(null);
         setScannedMembers([]);
+        setScannedCustomRecords([]);
         return;
       }
 
       setScannedTeam(data.team);
       setScannedMembers(data.members || []);
+      setScannedCustomRecords(data.custom_records || []);
     } catch (err: any) {
       setErrorMsg(err.message || 'Network error while validating QR');
     } finally {
@@ -212,20 +262,49 @@ export default function QRScanner() {
     }
   };
 
+  const handleConfirmCustomEvent = async (count: number) => {
+    if (!activeToken) return;
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          qr_token: activeToken,
+          event_id: purpose,
+          count,
+        }),
+      });
+
+      const data: ScanResult = await res.json();
+      if (data.success) {
+        setSuccessMsg(data.message);
+        closeModals();
+        autoResetAfterSuccess();
+      } else {
+        setErrorMsg(data.message);
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Error recording scan');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const closeModals = () => {
     setScannedTeam(null);
     setScannedMembers([]);
+    setScannedCustomRecords([]);
     setActiveToken(null);
   };
 
   const autoResetAfterSuccess = () => {
-    // Reset scanner after 3 seconds so volunteer is ready for next participant
     setTimeout(() => {
       setSuccessMsg(null);
     }, 3500);
   };
 
-  const purposes: { key: ScanPurpose; label: string; icon: React.ComponentType<{ className?: string }>; activeColor: string }[] = [
+  const baselinePurposes = [
     { key: 'registration', label: 'Registration', icon: Shield, activeColor: 'bg-nirmaan-green-bright text-nirmaan-black' },
     { key: 'breakfast', label: 'Breakfast', icon: Sun, activeColor: 'bg-nirmaan-amber text-nirmaan-black' },
     { key: 'lunch', label: 'Lunch', icon: Utensils, activeColor: 'bg-nirmaan-orange text-white' },
@@ -233,15 +312,25 @@ export default function QRScanner() {
     { key: 'coffee', label: 'Coffee', icon: Coffee, activeColor: 'bg-nirmaan-blue text-white' },
   ];
 
-  const currentTheme = purposes.find((p) => p.key === purpose) || purposes[0];
+  const customPurposes = customEvents.map((evt) => ({
+    key: evt.id,
+    label: evt.title,
+    icon: (evt.icon && ICON_MAP[evt.icon]) || Sparkles,
+    activeColor: `${evt.color} ${evt.text_color || 'text-white'}`,
+  }));
+
+  const allPurposes = [...baselinePurposes, ...customPurposes];
+  const currentTheme = allPurposes.find((p) => p.key === purpose) || allPurposes[0];
   const CurrentIcon = currentTheme.icon;
+
+  const activeCustomEvent = customEvents.find((e) => e.id === purpose);
 
   return (
     <div className="w-full max-w-lg mx-auto space-y-3">
       {/* Compact Quick-Switch Purpose Selector */}
       <div className="w-full overflow-x-auto no-scrollbar py-1 px-1">
         <div className="flex items-center justify-start sm:justify-center gap-2 min-w-max mx-auto px-1">
-          {purposes.map((p) => {
+          {allPurposes.map((p) => {
             const Icon = p.icon;
             const isSelected = purpose === p.key;
 
@@ -264,6 +353,16 @@ export default function QRScanner() {
               </button>
             );
           })}
+
+          <button
+            type="button"
+            onClick={() => setIsEventModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-black uppercase tracking-wider bg-nirmaan-black text-white hover:bg-nirmaan-black/80 shadow-xs flex-shrink-0 cursor-pointer"
+            title="Create a new scan event"
+          >
+            <Plus className="w-3.5 h-3.5 text-nirmaan-amber" />
+            <span>+ Event</span>
+          </button>
         </div>
       </div>
 
@@ -386,6 +485,31 @@ export default function QRScanner() {
           onConfirmServe={handleConfirmCoffee}
           onCancel={closeModals}
           loading={loading}
+        />
+      )}
+
+      {/* Custom Event Serve Modal */}
+      {scannedTeam && activeCustomEvent && (
+        <CustomServeModal
+          team={scannedTeam}
+          members={scannedMembers}
+          event={activeCustomEvent}
+          existingRecords={scannedCustomRecords}
+          onConfirmServe={handleConfirmCustomEvent}
+          onCancel={closeModals}
+          loading={loading}
+        />
+      )}
+
+      {/* Quick Add Custom Event Modal */}
+      {isEventModalOpen && (
+        <CustomEventModal
+          onClose={() => setIsEventModalOpen(false)}
+          onCreated={(newEvent) => {
+            setCustomEvents((prev) => [...prev, newEvent]);
+            setPurpose(newEvent.id);
+            setSuccessMsg(`Event "${newEvent.title}" created and activated in scanner!`);
+          }}
         />
       )}
     </div>

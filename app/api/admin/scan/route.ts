@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { processMealScan, processCoffeeScan, processRegistration, findTeamByToken, getTeamMembers } from '@/lib/data/store';
+import {
+  processMealScan,
+  processCoffeeScan,
+  processRegistration,
+  processCustomScan,
+  findTeamByToken,
+  getTeamMembers,
+  getCustomScanRecords,
+} from '@/lib/data/store';
 import { sanitizeQRToken } from '@/lib/qr/token';
 import { ScanPurpose, MealType } from '@/types/database';
 import { verifyAdminSession } from '@/lib/auth/admin';
@@ -24,7 +32,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { qr_token, purpose, present_member_ids, action } = body;
+    const { qr_token, purpose, event_id, count, present_member_ids, action } = body;
 
     if (!qr_token || typeof qr_token !== 'string') {
       return NextResponse.json(
@@ -53,16 +61,32 @@ export async function POST(req: NextRequest) {
       const members = await getTeamMembers(team.id);
       const presentCount = members.filter((m) => m.present).length;
 
+      // Also fetch custom records for this team if an event_id or custom purpose is passed
+      const targetEventId = event_id || (purpose && !['registration', 'breakfast', 'lunch', 'dinner', 'coffee'].includes(purpose) ? purpose : null);
+      let customEventRecords: any[] = [];
+      if (targetEventId) {
+        customEventRecords = await getCustomScanRecords(targetEventId, team.id);
+      }
+
       return NextResponse.json({
         success: true,
         team,
         members,
         present_count: presentCount,
         total_members: members.length,
+        custom_records: customEventRecords,
       });
     }
 
-    // Execute scan action based on purpose
+    // Execute scan action based on purpose or event_id
+    const targetEventId = event_id || (purpose && !['registration', 'breakfast', 'lunch', 'dinner', 'coffee'].includes(purpose) ? purpose : null);
+    if (targetEventId) {
+      const requestedCount = typeof count === 'number' && count > 0 ? count : 1;
+      const memberIds = Array.isArray(present_member_ids) ? present_member_ids : undefined;
+      const result = await processCustomScan(cleanToken, targetEventId, requestedCount, memberIds);
+      return NextResponse.json(result, { status: result.success ? 200 : 400 });
+    }
+
     if (purpose === 'registration') {
       const memberIds = Array.isArray(present_member_ids) ? present_member_ids : [];
       const result = await processRegistration(cleanToken, memberIds);

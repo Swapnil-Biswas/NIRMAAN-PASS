@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { BarChart3, Zap, Megaphone, Calendar, Lock, Shield, Menu, X } from 'lucide-react';
+import { BarChart3, Zap, Megaphone, Calendar, Lock, Shield, Menu, X, Layers } from 'lucide-react';
 import { ADMIN_TAB_SESSION_FLAG } from './AdminSessionGuard';
 
 export default function AdminNavbar() {
@@ -50,6 +50,12 @@ export default function AdminNavbar() {
       label: 'Queue Scanner',
       icon: Zap,
       activeClass: 'bg-nirmaan-red text-white',
+    },
+    {
+      href: '/admin/events',
+      label: 'Scan Events',
+      icon: Layers,
+      activeClass: 'bg-nirmaan-purple text-white',
     },
     {
       href: '/admin/dashboard',

@@ -58,6 +58,17 @@
 - **Front-and-Center Viewfinder**: Camera viewport and single-tap controls are positioned directly below the selector pills without requiring scrolling.
 - **Removed Manual Token Lookup**: Focused the scanner interface strictly on rapid camera scanning.
 
+### ⚡ 2.5 Dynamic Custom Attendance & Scan Events Engine
+- **Organizer Event Creator**: Added `/admin/events` page and `CustomEventModal` allowing organizers to create ad-hoc scan events on the fly (e.g., Midnight Snacks, Mentorship Check-in, Judging Rounds, Swag Distribution).
+- **Entitlement Rules**:
+  - `once_per_team`: Single scan per team (prevents duplicates with `ALREADY_COMPLETED`).
+  - `per_present_member`: Requires verified on-desk check-in, capped at the present headcount (prevents excess scans with `LIMIT_REACHED`).
+  - `unlimited`: Atomic increment counter per scan.
+- **Dynamic QR Scanner Integration**: Custom events appear directly alongside baseline modes in the Scanner mode selector bar with accent colors, icons, and a dedicated `CustomServeModal`.
+- **Database & In-Memory Store**: Added Supabase migration `20260105000000_custom_scan_events.sql` and full standalone mock DB support with atomic record tracking.
+- **Automated Test Coverage**: 71/71 tests passing across 9 test suites including `tests/custom-events.test.ts`.
+
+
 ### 🔒 2.5 Full Production Security Hardening & Audit Complete
 - **HMAC-SHA256 Cryptographic Session Tokens**: Replaced plaintext JSON cookies with tamper-proof HMAC-SHA256 signed session tokens (`v1.<payload>.<sig>`) for both `nirmaan_team_session` and `nirmaan_admin_session`. Enforced constant-time signature verification with `crypto.timingSafeEqual`.
 - **IDOR Elimination**: Hardened `/api/team/update` to strictly require verified session `teamId` matching the target team, preventing unauthorized edits across teams.

@@ -1,4 +1,15 @@
-import { Team, Member, Announcement, ScheduleItem, ScanResult, EventStatistics, MealType, TeamReviewStatus } from '@/types/database';
+import {
+  Team,
+  Member,
+  Announcement,
+  ScheduleItem,
+  ScanResult,
+  EventStatistics,
+  MealType,
+  TeamReviewStatus,
+  ScanEvent,
+  ScanEventRecord,
+} from '@/types/database';
 import { sanitizeQRToken } from '@/lib/qr/token';
 import { validateMealEligibility } from '@/lib/validation/rules';
 import { generateQRToken } from '@/lib/qr/token';
@@ -20,12 +31,14 @@ export interface NewTeamInput {
   duplicateMatchTeamId?: string | null;
 }
 
-// In-Memory store with NIRMAAN 2026 reference teams (50 teams)
+// In-Memory store with NIRMAAN 2026 reference teams
 interface MockDatabase {
   teams: Team[];
   members: Member[];
   announcements: Announcement[];
   schedule: ScheduleItem[];
+  custom_events: ScanEvent[];
+  custom_records: ScanEventRecord[];
 }
 
 const mockDb: MockDatabase = {
@@ -42,6 +55,8 @@ const mockDb: MockDatabase = {
     },
   ],
   schedule: JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)) as ScheduleItem[],
+  custom_events: [],
+  custom_records: [],
 };
 
 // In-memory registration concurrency lock
@@ -1147,4 +1162,330 @@ export async function resetSchedule(): Promise<ScheduleItem[]> {
 
   mockDb.schedule = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
   return [...mockDb.schedule];
+}
+
+// -----------------------------------------------------------------------------
+// Dynamic Custom Scan Events & Records
+// -----------------------------------------------------------------------------
+
+export async function getCustomScanEvents(): Promise<ScanEvent[]> {
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { data, error } = await supabase
+        .from('custom_scan_events')
+        .select('*')
+        .order('order_index', { ascending: true })
+        .order('created_at', { ascending: true });
+
+      if (!error && Array.isArray(data)) {
+        return data as ScanEvent[];
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  return [...mockDb.custom_events];
+}
+
+export async function createCustomScanEvent(
+  input: Omit<ScanEvent, 'id' | 'created_at' | 'active' | 'color'> & {
+    active?: boolean;
+    color?: string;
+  }
+): Promise<ScanEvent> {
+  const id = `evt-${randomUUID()}`;
+  const now = new Date().toISOString();
+  const newEvent: ScanEvent = {
+    id,
+    title: input.title.trim().toUpperCase(),
+    description: input.description?.trim() || null,
+    limit_rule: input.limit_rule || 'per_present_member',
+    color: input.color || 'bg-nirmaan-amber',
+    text_color: input.text_color || (input.color?.includes('blue') || input.color?.includes('purple') || input.color?.includes('dark') || input.color?.includes('red') ? 'text-white' : 'text-nirmaan-black'),
+    icon: input.icon || 'Sparkles',
+    active: input.active !== undefined ? input.active : true,
+    order_index: input.order_index || 0,
+    created_at: now,
+  };
+
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { data, error } = await supabase
+        .from('custom_scan_events')
+        .insert(newEvent)
+        .select()
+        .single();
+
+      if (!error && data) {
+        return data as ScanEvent;
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  mockDb.custom_events.push(newEvent);
+  return newEvent;
+}
+
+export async function deleteCustomScanEvent(id: string): Promise<boolean> {
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      await supabase.from('custom_scan_records').delete().eq('event_id', id);
+      const { error } = await supabase.from('custom_scan_events').delete().eq('id', id);
+      if (!error) return true;
+    } catch {
+      // Fallback
+    }
+  }
+
+  mockDb.custom_records = mockDb.custom_records.filter((r) => r.event_id !== id);
+  const initialCount = mockDb.custom_events.length;
+  mockDb.custom_events = mockDb.custom_events.filter((e) => e.id !== id);
+  return mockDb.custom_events.length < initialCount;
+}
+
+export async function getCustomScanRecords(eventId?: string, teamId?: string): Promise<ScanEventRecord[]> {
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      let query = supabase.from('custom_scan_records').select('*');
+      if (eventId) query = query.eq('event_id', eventId);
+      if (teamId) query = query.eq('team_id', teamId);
+      const { data, error } = await query;
+      if (!error && Array.isArray(data)) {
+        return data as ScanEventRecord[];
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  return mockDb.custom_records.filter((r) => {
+    if (eventId && r.event_id !== eventId) return false;
+    if (teamId && r.team_id !== teamId) return false;
+    return true;
+  });
+}
+
+export async function processCustomScan(
+  rawToken: string,
+  eventId: string,
+  requestedCount = 1,
+  presentMemberIds?: string[]
+): Promise<ScanResult> {
+  const token = sanitizeQRToken(rawToken);
+  if (!token) {
+    return { success: false, error_code: 'INVALID_QR', message: 'Invalid QR token provided' };
+  }
+
+  const events = await getCustomScanEvents();
+  const event = events.find((e) => e.id === eventId);
+  if (!event) {
+    return { success: false, error_code: 'INVALID_EVENT', message: 'Scan event not found or inactive' };
+  }
+
+  const team = await findTeamByToken(token);
+  if (!team) {
+    return { success: false, error_code: 'INVALID_QR', message: 'Invalid QR — Team not registered in system' };
+  }
+
+  if (team.review_status === 'rejected') {
+    return { success: false, error_code: 'TEAM_REJECTED', message: 'Team registration was rejected by organizers' };
+  }
+
+  if (team.review_status === 'merged') {
+    return { success: false, error_code: 'TEAM_MERGED', message: 'Team registration was merged into another primary team' };
+  }
+
+  const members = await getTeamMembers(team.id);
+  const presentCount = members.filter((m) => m.present).length;
+
+  // 1. Rule: Once per team check-in
+  if (event.limit_rule === 'once_per_team') {
+    const existingRecords = await getCustomScanRecords(eventId, team.id);
+    if (existingRecords.length > 0) {
+      return {
+        success: false,
+        error_code: 'ALREADY_COMPLETED',
+        message: `Team "${team.team_name}" has already checked in for ${event.title}.`,
+        team_id: team.id,
+        team_name: team.team_name,
+        college: team.college,
+        checked_in: team.checked_in,
+        event_id: event.id,
+        event_title: event.title,
+        current_count: existingRecords.reduce((acc, r) => acc + r.count, 0),
+      };
+    }
+
+    const record: ScanEventRecord = {
+      id: `rec-${randomUUID()}`,
+      event_id: eventId,
+      team_id: team.id,
+      count: 1,
+      present_member_ids: presentMemberIds || null,
+      scanned_at: new Date().toISOString(),
+    };
+
+    if (hasSupabaseConfig()) {
+      try {
+        const { createAdminClient } = await import('../supabase/admin');
+        const supabase = createAdminClient();
+        await supabase.from('custom_scan_records').insert(record);
+      } catch {}
+    } else {
+      mockDb.custom_records.push(record);
+    }
+
+    return {
+      success: true,
+      message: `Check-in recorded for "${team.team_name}" for ${event.title}!`,
+      team_id: team.id,
+      team_name: team.team_name,
+      college: team.college,
+      checked_in: team.checked_in,
+      event_id: event.id,
+      event_title: event.title,
+      current_count: 1,
+      new_count: 1,
+      remaining_count: 0,
+      present_count: presentCount,
+      total_members: members.length,
+      members,
+    };
+  }
+
+  // 2. Rule: Per present member entitlement
+  if (event.limit_rule === 'per_present_member') {
+    if (!team.checked_in) {
+      return {
+        success: false,
+        error_code: 'NOT_CHECKED_IN',
+        message: 'Team must complete on-desk registration check-in first.',
+        team_id: team.id,
+        team_name: team.team_name,
+        college: team.college,
+        checked_in: false,
+      };
+    }
+
+    if (presentCount === 0) {
+      return {
+        success: false,
+        error_code: 'NO_PRESENT_MEMBERS',
+        message: 'No members are marked present for this team.',
+        team_id: team.id,
+        team_name: team.team_name,
+        checked_in: true,
+        present_count: 0,
+      };
+    }
+
+    const existingRecords = await getCustomScanRecords(eventId, team.id);
+    const currentCount = existingRecords.reduce((acc, r) => acc + r.count, 0);
+    const remaining = Math.max(0, presentCount - currentCount);
+
+    if (currentCount + requestedCount > presentCount) {
+      return {
+        success: false,
+        error_code: 'LIMIT_REACHED',
+        message: `Limit reached for ${event.title}: ${currentCount}/${presentCount} already recorded.`,
+        team_id: team.id,
+        team_name: team.team_name,
+        college: team.college,
+        checked_in: true,
+        event_id: event.id,
+        event_title: event.title,
+        present_count: presentCount,
+        current_count: currentCount,
+        remaining_count: remaining,
+      };
+    }
+
+    const newCount = currentCount + requestedCount;
+    const record: ScanEventRecord = {
+      id: `rec-${randomUUID()}`,
+      event_id: eventId,
+      team_id: team.id,
+      count: requestedCount,
+      present_member_ids: presentMemberIds || null,
+      scanned_at: new Date().toISOString(),
+    };
+
+    if (hasSupabaseConfig()) {
+      try {
+        const { createAdminClient } = await import('../supabase/admin');
+        const supabase = createAdminClient();
+        await supabase.from('custom_scan_records').insert(record);
+      } catch {}
+    } else {
+      mockDb.custom_records.push(record);
+    }
+
+    return {
+      success: true,
+      message: `Recorded ${requestedCount} for "${team.team_name}" (${newCount}/${presentCount} for ${event.title})`,
+      team_id: team.id,
+      team_name: team.team_name,
+      college: team.college,
+      checked_in: true,
+      event_id: event.id,
+      event_title: event.title,
+      present_count: presentCount,
+      current_count: currentCount,
+      new_count: newCount,
+      remaining_count: presentCount - newCount,
+      total_members: members.length,
+      members,
+    };
+  }
+
+  // 3. Rule: Unlimited counter
+  const existingRecords = await getCustomScanRecords(eventId, team.id);
+  const currentCount = existingRecords.reduce((acc, r) => acc + r.count, 0);
+  const newCount = currentCount + requestedCount;
+
+  const record: ScanEventRecord = {
+    id: `rec-${randomUUID()}`,
+    event_id: eventId,
+    team_id: team.id,
+    count: requestedCount,
+    present_member_ids: presentMemberIds || null,
+    scanned_at: new Date().toISOString(),
+  };
+
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      await supabase.from('custom_scan_records').insert(record);
+    } catch {}
+  } else {
+    mockDb.custom_records.push(record);
+  }
+
+  return {
+    success: true,
+    message: `Recorded ${requestedCount} for "${team.team_name}" (Total: ${newCount} for ${event.title})`,
+    team_id: team.id,
+    team_name: team.team_name,
+    college: team.college,
+    checked_in: team.checked_in,
+    event_id: event.id,
+    event_title: event.title,
+    current_count: currentCount,
+    new_count: newCount,
+    total_members: members.length,
+    present_count: presentCount,
+    members,
+  };
 }
