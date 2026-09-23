@@ -695,7 +695,7 @@ export interface UpdateTeamDetailsInput {
   college: string;
   track: Track;
   leader: { name: string; email: string; phone: string };
-  members: { name: string; email: string; phone: string }[];
+  members: { name: string; email?: string; phone: string }[];
 }
 
 export async function updateTeamDetails(
@@ -771,8 +771,8 @@ export async function updateTeamDetails(
         .select('*')
         .eq('team_id', teamId);
 
-      const existingPresentEmails = new Set(
-        (existingMembers || []).filter((m: Member) => m.present).map((m: Member) => normalizeEmail(m.email))
+      const existingPresentPhones = new Set(
+        (existingMembers || []).filter((m: Member) => m.present).map((m: Member) => normalizePhone(m.phone))
       );
 
       await supabase.from('members').delete().eq('team_id', teamId);
@@ -783,9 +783,10 @@ export async function updateTeamDetails(
         name: member.name.trim(),
         phone: member.phone.trim(),
         normalized_phone: normalizePhone(member.phone),
-        email: normalizeEmail(member.email),
-        normalized_email: normalizeEmail(member.email),
-        present: existingPresentEmails.has(normalizeEmail(member.email)),
+        email: member.email ? normalizeEmail(member.email) : '',
+        normalized_email: member.email ? normalizeEmail(member.email) : '',
+        present: existingPresentPhones.has(normalizePhone(member.phone)),
+        is_leader: index === 0,
         created_at: now,
       }));
 
@@ -843,8 +844,8 @@ export async function updateTeamDetails(
   team.updated_at = now;
 
   const existingMembers = mockDb.members.filter((m) => m.team_id === teamId);
-  const existingPresentEmails = new Set(
-    existingMembers.filter((m) => m.present).map((m) => normalizeEmail(m.email))
+  const existingPresentPhones = new Set(
+    existingMembers.filter((m) => m.present).map((m: Member) => normalizePhone(m.phone))
   );
 
   mockDb.members = mockDb.members.filter((m) => m.team_id !== teamId);
@@ -855,9 +856,10 @@ export async function updateTeamDetails(
     name: member.name.trim(),
     phone: member.phone.trim(),
     normalized_phone: normalizePhone(member.phone),
-    email: normalizeEmail(member.email),
-    normalized_email: normalizeEmail(member.email),
-    present: existingPresentEmails.has(normalizeEmail(member.email)),
+    email: member.email ? normalizeEmail(member.email) : '',
+    normalized_email: member.email ? normalizeEmail(member.email) : '',
+    present: existingPresentPhones.has(normalizePhone(member.phone)),
+    is_leader: index === 0,
     created_at: now,
   }));
 

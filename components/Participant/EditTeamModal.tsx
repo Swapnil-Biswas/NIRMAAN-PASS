@@ -52,7 +52,6 @@ export default function EditTeamModal({
   const initialLeader = members[0] || { name: '', email: '', phone: '' };
   const initialMembers = members.slice(1).map((m) => ({
     name: m.name || '',
-    email: m.email || '',
     phone: m.phone || '',
   }));
 
@@ -76,7 +75,6 @@ export default function EditTeamModal({
     setAdditionalMembers(
       members.slice(1).map((m) => ({
         name: m.name || '',
-        email: m.email || '',
         phone: m.phone || '',
       }))
     );
@@ -97,7 +95,7 @@ export default function EditTeamModal({
 
   const handleAddMember = () => {
     if (additionalMembers.length < 3) {
-      setAdditionalMembers([...additionalMembers, { name: '', email: '', phone: '' }]);
+      setAdditionalMembers([...additionalMembers, { name: '', phone: '' }]);
     }
   };
 
@@ -107,7 +105,7 @@ export default function EditTeamModal({
 
   const handleMemberChange = (
     index: number,
-    field: 'name' | 'email' | 'phone',
+    field: 'name' | 'phone',
     value: string
   ) => {
     const updated = [...additionalMembers];
@@ -143,12 +141,8 @@ export default function EditTeamModal({
 
     for (let i = 0; i < additionalMembers.length; i++) {
       const m = additionalMembers[i];
-      if (!m.name.trim() || !m.email.trim() || !m.phone.trim()) {
-        setError(`Please fill all fields for Member ${i + 2}, or remove the entry.`);
-        return;
-      }
-      if (!isValidEmail(m.email)) {
-        setError(`Please provide a valid email address with a domain extension for Member ${i + 2}.`);
+      if (!m.name.trim() || !m.phone.trim()) {
+        setError(`Please fill name and phone number for Member ${i + 2}, or remove the entry.`);
         return;
       }
       if (!isValidPhone(m.phone)) {
@@ -170,7 +164,11 @@ export default function EditTeamModal({
           college: college.trim(),
           track,
           leader,
-          members: additionalMembers,
+          members: additionalMembers.map((m) => ({
+            name: m.name.trim(),
+            phone: m.phone.trim(),
+            email: '',
+          })),
         }),
       });
 
@@ -397,21 +395,13 @@ export default function EditTeamModal({
                           </button>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                           <input
                             type="text"
                             required
                             value={member.name}
                             onChange={(e) => handleMemberChange(idx, 'name', e.target.value)}
                             placeholder="Full Name"
-                            className="w-full px-3 py-2 bg-white border border-nirmaan-black/20 rounded-xl text-xs font-medium focus:border-nirmaan-black focus:outline-none"
-                          />
-                          <input
-                            type="email"
-                            required
-                            value={member.email}
-                            onChange={(e) => handleMemberChange(idx, 'email', e.target.value)}
-                            placeholder="member@college.edu"
                             className="w-full px-3 py-2 bg-white border border-nirmaan-black/20 rounded-xl text-xs font-medium focus:border-nirmaan-black focus:outline-none"
                           />
                           <input

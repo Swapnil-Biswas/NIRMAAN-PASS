@@ -172,7 +172,9 @@ export default function AdminTeamPreview({
                     >
                       <div className="min-w-0 flex-1 mr-2">
                         <p className="font-bold text-xs text-nirmaan-black truncate">{member.name}</p>
-                        <p className="text-[11px] text-nirmaan-black/60 truncate">{member.email}</p>
+                        <p className="text-[11px] text-nirmaan-black/60 truncate">
+                          {member.phone || (member.email ? member.email : 'Registered Member')}
+                        </p>
                       </div>
                       {member.present ? (
                         <span className="nirmaan-pill bg-nirmaan-green-bright text-nirmaan-black text-[10px] font-black shrink-0">
@@ -264,7 +266,9 @@ export default function AdminTeamPreview({
                             <p className="text-[11px] text-nirmaan-black/60">
                               {member.phone || 'Phone registered'}
                             </p>
-                            <p className="text-[10px] text-nirmaan-black/40">{member.email}</p>
+                            {member.email ? (
+                              <p className="text-[10px] text-nirmaan-black/40">{member.email}</p>
+                            ) : null}
                           </div>
                           {member.present ? (
                             <span className="nirmaan-pill bg-nirmaan-green-bright text-nirmaan-black text-[10px] font-black">

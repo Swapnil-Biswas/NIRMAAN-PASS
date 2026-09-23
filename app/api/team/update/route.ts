@@ -85,10 +85,10 @@ export async function POST(req: NextRequest) {
     };
 
     const normalizedMembers = rawMembers
-      .filter((m: RegistrationMemberInput) => m?.name && m?.email && m?.phone)
-      .map((m: RegistrationMemberInput) => ({
+      .filter((m: any) => m?.name && m?.phone)
+      .map((m: any) => ({
         name: m.name.trim(),
-        email: normalizeEmail(m.email),
+        email: m.email ? normalizeEmail(m.email) : '',
         phone: m.phone.trim(),
       }));
 
@@ -115,10 +115,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate member emails and phones
+    // Validate member phones (and email only if explicitly provided)
     for (let i = 0; i < normalizedMembers.length; i++) {
       const m = normalizedMembers[i];
-      if (!isValidEmail(m.email)) {
+      if (m.email && !isValidEmail(m.email)) {
         return NextResponse.json(
           { success: false, message: `Please provide a valid email with domain extension for Team Member ${i + 2} (${m.name || 'Member'}).` },
           { status: 400 }
@@ -132,8 +132,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Internal duplicate email check
-    const emails = [normalizedLeader.email, ...normalizedMembers.map((m: RegistrationMemberInput) => m.email)];
+    // Internal duplicate email check for non-empty emails
+    const emails = [normalizedLeader.email, ...normalizedMembers.map((m: any) => m.email)].filter(Boolean);
     if (new Set(emails).size !== emails.length) {
       return NextResponse.json(
         { success: false, message: 'Each team member must have a unique email address.' },
@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
     // Internal duplicate phone check
     const phones = [
       normalizePhone(normalizedLeader.phone),
-      ...normalizedMembers.map((m: RegistrationMemberInput) => normalizePhone(m.phone)),
+      ...normalizedMembers.map((m: any) => normalizePhone(m.phone)),
     ];
     if (new Set(phones).size !== phones.length) {
       return NextResponse.json(
