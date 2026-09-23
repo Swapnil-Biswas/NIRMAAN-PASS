@@ -280,35 +280,121 @@ export function invalidateAllCache() {
 }
 
 // -----------------------------------------------------------------------------
-// Data Access Operations (Optimized for Sub-millisecond Performance)
+// Data Access Operations (Direct Indexed Lookups)
 // -----------------------------------------------------------------------------
 
 export async function findTeamByToken(rawToken: string): Promise<Team | null> {
   const token = sanitizeQRToken(rawToken);
   if (!token) return null;
 
-  // 1. Fast in-memory cache lookup
-  if (storeCache.teams) {
-    const cached = storeCache.teams.find((t) => t.qr_token === token || t.qr_token === rawToken.trim());
-    if (cached) return { ...cached };
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { data, error } = await supabase
+        .from('teams')
+        .select('*')
+        .or(`qr_token.eq.${token},qr_token.eq.${rawToken.trim()}`)
+        .maybeSingle();
+
+      if (error) {
+        console.error('[Supabase] findTeamByToken error:', error.message);
+        return null;
+      }
+      return data as Team | null;
+    } catch (e) {
+      console.error('[Supabase] findTeamByToken exception:', e);
+      return null;
+    }
   }
 
-  // 2. Fetch all teams (populates cache)
-  const allTeams = await getAllTeams();
-  const team = allTeams.find((t) => t.qr_token === token || t.qr_token === rawToken.trim());
+  const team = mockDb.teams.find((t) => t.qr_token === token || t.qr_token === rawToken.trim());
   return team ? { ...team } : null;
+}
+
+export const findTeamByTokenDirect = findTeamByToken;
+
+export async function findTeamByMemberEmail(email: string): Promise<{ team: Team; member: Member } | null> {
+  if (!email || typeof email !== 'string') return null;
+  const cleanEmail = normalizeEmail(email);
+
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+
+      const { data: member, error: memErr } = await supabase
+        .from('members')
+        .select('*')
+        .or(`normalized_email.eq.${cleanEmail},email.ilike.${cleanEmail}`)
+        .limit(1)
+        .maybeSingle();
+
+      if (memErr || !member) {
+        return null;
+      }
+
+      const { data: team, error: teamErr } = await supabase
+        .from('teams')
+        .select('*')
+        .eq('id', member.team_id)
+        .maybeSingle();
+
+      if (teamErr || !team) {
+        return null;
+      }
+
+      return {
+        team: team as Team,
+        member: member as Member,
+      };
+    } catch (e) {
+      console.error('[Supabase] findTeamByMemberEmail exception:', e);
+      return null;
+    }
+  }
+
+  const matchedMember = mockDb.members.find(
+    (m) =>
+      (m.normalized_email && m.normalized_email === cleanEmail) ||
+      (m.email && normalizeEmail(m.email) === cleanEmail)
+  );
+  if (!matchedMember) return null;
+
+  const matchedTeam = mockDb.teams.find((t) => t.id === matchedMember.team_id);
+  if (!matchedTeam) return null;
+
+  return {
+    team: { ...matchedTeam },
+    member: { ...matchedMember },
+  };
 }
 
 export async function findTeamById(teamId: string): Promise<Team | null> {
   if (!teamId) return null;
 
-  if (storeCache.teams) {
-    const cached = storeCache.teams.find((t) => t.id === teamId);
-    if (cached) return { ...cached };
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { data, error } = await supabase
+        .from('teams')
+        .select('*')
+        .eq('id', teamId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('[Supabase] findTeamById error:', error.message);
+        return null;
+      }
+      return data as Team | null;
+    } catch (e) {
+      console.error('[Supabase] findTeamById exception:', e);
+      return null;
+    }
   }
 
-  const allTeams = await getAllTeams();
-  const team = allTeams.find((t) => t.id === teamId);
+  const team = mockDb.teams.find((t) => t.id === teamId);
   return team ? { ...team } : null;
 }
 
@@ -339,14 +425,28 @@ export async function updateTeamAuthId(teamId: string, authId: string): Promise<
 export async function getTeamMembers(teamId: string): Promise<Member[]> {
   if (!teamId) return [];
 
-  if (storeCache.teams) {
-    const cached = storeCache.teams.find((t) => t.id === teamId);
-    if (cached) return cached.members.map((m) => ({ ...m }));
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { data, error } = await supabase
+        .from('members')
+        .select('*')
+        .eq('team_id', teamId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('[Supabase] getTeamMembers error:', error.message);
+        return [];
+      }
+      return (data || []) as Member[];
+    } catch (e) {
+      console.error('[Supabase] getTeamMembers exception:', e);
+      return [];
+    }
   }
 
-  const allTeams = await getAllTeams();
-  const team = allTeams.find((t) => t.id === teamId);
-  return team ? team.members.map((m) => ({ ...m })) : [];
+  return mockDb.members.filter((m) => m.team_id === teamId).map((m) => ({ ...m }));
 }
 
 export async function getAllTeams(): Promise<EnrichedTeam[]> {
@@ -417,22 +517,36 @@ export async function processMealScan(rawToken: string, mealType: MealType): Pro
   const token = sanitizeQRToken(rawToken);
 
   if (hasSupabaseConfig()) {
-    const { createAdminClient } = await import('../supabase/admin');
-    const supabase = createAdminClient();
-    const { data, error } = await supabase.rpc('process_meal_scan', {
-      p_qr_token: token,
-      p_meal_type: mealType,
-    });
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { data, error } = await supabase.rpc('process_meal_scan', {
+        p_qr_token: token,
+        p_meal_type: mealType,
+      });
 
-    if (error) {
-      console.error('[Supabase] process_meal_scan error:', error.message, error.code, error.details);
+      if (error) {
+        console.error('[Supabase] process_meal_scan error:', error.message, error.code, error.details);
+        return {
+          success: false,
+          error_code: 'SERVER_ERROR',
+          message: `Database error: ${error.message}`,
+        };
+      }
+      if (data) return data as ScanResult;
+    } catch (e: any) {
+      console.error('[Supabase] process_meal_scan exception:', e);
       return {
         success: false,
         error_code: 'SERVER_ERROR',
-        message: `Database error: ${error.message}`,
+        message: e?.message || 'Database error during meal scan.',
       };
     }
-    if (data) return data as ScanResult;
+    return {
+      success: false,
+      error_code: 'SERVER_ERROR',
+      message: 'Failed to complete meal scan in database.',
+    };
   }
 
   // Fallback in-memory atomic processing
@@ -510,21 +624,35 @@ export async function processCoffeeScan(rawToken: string): Promise<ScanResult> {
   const token = sanitizeQRToken(rawToken);
 
   if (hasSupabaseConfig()) {
-    const { createAdminClient } = await import('../supabase/admin');
-    const supabase = createAdminClient();
-    const { data, error } = await supabase.rpc('process_coffee_scan', {
-      p_qr_token: token,
-    });
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { data, error } = await supabase.rpc('process_coffee_scan', {
+        p_qr_token: token,
+      });
 
-    if (error) {
-      console.error('[Supabase] process_coffee_scan error:', error.message, error.code, error.details);
+      if (error) {
+        console.error('[Supabase] process_coffee_scan error:', error.message, error.code, error.details);
+        return {
+          success: false,
+          error_code: 'SERVER_ERROR',
+          message: `Database error: ${error.message}`,
+        };
+      }
+      if (data) return data as ScanResult;
+    } catch (e: any) {
+      console.error('[Supabase] process_coffee_scan exception:', e);
       return {
         success: false,
         error_code: 'SERVER_ERROR',
-        message: `Database error: ${error.message}`,
+        message: e?.message || 'Database error during coffee scan.',
       };
     }
-    if (data) return data as ScanResult;
+    return {
+      success: false,
+      error_code: 'SERVER_ERROR',
+      message: 'Failed to complete coffee scan in database.',
+    };
   }
 
   const team = mockDb.teams.find((t) => t.qr_token === token || t.qr_token === rawToken.trim());
@@ -570,22 +698,36 @@ export async function processRegistration(rawToken: string, presentMemberIds: st
   const token = sanitizeQRToken(rawToken);
 
   if (hasSupabaseConfig()) {
-    const { createAdminClient } = await import('../supabase/admin');
-    const supabase = createAdminClient();
-    const { data, error } = await supabase.rpc('process_registration', {
-      p_qr_token: token,
-      p_present_member_ids: presentMemberIds,
-    });
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { data, error } = await supabase.rpc('process_registration', {
+        p_qr_token: token,
+        p_present_member_ids: presentMemberIds,
+      });
 
-    if (error) {
-      console.error('[Supabase] process_registration error:', error.message, error.code, error.details);
+      if (error) {
+        console.error('[Supabase] process_registration error:', error.message, error.code, error.details);
+        return {
+          success: false,
+          error_code: 'SERVER_ERROR',
+          message: `Database error: ${error.message}`,
+        };
+      }
+      if (data) return data as ScanResult;
+    } catch (e: any) {
+      console.error('[Supabase] process_registration exception:', e);
       return {
         success: false,
         error_code: 'SERVER_ERROR',
-        message: `Database error: ${error.message}`,
+        message: e?.message || 'Database error during registration scan.',
       };
     }
-    if (data) return data as ScanResult;
+    return {
+      success: false,
+      error_code: 'SERVER_ERROR',
+      message: 'Failed to complete registration scan in database.',
+    };
   }
 
   const team = mockDb.teams.find((t) => t.qr_token === token || t.qr_token === rawToken.trim());
@@ -1466,13 +1608,47 @@ export async function processCustomScan(
     return { success: false, error_code: 'INVALID_QR', message: 'Invalid QR token provided' };
   }
 
-  const events = await getCustomScanEvents();
-  const event = events.find((e) => e.id === eventId);
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+      const { data, error } = await supabase.rpc('process_custom_scan', {
+        p_qr_token: token,
+        p_event_id: eventId,
+        p_count: requestedCount,
+        p_present_member_ids: presentMemberIds || null,
+      });
+
+      if (error) {
+        console.error('[Supabase] process_custom_scan error:', error.message, error.code, error.details);
+        return {
+          success: false,
+          error_code: 'SERVER_ERROR',
+          message: `Database error: ${error.message}`,
+        };
+      }
+      if (data) return data as ScanResult;
+    } catch (e: any) {
+      console.error('[Supabase] process_custom_scan exception:', e);
+      return {
+        success: false,
+        error_code: 'SERVER_ERROR',
+        message: e?.message || 'Database error during custom scan.',
+      };
+    }
+    return {
+      success: false,
+      error_code: 'SERVER_ERROR',
+      message: 'Failed to complete custom scan in database.',
+    };
+  }
+
+  const event = mockDb.custom_events.find((e) => e.id === eventId && e.active);
   if (!event) {
     return { success: false, error_code: 'INVALID_EVENT', message: 'Scan event not found or inactive' };
   }
 
-  const team = await findTeamByToken(token);
+  const team = mockDb.teams.find((t) => t.qr_token === token || t.qr_token === rawToken.trim());
   if (!team) {
     return { success: false, error_code: 'INVALID_QR', message: 'Invalid QR — Team not registered in system' };
   }
@@ -1485,12 +1661,14 @@ export async function processCustomScan(
     return { success: false, error_code: 'TEAM_MERGED', message: 'Team registration was merged into another primary team' };
   }
 
-  const members = await getTeamMembers(team.id);
+  const members = mockDb.members.filter((m) => m.team_id === team.id);
   const presentCount = members.filter((m) => m.present).length;
 
   // 1. Rule: Once per team check-in
   if (event.limit_rule === 'once_per_team') {
-    const existingRecords = await getCustomScanRecords(eventId, team.id);
+    const existingRecords = mockDb.custom_records.filter(
+      (r) => r.event_id === eventId && r.team_id === team.id
+    );
     if (existingRecords.length > 0) {
       return {
         success: false,
@@ -1515,15 +1693,7 @@ export async function processCustomScan(
       scanned_at: new Date().toISOString(),
     };
 
-    if (hasSupabaseConfig()) {
-      try {
-        const { createAdminClient } = await import('../supabase/admin');
-        const supabase = createAdminClient();
-        await supabase.from('custom_scan_records').insert(record);
-      } catch {}
-    } else {
-      mockDb.custom_records.push(record);
-    }
+    mockDb.custom_records.push(record);
 
     return {
       success: true,
@@ -1569,7 +1739,9 @@ export async function processCustomScan(
       };
     }
 
-    const existingRecords = await getCustomScanRecords(eventId, team.id);
+    const existingRecords = mockDb.custom_records.filter(
+      (r) => r.event_id === eventId && r.team_id === team.id
+    );
     const currentCount = existingRecords.reduce((acc, r) => acc + r.count, 0);
     const remaining = Math.max(0, presentCount - currentCount);
 
@@ -1600,15 +1772,7 @@ export async function processCustomScan(
       scanned_at: new Date().toISOString(),
     };
 
-    if (hasSupabaseConfig()) {
-      try {
-        const { createAdminClient } = await import('../supabase/admin');
-        const supabase = createAdminClient();
-        await supabase.from('custom_scan_records').insert(record);
-      } catch {}
-    } else {
-      mockDb.custom_records.push(record);
-    }
+    mockDb.custom_records.push(record);
 
     return {
       success: true,
@@ -1629,7 +1793,9 @@ export async function processCustomScan(
   }
 
   // 3. Rule: Unlimited counter
-  const existingRecords = await getCustomScanRecords(eventId, team.id);
+  const existingRecords = mockDb.custom_records.filter(
+    (r) => r.event_id === eventId && r.team_id === team.id
+  );
   const currentCount = existingRecords.reduce((acc, r) => acc + r.count, 0);
   const newCount = currentCount + requestedCount;
 
@@ -1642,15 +1808,7 @@ export async function processCustomScan(
     scanned_at: new Date().toISOString(),
   };
 
-  if (hasSupabaseConfig()) {
-    try {
-      const { createAdminClient } = await import('../supabase/admin');
-      const supabase = createAdminClient();
-      await supabase.from('custom_scan_records').insert(record);
-    } catch {}
-  } else {
-    mockDb.custom_records.push(record);
-  }
+  mockDb.custom_records.push(record);
 
   return {
     success: true,

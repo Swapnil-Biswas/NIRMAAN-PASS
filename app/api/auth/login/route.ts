@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllTeams } from '@/lib/data/store';
+import { findTeamByMemberEmail } from '@/lib/data/store';
 import { normalizeEmail } from '@/lib/registration';
 import { createTeamSessionToken, TEAM_COOKIE_NAME, MAX_TEAM_SESSION_LIFETIME_MS } from '@/lib/auth/session';
 import { checkRateLimit, getClientIp } from '@/lib/security/rateLimit';
@@ -34,12 +34,10 @@ export async function POST(req: NextRequest) {
         { status: 429 }
       );
     }
-    const teams = await getAllTeams();
-    const matchedTeam = teams.find((t) =>
-      t.members.some((m) => m?.email && normalizeEmail(m.email) === cleanEmail)
-    );
 
-    if (!matchedTeam) {
+    const match = await findTeamByMemberEmail(cleanEmail);
+
+    if (!match) {
       return NextResponse.json(
         {
           success: false,
@@ -48,6 +46,8 @@ export async function POST(req: NextRequest) {
         { status: 404 }
       );
     }
+
+    const { team: matchedTeam } = match;
 
     // Generate tamper-proof signed session token
     const token = createTeamSessionToken({

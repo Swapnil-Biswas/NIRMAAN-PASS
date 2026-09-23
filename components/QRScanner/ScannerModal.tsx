@@ -56,8 +56,10 @@ export default function QRScanner() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Scanner camera ref
+  // Scanner camera ref & scan debounce
   const html5QrCodeRef = useRef<any>(null);
+  const lastScanTimeRef = useRef<number>(0);
+  const isProcessingRef = useRef<boolean>(false);
 
   const fetchCustomEvents = async () => {
     try {
@@ -96,14 +98,25 @@ export default function QRScanner() {
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width: 250, height: 250 } },
         async (decodedText) => {
-          handleTokenScanned(decodedText);
+          const now = Date.now();
+          if (now - lastScanTimeRef.current < 800 || isProcessingRef.current) {
+            return;
+          }
+          lastScanTimeRef.current = now;
+          isProcessingRef.current = true;
+
           try {
-            if (scanner.isScanning) {
-              await scanner.stop();
-            }
-            await scanner.clear();
-          } catch {}
-          setScanning(false);
+            await handleTokenScanned(decodedText);
+            try {
+              if (scanner.isScanning) {
+                await scanner.stop();
+              }
+              await scanner.clear();
+            } catch {}
+            setScanning(false);
+          } finally {
+            isProcessingRef.current = false;
+          }
         },
         () => {}
       );
@@ -139,6 +152,7 @@ export default function QRScanner() {
   }, []);
 
   const handleTokenScanned = async (tokenInput: string) => {
+    if (loading) return;
     const token = sanitizeQRToken(tokenInput);
     if (!token) {
       setErrorMsg('Invalid QR token payload.');
