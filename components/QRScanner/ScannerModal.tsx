@@ -40,7 +40,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export default function QRScanner() {
-  const [purpose, setPurpose] = useState<ScanPurpose>('lunch');
+  const [purpose, setPurpose] = useState<ScanPurpose>('registration');
   const [scanning, setScanning] = useState(false);
   const [loading, setLoading] = useState(false);
   const [customEvents, setCustomEvents] = useState<ScanEvent[]>([]);
