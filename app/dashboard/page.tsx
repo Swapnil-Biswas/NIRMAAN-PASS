@@ -106,9 +106,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             <p className="text-xs sm:text-sm font-semibold text-nirmaan-black/70">
               {team.college}
             </p>
-            {team.track && (
-              <p className="text-xs font-bold text-nirmaan-blue mt-1">{team.track}</p>
-            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">

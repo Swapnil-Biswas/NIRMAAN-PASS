@@ -218,11 +218,6 @@ export default function AdminTeamPreview({
                   <p className="text-xs sm:text-sm font-semibold text-nirmaan-black/70">
                     {currentTeam.college}
                   </p>
-                  {currentTeam.track && (
-                    <p className="text-xs font-bold text-nirmaan-blue mt-1">
-                      {currentTeam.track}
-                    </p>
-                  )}
                 </div>
 
                 <div className="text-right sm:text-right">

@@ -71,12 +71,14 @@ export async function POST(req: NextRequest) {
     const rawLeader = leader as RegistrationMemberInput | undefined;
     const rawMembers = Array.isArray(members) ? members : [];
 
-    if (!trimmedTeamName || !trimmedCollege || !isTrack(track) || !rawLeader?.name || !rawLeader.email || !rawLeader.phone) {
+    if (!trimmedTeamName || !trimmedCollege || !rawLeader?.name || !rawLeader.email || !rawLeader.phone) {
       return NextResponse.json(
-        { success: false, message: 'Team name, college, valid track, and leader details are required.' },
+        { success: false, message: 'Team name, college, and leader details are required.' },
         { status: 400 }
       );
     }
+
+    const effectiveTrack = isTrack(track) ? track : 'Open Innovation';
 
     const normalizedLeader = {
       name: rawLeader.name.trim(),
@@ -182,7 +184,7 @@ export async function POST(req: NextRequest) {
     const result = await updateTeamDetails(teamId, {
       teamName: trimmedTeamName,
       college: trimmedCollege,
-      track,
+      track: effectiveTrack,
       leader: normalizedLeader,
       members: normalizedMembers,
     });
