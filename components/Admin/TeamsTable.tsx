@@ -16,7 +16,6 @@ import {
   Trash2,
   Phone,
   Mail,
-  RotateCcw,
 } from 'lucide-react';
 import { Team, Member } from '@/types/database';
 import Link from 'next/link';
@@ -42,7 +41,6 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
   const [statusFilter, setStatusFilter] = useState<'all' | 'checked_in' | 'not_checked_in'>('all');
   const [registrationModalTeam, setRegistrationModalTeam] = useState<TeamRowData | null>(null);
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
-  const [resetLoading, setResetLoading] = useState(false);
   const [checkInLoading, setCheckInLoading] = useState(false);
 
   // Keep local state in sync if prop updates
@@ -151,69 +149,6 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
       alert(err.message || 'Failed to delete team');
     } finally {
       setDeleteLoading(null);
-    }
-  };
-
-  const handleClearAllTeams = async () => {
-    if (!window.confirm('⚠️ DANGER: Are you sure you want to delete ALL teams and consumption logs? This will reset all event statistics and cannot be undone.')) {
-      return;
-    }
-
-    setDeleteLoading('all');
-    try {
-      const res = await fetch('/api/admin/teams?all=true', {
-        method: 'DELETE',
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Failed to clear all teams');
-      }
-
-      setTeams([]);
-    } catch (err: any) {
-      alert(err.message || 'Failed to clear all teams');
-    } finally {
-      setDeleteLoading(null);
-    }
-  };
-
-  const handleResetAllScans = async () => {
-    if (
-      !window.confirm(
-        '⚠️ Are you sure you want to reset all scans and attendance back to 0? All meal counters and check-in statuses will be reset.'
-      )
-    ) {
-      return;
-    }
-
-    setResetLoading(true);
-    try {
-      const res = await fetch('/api/admin/reset-scans', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Failed to reset scans');
-      }
-
-      setTeams((prev) =>
-        prev.map((t) => ({
-          ...t,
-          checked_in: false,
-          breakfast_count: 0,
-          lunch_count: 0,
-          dinner_count: 0,
-          coffee_count: 0,
-          present_count: 0,
-          members: t.members.map((m) => ({ ...m, present: false })),
-        }))
-      );
-      alert('All scans and attendance have been reset.');
-    } catch (err: any) {
-      alert(err.message || 'Failed to reset scans');
-    } finally {
-      setResetLoading(false);
     }
   };
 
@@ -339,36 +274,12 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
           <button
             type="button"
             onClick={exportToExcel}
-            className="nirmaan-pill bg-nirmaan-green-dark text-white text-[10px] font-black py-2 px-3 hover:opacity-90 transition-opacity shadow-xs flex-shrink-0"
+            className="nirmaan-pill bg-nirmaan-green-dark text-white text-[10px] font-black py-2 px-3 hover:opacity-90 transition-opacity shadow-xs flex-shrink-0 cursor-pointer"
             title="Export to CSV"
           >
             <Download className="w-3.5 h-3.5" />
             EXPORT
           </button>
-          {teams.length > 0 && (
-            <button
-              type="button"
-              disabled={resetLoading}
-              onClick={handleResetAllScans}
-              className="nirmaan-pill bg-nirmaan-amber text-nirmaan-black text-[10px] font-black py-2 px-3 hover:opacity-90 transition-opacity shadow-xs flex-shrink-0 disabled:opacity-50"
-              title="Reset all attendance and meal scans back to 0"
-            >
-              <RotateCcw className={`w-3.5 h-3.5 ${resetLoading ? 'animate-spin' : ''}`} />
-              <span>{resetLoading ? 'RESETTING...' : 'RESET SCANS'}</span>
-            </button>
-          )}
-          {teams.length > 0 && (
-            <button
-              type="button"
-              disabled={deleteLoading !== null}
-              onClick={handleClearAllTeams}
-              className="nirmaan-pill bg-nirmaan-red text-white text-[10px] font-black py-2 px-3 hover:opacity-90 transition-opacity shadow-xs flex-shrink-0 disabled:opacity-50"
-              title="Delete all teams and reset event statistics"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>{deleteLoading === 'all' ? 'CLEARING...' : 'CLEAR'}</span>
-            </button>
-          )}
         </div>
       </div>
 

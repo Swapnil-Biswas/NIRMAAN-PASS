@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllTeams, findTeamByToken, getTeamMembers, deleteTeam, deleteAllTeams } from '@/lib/data/store';
+import { getAllTeams, findTeamByToken, getTeamMembers, deleteTeam, deleteAllTeams, restoreDefaultTeams } from '@/lib/data/store';
 import { verifyAdminSession } from '@/lib/auth/admin';
 
 export const dynamic = 'force-dynamic';
@@ -29,6 +29,30 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     return NextResponse.json(
       { success: false, message: error.message || 'Failed to fetch teams' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    if (!verifyAdminSession(req)) {
+      return NextResponse.json(
+        { success: false, message: 'Organizer authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json().catch(() => ({}));
+    if (body.action === 'restore') {
+      const result = await restoreDefaultTeams();
+      return NextResponse.json(result);
+    }
+
+    return NextResponse.json({ success: false, message: 'Invalid action' }, { status: 400 });
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, message: error.message || 'Error executing team operation' },
       { status: 500 }
     );
   }

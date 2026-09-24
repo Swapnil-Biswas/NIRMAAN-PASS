@@ -1,63 +1,62 @@
--- =============================================================================
--- NIRMAAN 2026: OFFICIAL SHORTLIST 50 TEAMS & 184 MEMBERS SEED SCRIPT (CLEAN)
--- Paste and run this script in your Supabase SQL Editor
--- =============================================================================
+--
+-- NIRMAAN 2026: Official Seed Data (50 Shortlisted Teams & 184 Members with Tracks)
+--
+BEGIN;
 
-TRUNCATE public.members, public.teams CASCADE;
-
+-- 1. Insert 50 Teams
 INSERT INTO public.teams (id, team_name, canonical_name, college, track, qr_token, checked_in, breakfast_count, lunch_count, dinner_count, coffee_count, review_status, duplicate_notes, created_at, updated_at) VALUES
 ('team-022', '3 byte builders', '3bytebuilders', 'JSS Academy of Technical Education, Bangalore', 'Open Innovation', 'nirmaan_team-022_03e5dab323a31914', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-024', 'AERONEX', 'aeronex', 'KLE Technological University, Hubli', 'Open Innovation', 'nirmaan_team-024_840c467a92f68dd6', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-025', 'Arigato Algorithms', 'arigatoalgorithms', 'BMS Institute of Technology and Management', 'Open Innovation', 'nirmaan_team-025_3d62ba7242b349e8', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-046', 'Axiom', 'axiom', 'Brindavan College of Engineering', 'Open Innovation', 'nirmaan_team-046_f9af7f44abcc0bed', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-020', 'Byte_me', 'byteme', 'BMSIT&M', 'Open Innovation', 'nirmaan_team-020_0488fb7a66717b50', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-030', 'ByteBenders', 'bytebenders', 'KLE Institute of Technology, Hubballi', 'Open Innovation', 'nirmaan_team-030_666cb357a94e51a9', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-037', 'CacheUs', 'cacheus', 'BMSIT&M', 'Open Innovation', 'nirmaan_team-037_ea4f87c8427eaac3', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-023', 'ChaCha', 'chacha', 'BMS Institute of Technology and Management', 'Open Innovation', 'nirmaan_team-023_c823e05dfa9602b2', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-012', 'CLASHERS', 'clashers', 'BNM Institute of Technology and Bangalore Institute of Technology', 'Open Innovation', 'nirmaan_team-012_8ddaa16d417206cc', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-018', 'Codalist', 'codalist', 'JSS Science and Technology University', 'Open Innovation', 'nirmaan_team-018_3028e38fafdf5719', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-026', 'Codegeeks', 'codegeeks', 'Jawaharlal Nehru Technological University, Anantapur', 'Open Innovation', 'nirmaan_team-026_76fce15aa52942f2', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-050', 'Codexa', 'codexa', 'The Oxford College of Engineering', 'Open Innovation', 'nirmaan_team-050_2529e8185cac149a', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-003', 'Ctrl+Care', 'ctrlcare', 'BMSIT', 'Open Innovation', 'nirmaan_team-003_09237542744aa8f4', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-041', 'Cyber Citadel', 'cybercitadel', 'BMSIT&M', 'Open Innovation', 'nirmaan_team-041_eb5e7ddaf5cdd095', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-024', 'AERONEX', 'aeronex', 'KLE Technological University, Hubli', 'Smart Mobility & Aerospace', 'nirmaan_team-024_840c467a92f68dd6', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-025', 'Arigato Algorithms', 'arigatoalgorithms', 'BMS Institute of Technology and Management', 'AgriTech', 'nirmaan_team-025_3d62ba7242b349e8', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-046', 'Axiom', 'axiom', 'Brindavan College of Engineering', 'Deep Tech & Edge AI', 'nirmaan_team-046_f9af7f44abcc0bed', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-020', 'Byte_me', 'byteme', 'BMSIT&M', 'Cyber-Physical Security', 'nirmaan_team-020_0488fb7a66717b50', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-030', 'ByteBenders', 'bytebenders', 'KLE Institute of Technology, Hubballi', 'AgriTech', 'nirmaan_team-030_666cb357a94e51a9', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-037', 'CacheUs', 'cacheus', 'BMSIT&M', 'HealthTech & Bio-Wearables', 'nirmaan_team-037_ea4f87c8427eaac3', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-023', 'ChaCha', 'chacha', 'BMS Institute of Technology and Management', 'Deep Tech & Edge AI', 'nirmaan_team-023_c823e05dfa9602b2', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-012', 'CLASHERS', 'clashers', 'BNM Institute of Technology and Bangalore Institute of Technology', 'Deep Tech & Edge AI', 'nirmaan_team-012_8ddaa16d417206cc', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-018', 'Codalist', 'codalist', 'JSS Science and Technology University', 'HealthTech & Bio-Wearables', 'nirmaan_team-018_3028e38fafdf5719', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-026', 'Codegeeks', 'codegeeks', 'Jawaharlal Nehru Technological University, Anantapur', 'Deep Tech & Edge AI', 'nirmaan_team-026_76fce15aa52942f2', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-050', 'Codexa', 'codexa', 'The Oxford College of Engineering', 'AgriTech', 'nirmaan_team-050_2529e8185cac149a', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-003', 'Ctrl+Care', 'ctrlcare', 'BMSIT', 'HealthTech & Bio-Wearables', 'nirmaan_team-003_09237542744aa8f4', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-041', 'Cyber Citadel', 'cybercitadel', 'BMSIT&M', 'Cyber-Physical Security', 'nirmaan_team-041_eb5e7ddaf5cdd095', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
 ('team-014', 'Docker Ducks', 'dockerducks', 'BMS Institute of Technology', 'Open Innovation', 'nirmaan_team-014_95449a0baae12070', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-008', 'Edgevital', 'edgevital', 'MS Ramaiah Institute of Technology', 'Open Innovation', 'nirmaan_team-008_0867ec64b82cfdc3', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-021', 'Electrified', 'electrified', 'BMS Institute of Technology and Management', 'Open Innovation', 'nirmaan_team-021_60395af1d1fe80bd', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-028', 'Embedded Minds', 'embeddedminds', 'BMSIT', 'Open Innovation', 'nirmaan_team-028_4303f348b3f54557', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-043', 'Error404: NotFound', 'error404notfound', 'Shri Madhwa Vadhiraja Institute of Technology and Management, Bantakal, Udupi', 'Open Innovation', 'nirmaan_team-043_075f7fb5c4f3de44', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-004', 'FLEETMIND', 'fleetmind', 'BMSIT', 'Open Innovation', 'nirmaan_team-004_8556cb436f2f19cd', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-034', 'Frequency Fusion', 'frequencyfusion', 'BMSIT&M', 'Open Innovation', 'nirmaan_team-034_12ac672966e6db6e', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-002', 'Logic Forge', 'logicforge', 'Bangalore Institute of Technology', 'Open Innovation', 'nirmaan_team-002_179dd9287ed92a03', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-019', 'MergeInfinity', 'mergeinfinity', 'SVKM''s Dwarkadas J Sanghvi College of Engineering', 'Open Innovation', 'nirmaan_team-019_3e4b52bbf70354fa', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-048', 'MindSight', 'mindsight', 'REVA University', 'Open Innovation', 'nirmaan_team-048_2f5c277ceb9faf30', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-001', 'Muggles', 'muggles', 'Nitte Meenakshi Institute of Technology, Bengaluru', 'Open Innovation', 'nirmaan_team-001_75849c3009ed2cec', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-009', 'nexbyte', 'nexbyte', 'BMS Institute of Technology and Management', 'Open Innovation', 'nirmaan_team-009_6e8ea4e41f998ba4', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-029', 'NightCrawler (NMIT)', 'nightcrawlernmit', 'Nitte Meenakshi Institute of Technology', 'Open Innovation', 'nirmaan_team-029_296d26a91d6edbee', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-015', 'Paritrana', 'paritrana', 'MS Ramaiah Institute of Technology', 'Open Innovation', 'nirmaan_team-015_da1f1aca0982718d', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-010', 'QuadCore', 'quadcore', 'BMS Institute of Technology and Management', 'Open Innovation', 'nirmaan_team-010_0556596552bac5d0', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-008', 'Edgevital', 'edgevital', 'MS Ramaiah Institute of Technology', 'HealthTech & Bio-Wearables', 'nirmaan_team-008_0867ec64b82cfdc3', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-021', 'Electrified', 'electrified', 'BMS Institute of Technology and Management', 'Cyber-Physical Security', 'nirmaan_team-021_60395af1d1fe80bd', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-028', 'Embedded Minds', 'embeddedminds', 'BMSIT', 'Deep Tech & Edge AI', 'nirmaan_team-028_4303f348b3f54557', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-043', 'Error404: NotFound', 'error404notfound', 'Shri Madhwa Vadhiraja Institute of Technology and Management, Bantakal, Udupi', 'Smart Mobility & Aerospace', 'nirmaan_team-043_075f7fb5c4f3de44', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-004', 'FLEETMIND', 'fleetmind', 'BMSIT', 'Deep Tech & Edge AI', 'nirmaan_team-004_8556cb436f2f19cd', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-034', 'Frequency Fusion', 'frequencyfusion', 'BMSIT&M', 'Cyber-Physical Security', 'nirmaan_team-034_12ac672966e6db6e', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-002', 'Logic Forge', 'logicforge', 'Bangalore Institute of Technology', 'Cyber-Physical Security', 'nirmaan_team-002_179dd9287ed92a03', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-019', 'MergeInfinity', 'mergeinfinity', 'SVKM''s Dwarkadas J Sanghvi College of Engineering', 'AgriTech', 'nirmaan_team-019_3e4b52bbf70354fa', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-048', 'MindSight', 'mindsight', 'REVA University', 'HealthTech & Bio-Wearables', 'nirmaan_team-048_2f5c277ceb9faf30', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-001', 'Muggles', 'muggles', 'Nitte Meenakshi Institute of Technology, Bengaluru', 'HealthTech & Bio-Wearables', 'nirmaan_team-001_75849c3009ed2cec', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-009', 'nexbyte', 'nexbyte', 'BMS Institute of Technology and Management', 'Cyber-Physical Security', 'nirmaan_team-009_6e8ea4e41f998ba4', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-029', 'NightCrawler (NMIT)', 'nightcrawlernmit', 'Nitte Meenakshi Institute of Technology', 'Deep Tech & Edge AI', 'nirmaan_team-029_296d26a91d6edbee', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-015', 'Paritrana', 'paritrana', 'MS Ramaiah Institute of Technology', 'Deep Tech & Edge AI', 'nirmaan_team-015_da1f1aca0982718d', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-010', 'QuadCore', 'quadcore', 'BMS Institute of Technology and Management', 'Deep Tech & Edge AI', 'nirmaan_team-010_0556596552bac5d0', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
 ('team-045', 'Quantum Traid', 'quantumtraid', 'BMS Institute of Technology', 'Open Innovation', 'nirmaan_team-045_a5073ad21c39c525', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-035', 'Rasam', 'rasam', 'BMSIT', 'Open Innovation', 'nirmaan_team-035_bc4c407bd23689b0', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-031', 'RehabGrip', 'rehabgrip', 'MS Ramaiah Institute of Technology', 'Open Innovation', 'nirmaan_team-031_878df930fc96d889', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-038', 'Shadow quant', 'shadowquant', 'Bapuji Institute of Engineering and Technology', 'Open Innovation', 'nirmaan_team-038_d02b829cbde1123b', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-040', 'Silicon Syndicate', 'siliconsyndicate', 'BMSIT&M', 'Open Innovation', 'nirmaan_team-040_e13f623940967eeb', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-049', 'SmartGuard', 'smartguard', 'Easwari Engineering College', 'Open Innovation', 'nirmaan_team-049_f25ed6a21bddba4b', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-047', 'Team ASTRA', 'teamastra', 'Bapuji Institute of Engineering and Technology', 'Open Innovation', 'nirmaan_team-047_8f41e397561b43bf', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-039', 'Tech Spark', 'techspark', 'Cambridge Institute of Technology, North Campus', 'Open Innovation', 'nirmaan_team-039_df91cea111f284a9', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-036', 'The big 4', 'thebig4', 'BMSIT&M', 'Open Innovation', 'nirmaan_team-036_1dd9f53b40c9f344', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-044', 'The Innov8ors', 'theinnov8ors', 'Cambridge Institute of Technology, KR Puram, Bangalore', 'Open Innovation', 'nirmaan_team-044_91cf92b3da4eeceb', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-027', 'The Ravagers', 'theravagers', 'BMSIT&M', 'Open Innovation', 'nirmaan_team-027_014de29d01af2632', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-007', 'The Third Byte', 'thethirdbyte', 'BMSIT', 'Open Innovation', 'nirmaan_team-007_fc143880d9788ece', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-006', 'Tragic bytes', 'tragicbytes', 'BMS Institute of Technology and Management', 'Open Innovation', 'nirmaan_team-006_fa639c0e886fee2d', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-017', 'Triple Espresso', 'tripleespresso', 'Nitte Meenakshi Institute of Technology', 'Open Innovation', 'nirmaan_team-017_257ea4a48d5169b7', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-013', 'Trojan Hex', 'trojanhex', 'Nitte Meenakshi Institute of Technology', 'Open Innovation', 'nirmaan_team-013_b7b042d386cd2034', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-035', 'Rasam', 'rasam', 'BMSIT', 'Deep Tech & Edge AI', 'nirmaan_team-035_bc4c407bd23689b0', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-031', 'RehabGrip', 'rehabgrip', 'MS Ramaiah Institute of Technology', 'HealthTech & Bio-Wearables', 'nirmaan_team-031_878df930fc96d889', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-038', 'Shadow quant', 'shadowquant', 'Bapuji Institute of Engineering and Technology', 'AgriTech', 'nirmaan_team-038_d02b829cbde1123b', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-040', 'Silicon Syndicate', 'siliconsyndicate', 'BMSIT&M', 'Smart Mobility & Aerospace', 'nirmaan_team-040_e13f623940967eeb', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-049', 'SmartGuard', 'smartguard', 'Easwari Engineering College', 'Smart Mobility & Aerospace', 'nirmaan_team-049_f25ed6a21bddba4b', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-047', 'Team ASTRA', 'teamastra', 'Bapuji Institute of Engineering and Technology', 'HealthTech & Bio-Wearables', 'nirmaan_team-047_8f41e397561b43bf', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-039', 'Tech Spark', 'techspark', 'Cambridge Institute of Technology, North Campus', 'Smart Mobility & Aerospace', 'nirmaan_team-039_df91cea111f284a9', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-036', 'The big 4', 'thebig4', 'BMSIT&M', 'Deep Tech & Edge AI', 'nirmaan_team-036_1dd9f53b40c9f344', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-044', 'The Innov8ors', 'theinnov8ors', 'Cambridge Institute of Technology, KR Puram, Bangalore', 'Cyber-Physical Security', 'nirmaan_team-044_91cf92b3da4eeceb', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-027', 'The Ravagers', 'theravagers', 'BMSIT&M', 'Deep Tech & Edge AI', 'nirmaan_team-027_014de29d01af2632', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-007', 'The Third Byte', 'thethirdbyte', 'BMSIT', 'HealthTech & Bio-Wearables', 'nirmaan_team-007_fc143880d9788ece', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-006', 'Tragic bytes', 'tragicbytes', 'BMS Institute of Technology and Management', 'HealthTech & Bio-Wearables', 'nirmaan_team-006_fa639c0e886fee2d', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-017', 'Triple Espresso', 'tripleespresso', 'Nitte Meenakshi Institute of Technology', 'AgriTech', 'nirmaan_team-017_257ea4a48d5169b7', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-013', 'Trojan Hex', 'trojanhex', 'Nitte Meenakshi Institute of Technology', 'Deep Tech & Edge AI', 'nirmaan_team-013_b7b042d386cd2034', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
 ('team-011', 'UNO-PI', 'unopi', 'Hindusthan College of Technology, Salem', 'Open Innovation', 'nirmaan_team-011_b0b9bdbeb1bd1977', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
 ('team-042', 'Value', 'value', 'Nitte Meenakshi Institute of Technology, Bengaluru', 'Open Innovation', 'nirmaan_team-042_661e1910207f8373', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-016', 'Virtual Soldiers', 'virtualsoldiers', 'Dayananda Sagar College of Engineering', 'Open Innovation', 'nirmaan_team-016_8c4c2fafc2986cc0', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-016', 'Virtual Soldiers', 'virtualsoldiers', 'Dayananda Sagar College of Engineering', 'Cyber-Physical Security', 'nirmaan_team-016_8c4c2fafc2986cc0', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
 ('team-005', 'VORTEX', 'vortex', 'BMS Institute of Technology and Management', 'Open Innovation', 'nirmaan_team-005_7182736e5341add9', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-033', 'YantraVidya', 'yantravidya', 'BMSIT', 'Open Innovation', 'nirmaan_team-033_ac2c1f16670286a2', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
-('team-032', 'YoungDumb&Broke', 'youngdumbbroke', 'BMSIT', 'Open Innovation', 'nirmaan_team-032_6853bdcc6a196f73', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z')
-ON CONFLICT (id) DO UPDATE SET team_name = EXCLUDED.team_name, qr_token = EXCLUDED.qr_token;
+('team-033', 'YantraVidya', 'yantravidya', 'BMSIT', 'Deep Tech & Edge AI', 'nirmaan_team-033_ac2c1f16670286a2', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z'),
+('team-032', 'YoungDumb&Broke', 'youngdumbbroke', 'BMSIT', 'Deep Tech & Edge AI', 'nirmaan_team-032_6853bdcc6a196f73', false, 0, 0, 0, 0, 'approved', NULL, '2026-09-23T15:00:00.000Z', '2026-09-23T15:00:00.000Z');
 
+-- 2. Insert 184 Members
 INSERT INTO public.members (id, team_id, name, phone, email, present, created_at) VALUES
 ('mem-022-1', 'team-022', 'Amith H P', '6360728976', 'amithveerapura@gmail.com', false, '2026-09-23T15:00:00.000Z'),
 ('mem-022-3', 'team-022', 'Akhilesh P U', '8951611840', '', false, '2026-09-23T15:00:00.000Z'),
@@ -242,5 +241,6 @@ INSERT INTO public.members (id, team_id, name, phone, email, present, created_at
 ('mem-033-3', 'team-033', 'Manjunath Biradar', '8951823268', '', false, '2026-09-23T15:00:00.000Z'),
 ('mem-032-1', 'team-032', 'Likithashri', '7676496469', 'liki200tha@gmail.com', false, '2026-09-23T15:00:00.000Z'),
 ('mem-032-2', 'team-032', 'Aishwarya Manoj', '8137846014', '', false, '2026-09-23T15:00:00.000Z'),
-('mem-032-3', 'team-032', 'Shubhashree S', '8497037653', '', false, '2026-09-23T15:00:00.000Z')
-ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, phone = EXCLUDED.phone, email = EXCLUDED.email;
+('mem-032-3', 'team-032', 'Shubhashree S', '8497037653', '', false, '2026-09-23T15:00:00.000Z');
+
+COMMIT;

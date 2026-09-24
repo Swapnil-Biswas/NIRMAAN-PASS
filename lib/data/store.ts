@@ -490,6 +490,11 @@ export async function getAllTeams(): Promise<EnrichedTeam[]> {
     }
   }
 
+  if (mockDb.teams.length === 0 && seededDataset.teams && seededDataset.teams.length > 0) {
+    mockDb.teams = JSON.parse(JSON.stringify(seededDataset.teams)) as Team[];
+    mockDb.members = JSON.parse(JSON.stringify(seededDataset.members)) as Member[];
+  }
+
   const enrichedTeams: EnrichedTeam[] = mockDb.teams
     .map((team) => {
       const teamMembers = mockDb.members.filter((m) => m.team_id === team.id);
@@ -1118,6 +1123,63 @@ export async function deleteAllTeams(): Promise<boolean> {
   mockDb.members = [];
   mockDb.teams = [];
   return true;
+}
+
+export async function restoreDefaultTeams(): Promise<{ success: boolean; count: number; message: string }> {
+  invalidateTeamsCache();
+  const datasetTeams = JSON.parse(JSON.stringify(seededDataset.teams)) as Team[];
+  const datasetMembers = JSON.parse(JSON.stringify(seededDataset.members)) as Member[];
+
+  if (hasSupabaseConfig()) {
+    try {
+      const { createAdminClient } = await import('../supabase/admin');
+      const supabase = createAdminClient();
+
+      const teamsPayload = datasetTeams.map((t) => ({
+        id: t.id,
+        team_name: t.team_name,
+        canonical_name: t.canonical_name || null,
+        college: t.college,
+        track: t.track || 'Open Innovation',
+        qr_token: t.qr_token,
+        checked_in: false,
+        breakfast_count: 0,
+        lunch_count: 0,
+        dinner_count: 0,
+        coffee_count: 0,
+        review_status: t.review_status || 'approved',
+        duplicate_notes: t.duplicate_notes || null,
+        created_at: t.created_at || new Date().toISOString(),
+        updated_at: t.updated_at || new Date().toISOString(),
+      }));
+
+      await supabase.from('teams').upsert(teamsPayload, { onConflict: 'id' });
+
+      const membersPayload = datasetMembers.map((m) => ({
+        id: m.id,
+        team_id: m.team_id,
+        name: m.name,
+        email: m.email || '',
+        phone: m.phone || '',
+        normalized_phone: m.normalized_phone || '',
+        normalized_email: m.normalized_email || '',
+        present: false,
+      }));
+
+      await supabase.from('members').upsert(membersPayload, { onConflict: 'id' });
+    } catch (e: any) {
+      console.error('[Supabase] restoreDefaultTeams error:', e);
+    }
+  }
+
+  mockDb.teams = datasetTeams;
+  mockDb.members = datasetMembers;
+
+  return {
+    success: true,
+    count: datasetTeams.length,
+    message: `Successfully restored all ${datasetTeams.length} official NIRMAAN 2026 teams.`,
+  };
 }
 
 export async function resetAllScansAndAttendance(): Promise<{ success: boolean; message: string }> {

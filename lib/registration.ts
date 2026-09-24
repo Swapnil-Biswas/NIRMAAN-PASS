@@ -1,15 +1,19 @@
 import { Team, Member, TeamReviewStatus } from '@/types/database';
 
 export const TRACKS = [
+  'Cyber-Physical Security',
   'Cyber-Physical Security & Defense',
   'Smart Mobility & Aerospace',
   'HealthTech & Bio-Wearables',
   'Deep Tech & Edge AI',
+  'AgriTech',
   'Agritech',
   'Open Innovation',
 ] as const;
 
 export const TRACK_DESCRIPTIONS: Record<Track, string> = {
+  'Cyber-Physical Security':
+    'Securing critical infrastructure, IoT ecosystems, defense systems, and resilient security architectures.',
   'Cyber-Physical Security & Defense':
     'Securing critical infrastructure, IoT ecosystems, defense systems, and resilient security architectures.',
   'Smart Mobility & Aerospace':
@@ -18,10 +22,12 @@ export const TRACK_DESCRIPTIONS: Record<Track, string> = {
     'Next-gen diagnostic systems, wearable health monitors, telemedicine, and healthcare analytics.',
   'Deep Tech & Edge AI':
     'Embedded AI, low-latency edge inference, computer vision, robotics, and foundational engineering.',
+  'AgriTech':
+    'Precision farming, smart irrigation, crop health analytics, and sustainable agricultural ecosystems.',
   'Agritech':
     'Precision farming, smart irrigation, crop health analytics, and sustainable agricultural ecosystems.',
   'Open Innovation':
-    'Intended for hardware-aligned software solutions addressing meaningful real-world challenges, bridging software innovation with hardware-driven and physical-world applications.',
+    'Hardware-aligned and software solutions addressing meaningful real-world challenges.',
 };
 
 export type Track = (typeof TRACKS)[number];
