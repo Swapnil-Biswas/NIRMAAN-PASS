@@ -16,6 +16,9 @@ import { generateQRToken } from '@/lib/qr/token';
 import { normalizeEmail, normalizePhone, canonicalizeTeamName, type Track } from '@/lib/registration';
 import { randomUUID } from 'crypto';
 
+import fs from 'fs';
+import path from 'path';
+
 import seededDataset from './seeded_teams.json';
 
 export const DEFAULT_SCHEDULE: ScheduleItem[] = [];
@@ -31,6 +34,21 @@ export interface NewTeamInput {
   duplicateMatchTeamId?: string | null;
 }
 
+function loadInitialDiskData(): { teams: Team[]; members: Member[] } {
+  try {
+    const p = path.join(process.cwd(), 'lib', 'data', 'seeded_teams.json');
+    if (fs.existsSync(p)) {
+      const parsed = JSON.parse(fs.readFileSync(p, 'utf8'));
+      if (parsed && Array.isArray(parsed.teams) && Array.isArray(parsed.members)) {
+        return parsed;
+      }
+    }
+  } catch {}
+  return seededDataset as { teams: Team[]; members: Member[] };
+}
+
+const initialDataset = loadInitialDiskData();
+
 // In-Memory store with NIRMAAN 2026 reference teams
 interface MockDatabase {
   teams: Team[];
@@ -42,8 +60,8 @@ interface MockDatabase {
 }
 
 const mockDb: MockDatabase = {
-  teams: JSON.parse(JSON.stringify(seededDataset.teams)) as Team[],
-  members: JSON.parse(JSON.stringify(seededDataset.members)) as Member[],
+  teams: JSON.parse(JSON.stringify(initialDataset.teams)) as Team[],
+  members: JSON.parse(JSON.stringify(initialDataset.members)) as Member[],
   announcements: [
     {
       id: 'ann-1',
@@ -58,6 +76,24 @@ const mockDb: MockDatabase = {
   custom_events: [],
   custom_records: [],
 };
+
+export function persistLocalDataset() {
+  if (hasSupabaseConfig()) return;
+  try {
+    const p = path.join(process.cwd(), 'lib', 'data', 'seeded_teams.json');
+    fs.writeFileSync(
+      p,
+      JSON.stringify(
+        {
+          teams: mockDb.teams,
+          members: mockDb.members,
+        },
+        null,
+        2
+      )
+    );
+  } catch {}
+}
 
 // In-memory registration concurrency lock
 let registrationMutex = Promise.resolve();
@@ -603,6 +639,7 @@ export async function processMealScan(rawToken: string, mealType: MealType): Pro
   if (mealType === 'lunch') team.lunch_count += 1;
   if (mealType === 'dinner') team.dinner_count += 1;
   team.updated_at = new Date().toISOString();
+  persistLocalDataset();
 
   const newCount =
     mealType === 'breakfast'
@@ -700,6 +737,7 @@ export async function processCoffeeScan(rawToken: string): Promise<ScanResult> {
 
   team.coffee_count += 1;
   team.updated_at = new Date().toISOString();
+  persistLocalDataset();
 
   return {
     success: true,
@@ -781,6 +819,7 @@ export async function processRegistration(rawToken: string, presentMemberIds: st
   teamMembers.forEach((member) => {
     member.present = presentMemberIds.includes(member.id);
   });
+  persistLocalDataset();
 
   const presentCount = teamMembers.filter((m) => m.present).length;
 
@@ -1174,6 +1213,7 @@ export async function restoreDefaultTeams(): Promise<{ success: boolean; count: 
 
   mockDb.teams = datasetTeams;
   mockDb.members = datasetMembers;
+  persistLocalDataset();
 
   return {
     success: true,
@@ -1183,7 +1223,7 @@ export async function restoreDefaultTeams(): Promise<{ success: boolean; count: 
 }
 
 export async function resetAllScansAndAttendance(): Promise<{ success: boolean; message: string }> {
-  invalidateTeamsCache();
+  invalidateAllCache();
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
@@ -1229,6 +1269,7 @@ export async function resetAllScansAndAttendance(): Promise<{ success: boolean; 
   });
 
   mockDb.custom_records = [];
+  persistLocalDataset();
 
   return {
     success: true,
@@ -1237,7 +1278,7 @@ export async function resetAllScansAndAttendance(): Promise<{ success: boolean; 
 }
 
 export async function resetTeamAttendance(teamId: string): Promise<boolean> {
-  invalidateTeamsCache();
+  invalidateAllCache();
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
@@ -1283,6 +1324,7 @@ export async function resetTeamAttendance(teamId: string): Promise<boolean> {
     });
 
   mockDb.custom_records = mockDb.custom_records.filter((r) => r.team_id !== teamId);
+  persistLocalDataset();
 
   return true;
 }
