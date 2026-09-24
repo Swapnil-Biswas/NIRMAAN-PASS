@@ -40,8 +40,11 @@ export default function AdminNavbar() {
     try {
       await fetch('/api/admin/auth', { method: 'DELETE' });
     } catch {}
-    router.refresh();
-    router.push('/');
+    if (typeof window !== 'undefined') {
+      window.location.href = '/admin';
+    } else {
+      router.push('/admin');
+    }
   };
 
   const navItems = [
