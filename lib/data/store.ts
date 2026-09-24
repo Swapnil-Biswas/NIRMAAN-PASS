@@ -453,6 +453,7 @@ export async function updateTeamAuthId(teamId: string, authId: string): Promise<
   if (team) {
     team.auth_id = authId;
     team.updated_at = new Date().toISOString();
+    persistLocalDataset();
     return true;
   }
   return false;
