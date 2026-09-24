@@ -61,7 +61,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </div>
 
             <div className="space-y-3">
-              <PassLookupForm />
+              <PassLookupForm redirectTo="/dashboard" buttonText="OPEN DASHBOARD" />
             </div>
 
             <div className="pt-4 border-t border-nirmaan-black/10 flex items-center justify-center gap-4 text-xs font-bold">
