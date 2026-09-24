@@ -375,6 +375,13 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                         <div className="text-[11px] text-nirmaan-black/60 leading-snug">
                           {team.college}
                         </div>
+                        {team.track && (
+                          <div className="mt-1">
+                            <span className="inline-block text-[10px] font-extrabold text-nirmaan-blue bg-nirmaan-blue/10 px-2 py-0.5 rounded-md border border-nirmaan-blue/20">
+                              {team.track}
+                            </span>
+                          </div>
+                        )}
                       </td>
 
                       {/* Leader & Contact */}

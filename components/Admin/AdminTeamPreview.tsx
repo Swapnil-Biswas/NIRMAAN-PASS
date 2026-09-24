@@ -218,6 +218,13 @@ export default function AdminTeamPreview({
                   <p className="text-xs sm:text-sm font-semibold text-nirmaan-black/70">
                     {currentTeam.college}
                   </p>
+                  {currentTeam.track && (
+                    <div className="mt-1.5">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-nirmaan-blue text-white shadow-xs">
+                        {currentTeam.track}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="text-right sm:text-right">

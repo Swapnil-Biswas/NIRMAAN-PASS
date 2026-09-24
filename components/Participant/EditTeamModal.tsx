@@ -272,6 +272,22 @@ export default function EditTeamModal({
                     />
                   </div>
                 </div>
+
+                {team.track && (
+                  <div className="bg-nirmaan-cream/60 border border-nirmaan-black/10 rounded-xl p-3 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-black uppercase text-nirmaan-black/50 block">
+                        Assigned Problem Track
+                      </span>
+                      <span className="text-xs font-black text-nirmaan-blue">
+                        {team.track}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-bold bg-nirmaan-blue/10 text-nirmaan-blue px-2 py-0.5 rounded-full">
+                      Verified
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Section 2: Team Leader Details */}

@@ -106,6 +106,13 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             <p className="text-xs sm:text-sm font-semibold text-nirmaan-black/70">
               {team.college}
             </p>
+            {team.track && (
+              <div className="mt-2">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-nirmaan-blue text-white shadow-xs">
+                  {team.track}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
