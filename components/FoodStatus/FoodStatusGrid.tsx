@@ -98,8 +98,8 @@ export default function FoodStatusGrid({ team, members }: FoodStatusGridProps) {
                       / {item.max}
                     </span>
                   ) : (
-                    <span className="text-[9px] sm:text-xs font-bold uppercase text-nirmaan-blue bg-nirmaan-blue/10 px-1.5 sm:px-2 py-0.5 rounded-full">
-                      UNLIMITED
+                    <span className="text-[9px] sm:text-xs font-bold uppercase text-nirmaan-black/50 bg-nirmaan-black/5 px-1.5 sm:px-2 py-0.5 rounded-full">
+                      CUPS
                     </span>
                   )}
                 </div>
@@ -109,7 +109,7 @@ export default function FoodStatusGrid({ team, members }: FoodStatusGridProps) {
                     ? item.completed
                       ? 'All servings claimed'
                       : `${Math.max(0, item.max - item.count)} remaining`
-                    : 'Refills anytime at counter'}
+                    : 'Available at refreshment counter'}
                 </p>
               </div>
 

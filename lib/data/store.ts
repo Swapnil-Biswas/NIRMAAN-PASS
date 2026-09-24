@@ -619,6 +619,8 @@ export async function processMealScan(rawToken: string, mealType: MealType): Pro
   };
 }
 
+export const TOTAL_COFFEE_CAP = 900;
+
 export async function processCoffeeScan(rawToken: string): Promise<ScanResult> {
   invalidateTeamsCache();
   const token = sanitizeQRToken(rawToken);
@@ -677,6 +679,17 @@ export async function processCoffeeScan(rawToken: string): Promise<ScanResult> {
       success: false,
       error_code: 'TEAM_MERGED',
       message: 'This duplicate team pass was merged into another registration and is now inactive.',
+    };
+  }
+
+  // Enforce total 900 cups cap across all teams
+  const activeTeams = mockDb.teams.filter((t) => t.review_status !== 'rejected' && t.review_status !== 'merged');
+  const totalCoffeeServed = activeTeams.reduce((acc, t) => acc + (t.coffee_count || 0), 0);
+  if (totalCoffeeServed >= TOTAL_COFFEE_CAP) {
+    return {
+      success: false,
+      error_code: 'LIMIT_REACHED',
+      message: `Coffee limit reached! Maximum ${TOTAL_COFFEE_CAP} cups allocated for NIRMAAN 2026 have already been served.`,
     };
   }
 

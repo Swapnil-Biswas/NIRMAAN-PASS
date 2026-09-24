@@ -45,12 +45,12 @@ export default function CoffeeServeModal({
         {/* Cup Counter Display */}
         <div className="bg-nirmaan-cream p-5 rounded-2xl border border-nirmaan-black/10 mb-6 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="nirmaan-pill bg-nirmaan-green-bright text-nirmaan-black text-[10px] font-black">
-              UNLIMITED CONSUMPTION
+            <span className="nirmaan-pill bg-nirmaan-blue text-white text-[10px] font-black">
+              EVENT TOTAL ALLOCATION: 900 CUPS
             </span>
           </div>
           <p className="text-xs font-bold uppercase text-nirmaan-black/60 tracking-wider">
-            CUPS CONSUMED
+            CUPS CONSUMED BY TEAM
           </p>
           <div className="my-2 font-display text-4xl font-black text-nirmaan-black flex items-center justify-center gap-3">
             <span>{team.coffee_count}</span>

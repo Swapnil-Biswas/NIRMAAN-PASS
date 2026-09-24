@@ -26,8 +26,8 @@ export default async function EventInfoPage() {
       a: 'Please visit the On-Desk Registration desk with your team QR code. Authorized organizers can perform an Attendance Correction.',
     },
     {
-      q: 'Is coffee or tea limited per team?',
-      a: 'No, coffee/tea is completely unlimited for all participating teams throughout NIRMAAN 2026.',
+      q: 'Is coffee or tea available for teams?',
+      a: 'Yes, coffee and tea are available for all participating teams at the designated refreshment counters during the event.',
     },
     {
       q: 'Where do we show our digital QR pass?',

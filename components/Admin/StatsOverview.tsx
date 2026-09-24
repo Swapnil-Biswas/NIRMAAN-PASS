@@ -37,7 +37,7 @@ export default function StatsOverview({ stats }: StatsOverviewProps) {
     {
       title: 'COFFEE / TEA CUPS',
       value: stats.total_coffee,
-      subtitle: 'Unlimited hackathon energy',
+      subtitle: `Limit: 900 cups total (${Math.max(0, 900 - stats.total_coffee)} remaining)`,
       icon: Coffee,
       bg: 'bg-nirmaan-amber',
       textColor: 'text-nirmaan-black',
