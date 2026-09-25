@@ -73,7 +73,7 @@ describe('Production Concurrency & Burst Simulation Suite', () => {
         const team = await createTeam({
           teamName: `Concurrent Team ${count}`,
           college: `College ${count}`,
-          track: 'AI & Machine Learning Track',
+          track: 'Deep Tech & Edge AI',
           leader: { name: `Leader ${count}`, phone: `999111${count}00`, email: `team${count}.lead@test.com` },
           members: otherMembers,
         });
@@ -116,7 +116,7 @@ describe('Production Concurrency & Burst Simulation Suite', () => {
     const team = await createTeam({
       teamName: 'Goodies Claimers',
       college: 'NIT Tech',
-      track: 'General',
+      track: 'Open Innovation',
       leader: { name: 'David', phone: '4444444444', email: 'david.kit@test.com' },
       members: [],
     });
@@ -188,7 +188,7 @@ describe('Production Concurrency & Burst Simulation Suite', () => {
     const team = await createTeam({
       teamName: 'Direct Lookup Test Team',
       college: 'Stanford Tech',
-      track: 'Robotics & Hardware',
+      track: 'Deep Tech & Edge AI',
       leader: { name: 'Elena', phone: '6667778888', email: testEmail },
       members: [],
     });
@@ -222,7 +222,7 @@ describe('Production Concurrency & Burst Simulation Suite', () => {
     const team = await createTeam({
       teamName: 'Revoked Team',
       college: 'Test College',
-      track: 'General',
+      track: 'Open Innovation',
       leader: { name: 'Frank', phone: '7778889999', email: 'frank.revoked@test.com' },
       members: [],
     });
@@ -253,7 +253,7 @@ describe('Production Concurrency & Burst Simulation Suite', () => {
     const team = await createTeam({
       teamName: 'Coffee Addicts',
       college: 'Caffeine Univ',
-      track: 'Energy Track',
+      track: 'Open Innovation',
       leader: { name: 'Grace', phone: '8889990000', email: 'grace.coffee@test.com' },
       members: [],
     });

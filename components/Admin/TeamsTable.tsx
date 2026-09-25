@@ -16,6 +16,8 @@ import {
   Trash2,
   Phone,
   Mail,
+  Search,
+  X,
 } from 'lucide-react';
 import { Team, Member } from '@/types/database';
 import Link from 'next/link';
@@ -55,16 +57,42 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
     const q = search.trim().toLowerCase();
     
     if (q) {
-      const matchesTeamName = t.team_name.toLowerCase().includes(q);
-      const matchesCollege = (t.college || '').toLowerCase().includes(q);
-      const matchesMember = t.members.some(
-        (m) =>
-          (m.name && m.name.toLowerCase().includes(q)) ||
-          (m.email && m.email.toLowerCase().includes(q)) ||
-          (m.phone && m.phone.includes(q))
-      );
+      const qDigits = q.replace(/\D/g, '');
+      const isPhoneSearch = /^[\d\s+\-()]+$/.test(q) && qDigits.length >= 4;
+      const teamName = (t.team_name || '').toLowerCase();
+      const canonical = (t.canonical_name || '').toLowerCase();
+      const college = (t.college || '').toLowerCase();
+      const track = (t.track || '').toLowerCase();
+      const qrToken = (t.qr_token || '').toLowerCase();
+      const teamId = (t.id || '').toLowerCase();
 
-      if (!matchesTeamName && !matchesCollege && !matchesMember) {
+      // Check team-level fields
+      const matchesTeam =
+        teamName.includes(q) ||
+        canonical.includes(q) ||
+        college.includes(q) ||
+        track.includes(q) ||
+        qrToken.includes(q) ||
+        teamId.includes(q);
+
+      // Check all member fields (name, email, phone)
+      const members = Array.isArray(t.members) ? t.members : [];
+      const matchesMember = members.some((m) => {
+        if (!m) return false;
+        const name = (m.name || '').toLowerCase();
+        const email = (m.email || '').toLowerCase();
+        const phone = String(m.phone || '');
+        const phoneDigits = phone.replace(/\D/g, '');
+
+        return (
+          name.includes(q) ||
+          email.includes(q) ||
+          phone.includes(q) ||
+          (isPhoneSearch && phoneDigits.includes(qDigits))
+        );
+      });
+
+      if (!matchesTeam && !matchesMember) {
         return false;
       }
     }
@@ -76,7 +104,7 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
       return !t.checked_in;
     }
     return true;
-  }).sort((a, b) => a.team_name.localeCompare(b.team_name, undefined, { sensitivity: 'base' }));
+  }).sort((a, b) => (a.team_name || '').localeCompare(b.team_name || '', undefined, { sensitivity: 'base' }));
 
   const totalPages = pageSize === 0 ? 1 : Math.max(1, Math.ceil(filteredTeams.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -87,6 +115,16 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
+    setPage(1);
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+  };
+
+  const handleClearSearch = () => {
+    setSearch('');
     setPage(1);
   };
 
@@ -270,30 +308,52 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
         </div>
 
         {/* Search & Actions */}
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <input
-            type="text"
-            placeholder="Search by team, college, leader, email..."
-            value={search}
-            onChange={handleSearchChange}
-            className="flex-1 sm:w-72 px-4 py-2 rounded-full border border-nirmaan-black/20 bg-white font-medium text-xs outline-none focus:border-nirmaan-black"
-          />
+        <form onSubmit={handleSearchSubmit} className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-72">
+            <Search className="w-3.5 h-3.5 text-nirmaan-black/40 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search by team, college, leader, email, track..."
+              value={search}
+              onChange={handleSearchChange}
+              className="w-full pl-9 pr-8 py-2 rounded-full border border-nirmaan-black/20 bg-white font-medium text-xs outline-none focus:border-nirmaan-black transition-colors"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-nirmaan-black/40 hover:text-nirmaan-black rounded-full transition-colors cursor-pointer"
+                title="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="nirmaan-pill bg-nirmaan-black text-white text-[10px] font-black py-2 px-3 hover:bg-nirmaan-black/85 transition-all shadow-xs flex-shrink-0 cursor-pointer inline-flex items-center gap-1.5"
+            title="Search teams"
+          >
+            <Search className="w-3.5 h-3.5" />
+            <span>SEARCH</span>
+          </button>
           <button
             type="button"
             onClick={exportToExcel}
-            className="nirmaan-pill bg-nirmaan-green-dark text-white text-[10px] font-black py-2 px-3 hover:opacity-90 transition-opacity shadow-xs flex-shrink-0 cursor-pointer"
+            className="nirmaan-pill bg-nirmaan-green-dark text-white text-[10px] font-black py-2 px-3 hover:opacity-90 transition-opacity shadow-xs flex-shrink-0 cursor-pointer inline-flex items-center gap-1.5"
             title="Export to CSV"
           >
             <Download className="w-3.5 h-3.5" />
-            EXPORT
+            <span>EXPORT</span>
           </button>
-        </div>
+        </form>
       </div>
 
       {/* Pagination & Count Header */}
       <div className="flex items-center justify-between text-xs font-bold text-nirmaan-black/70 px-1">
         <span>
-          Showing {filteredTeams.length} of {teams.length} teams
+          Showing {filteredTeams.length === 0 ? 0 : pageSize === 0 ? filteredTeams.length : `${(currentPage - 1) * pageSize + 1}–${Math.min(currentPage * pageSize, filteredTeams.length)}`} of {filteredTeams.length} {filteredTeams.length === 1 ? 'team' : 'teams'}
+          {filteredTeams.length !== teams.length && ` (filtered from ${teams.length} total)`}
         </span>
 
         <div className="flex items-center gap-3">
@@ -367,6 +427,15 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                     <p className="text-xs font-medium text-nirmaan-black/50">
                       Try clearing your search query or adjusting filters.
                     </p>
+                    {search && (
+                      <button
+                        type="button"
+                        onClick={handleClearSearch}
+                        className="mt-2 nirmaan-btn nirmaan-btn-secondary text-[11px] py-1.5 px-3 cursor-pointer"
+                      >
+                        Clear Search
+                      </button>
+                    )}
                   </td>
                 </tr>
               ) : (

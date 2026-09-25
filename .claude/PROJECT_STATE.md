@@ -85,38 +85,41 @@ Security & Session Architecture:
     - Embedded official NIRMAAN 2026 emblem into the exact center of all generated team QR passes in `components/TeamQR/PassCard.tsx`.
     - Configured `QRCodeSVG` with `level="H"` error correction (up to 30% restoration capability) and `excavate: true` module excavation.
     - Embedded high-res Base64 data URI in `lib/brand/qrLogo.ts` ensuring 100% offline reliability, zero network delay, and zero canvas taint during high-res PNG pass export (`handleDownload`).
-- [x] **Automated Testing & Full Build Verification** — 2026-09-18
-  - All 38 tests passing across 6 test suites (`npm test`):
-    - `tests/domain-rules.test.ts` (10/10 passing)
-    - `tests/admin-security.test.ts` (9/9 passing)
+  - **Admin Console Search & Search Button Enhancement** — 2026-09-25:
+    - Added dedicated `SEARCH` action button and inline `Search` prefix icon to the Admin Console teams table (`components/Admin/TeamsTable.tsx`).
+    - Added instant `Clear (X)` button inside the search input as well as in the empty results state.
+    - Wrapped search controls in a standard form with `onSubmit` handling, allowing organizers to submit via either the Search button or pressing Enter.
+    - Expanded search scope to comprehensively match: Team Name, Canonical Name, College, Track name (e.g. "Smart Mobility", "HealthTech"), Team ID (e.g. "team-022"), QR token, Member Name, Member Email, and Member Phone (with defensive digit matching for formatted numbers).
+    - Fixed pagination counter to display accurate range counts (`Showing 1–25 of 50 teams`, `Showing 1–3 of 3 teams (filtered from 50 total)`).
+    - Added test suite `tests/team-search.test.ts` (12 tests passing).
+- [x] **Automated Testing & Full Build Verification** — 2026-09-25
+  - All 90 tests passing across 11 test suites (`npm test`):
+    - `tests/team-search.test.ts` (12/12 passing)
+    - `tests/domain-rules.test.ts` (8/8 passing)
+    - `tests/duplicate-prevention.test.ts` (18/18 passing)
+    - `tests/custom-events.test.ts` (5/5 passing)
+    - `tests/concurrency-simulation.test.ts` (7/7 passing)
+    - `tests/admin-security.test.ts` (11/11 passing)
+    - `tests/security-audit.test.ts` (10/10 passing)
     - `tests/auth-session.test.ts` (5/5 passing)
     - `tests/middleware.test.ts` (5/5 passing)
     - `tests/schema-models.test.ts` (3/3 passing)
     - `tests/schedule.test.ts` (6/6 passing)
   - TypeScript validation (`npm run lint` / `tsc --noEmit`) passes with 0 errors.
-  - Next.js production build (`npm run build`) passing 100% across all 21 routes.
 
 ## In Progress / Pending
 - [ ] Teammate connects new Supabase database by pasting credentials into `.env.local` and executing `supabase/complete_database_migration.sql` in their Supabase SQL editor.
 - [ ] Live venue rehearsal with desk volunteers and food counter operators.
 
 ## Key Modified / Touched Files
-- `.env.local` — Cleaned environment variables, prepared placeholders for new DB
-- `.env.example` — Documented environment variables for team deployment
-- `lib/auth/session.ts` — Server session & team retrieval supporting local cookie + Supabase
-- `app/api/auth/login/route.ts` — Standalone team login endpoint
-- `app/api/auth/session/route.ts` — Client/SSR session check endpoint
-- `app/api/auth/logout/route.ts` — Session termination endpoint
-- `app/login/page.tsx` — Clean login interface calling `/api/auth/login`
-- `app/api/activate/link/route.ts` — Activation endpoint setting team session
-- `components/Navbar.tsx` — Clean navigation using unified auth session check
-- `scripts/check_supabase.mjs` — Database connectivity status verification script
-- `supabase/complete_database_migration.sql` — Ready-to-run consolidated migration script
-- `tests/auth-session.test.ts` — Standalone session test suite
+- `components/Admin/TeamsTable.tsx` — Search button, clear button, multi-field search, accurate pagination count
+- `tests/team-search.test.ts` — Comprehensive unit test suite for team search filtering
+- `tests/concurrency-simulation.test.ts` — Type alignment with official track unions
+- `.claude/PROJECT_STATE.md` — Updated project status and changelog
 
 ## Decisions
 - Stored session data in httpOnly `nirmaan_team_session` cookies so participants experience persistent, seamless SSR sessions even with zero external database connection.
 - Preserved bidirectional compatibility: if the teammate adds their Supabase project to `.env.local`, the existing `hasSupabaseConfig()` checks automatically activate remote database queries and RPCs without changing any frontend code.
 
 ## Known Issues
-- None. Build, linting, and all 24 tests pass with 0 errors.
+- None. Build, linting, and all 90 tests pass with 0 errors.
