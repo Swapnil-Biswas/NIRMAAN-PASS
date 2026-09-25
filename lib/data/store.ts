@@ -78,7 +78,7 @@ const mockDb: MockDatabase = {
 };
 
 export function persistLocalDataset() {
-  if (hasSupabaseConfig()) return;
+  if (hasSupabaseConfig() || process.env.NODE_ENV === 'test') return;
   try {
     const p = path.join(process.cwd(), 'lib', 'data', 'seeded_teams.json');
     fs.writeFileSync(

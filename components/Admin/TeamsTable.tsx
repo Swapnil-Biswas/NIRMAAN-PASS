@@ -16,7 +16,6 @@ import {
   Trash2,
   Phone,
   Mail,
-  RotateCcw,
 } from 'lucide-react';
 import { Team, Member } from '@/types/database';
 import Link from 'next/link';
@@ -43,7 +42,6 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
   const [registrationModalTeam, setRegistrationModalTeam] = useState<TeamRowData | null>(null);
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
   const [checkInLoading, setCheckInLoading] = useState(false);
-  const [resetLoading, setResetLoading] = useState(false);
 
   // Keep local state in sync if prop updates
   React.useEffect(() => {
@@ -54,15 +52,22 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
   const notCheckedInCount = teams.filter((t) => !t.checked_in).length;
 
   const filteredTeams = teams.filter((t) => {
-    const leader = t.members.find((m) => m.is_leader) || t.members[0];
-    const matchesSearch =
-      t.team_name.toLowerCase().includes(search.toLowerCase()) ||
-      t.college.toLowerCase().includes(search.toLowerCase()) ||
-      (leader?.name && leader.name.toLowerCase().includes(search.toLowerCase())) ||
-      (leader?.email && leader.email.toLowerCase().includes(search.toLowerCase())) ||
-      (leader?.phone && leader.phone.includes(search));
+    const q = search.trim().toLowerCase();
+    
+    if (q) {
+      const matchesTeamName = t.team_name.toLowerCase().includes(q);
+      const matchesCollege = (t.college || '').toLowerCase().includes(q);
+      const matchesMember = t.members.some(
+        (m) =>
+          (m.name && m.name.toLowerCase().includes(q)) ||
+          (m.email && m.email.toLowerCase().includes(q)) ||
+          (m.phone && m.phone.includes(q))
+      );
 
-    if (!matchesSearch) return false;
+      if (!matchesTeamName && !matchesCollege && !matchesMember) {
+        return false;
+      }
+    }
 
     if (statusFilter === 'checked_in') {
       return t.checked_in;
@@ -151,48 +156,6 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
       alert(err.message || 'Failed to delete team');
     } finally {
       setDeleteLoading(null);
-    }
-  };
-
-  const handleResetScans = async () => {
-    if (
-      !window.confirm(
-        '⚠️ RESET ALL TEST SCANS & ATTENDANCE?\n\nThis will reset all team check-in statuses, student attendance marks, and meal/coffee scan counters back to 0.\n\nAre you sure you want to proceed?'
-      )
-    ) {
-      return;
-    }
-
-    setResetLoading(true);
-    try {
-      const res = await fetch('/api/admin/reset-scans', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Failed to reset scans');
-      }
-
-      setTeams((prev) =>
-        prev.map((t) => ({
-          ...t,
-          checked_in: false,
-          breakfast_count: 0,
-          lunch_count: 0,
-          dinner_count: 0,
-          coffee_count: 0,
-          present_count: 0,
-          members: t.members.map((m) => ({ ...m, present: false })),
-        }))
-      );
-
-      router.refresh();
-      alert('✅ All test scans and attendance have been successfully reset to 0!');
-    } catch (err: any) {
-      alert(err.message || 'Failed to reset scans');
-    } finally {
-      setResetLoading(false);
     }
   };
 
@@ -323,16 +286,6 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
           >
             <Download className="w-3.5 h-3.5" />
             EXPORT
-          </button>
-          <button
-            type="button"
-            disabled={resetLoading}
-            onClick={handleResetScans}
-            className="nirmaan-pill bg-white hover:bg-nirmaan-red hover:text-white text-nirmaan-red border border-nirmaan-red/40 text-[10px] font-black py-2 px-3 transition-colors shadow-xs flex-shrink-0 cursor-pointer disabled:opacity-50 inline-flex items-center gap-1"
-            title="Reset all test scans, attendance, and check-ins"
-          >
-            <RotateCcw className={`w-3.5 h-3.5 ${resetLoading ? 'animate-spin' : ''}`} />
-            RESET TEST SCANS
           </button>
         </div>
       </div>
