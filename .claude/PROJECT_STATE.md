@@ -1,6 +1,6 @@
 # Project State — NIRMAAN-PASS
 
-_Last updated: 2026-09-18 — Disconnected old Supabase project; Transitioned to 100% Standalone Local Architecture with Plug-and-Play readiness for new database connection_
+_Last updated: 2026-09-26 — Dinner service locked (UI-only); no database changes_
 
 ## Architecture
 Next.js 14 (App Router) + TypeScript + Tailwind CSS with official NIRMAAN 2026 Design System.
@@ -106,12 +106,33 @@ Security & Session Architecture:
     - `tests/schema-models.test.ts` (3/3 passing)
     - `tests/schedule.test.ts` (6/6 passing)
   - TypeScript validation (`npm run lint` / `tsc --noEmit`) passes with 0 errors.
+- [x] **Registration, Lunch & Dinner Locked (UI-only)** — 2026-09-26
+  - Registration, Lunch, and Dinner are all concluded. Only **Breakfast** and **Coffee** remain open.
+  - `components/QRScanner/ScannerModal.tsx` — three lock constants:
+    ```
+    const REGISTRATION_LOCKED = true;
+    const LUNCH_LOCKED        = true;
+    const DINNER_LOCKED       = true;
+    ```
+    - Locked purpose-selector buttons are `disabled`, grayed out, show 🔒 lock icon and red **CLOSED** badge.
+    - Shared `isLocked` flag covers all three — easy to add more in future.
+  - `components/Admin/MealServeModal.tsx` — two lock constants:
+    ```
+    const LUNCH_LOCKED  = true;
+    const DINNER_LOCKED = true;
+    ```
+    - When `mealType` is locked, a purple **LUNCH/DINNER CLOSED** banner is shown dynamically.
+    - The **SERVE** button is replaced with **DISMISS** only — `onConfirmServe` cannot be triggered.
+  - **No database changes** were made. All locks are purely frontend/UI.
+  - To re-open any meal: set its constant back to `false` in both files.
 
 ## In Progress / Pending
 - [ ] Teammate connects new Supabase database by pasting credentials into `.env.local` and executing `supabase/complete_database_migration.sql` in their Supabase SQL editor.
 - [ ] Live venue rehearsal with desk volunteers and food counter operators.
 
 ## Key Modified / Touched Files
+- `components/QRScanner/ScannerModal.tsx` — `REGISTRATION_LOCKED = true`, `DINNER_LOCKED = true`; both buttons disabled with lock icon + CLOSED badge; fixed import order
+- `components/Admin/MealServeModal.tsx` — `DINNER_LOCKED = true`; dinner-locked banner + serve button blocked
 - `components/Admin/TeamsTable.tsx` — Search button, clear button, multi-field search, accurate pagination count
 - `tests/team-search.test.ts` — Comprehensive unit test suite for team search filtering
 - `tests/concurrency-simulation.test.ts` — Type alignment with official track unions

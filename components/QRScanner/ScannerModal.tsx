@@ -17,6 +17,7 @@ import {
   Award,
   Users,
   Layers,
+  Lock,
 } from 'lucide-react';
 import { ScanPurpose, Team, Member, ScanResult, MealType, ScanEvent, ScanEventRecord } from '@/types/database';
 import { sanitizeQRToken } from '@/lib/qr/token';
@@ -25,6 +26,13 @@ import MealServeModal from '@/components/Admin/MealServeModal';
 import CoffeeServeModal from '@/components/Admin/CoffeeServeModal';
 import CustomServeModal from '@/components/Admin/CustomServeModal';
 import CustomEventModal from '@/components/Admin/CustomEventModal';
+
+// ─── MEAL / EVENT LOCKS ───────────────────────────────────────────────────────────
+// Set to true to disable that purpose tab (no scans / serves allowed).
+// Change back to false to re-enable. Only BREAKFAST and COFFEE are open.
+const REGISTRATION_LOCKED = true;
+const LUNCH_LOCKED       = true;
+const DINNER_LOCKED      = true;
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Sparkles,
@@ -40,7 +48,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export default function QRScanner() {
-  const [purpose, setPurpose] = useState<ScanPurpose>('dinner');
+  const [purpose, setPurpose] = useState<ScanPurpose>('breakfast');
   const [scanning, setScanning] = useState(false);
   const [loading, setLoading] = useState(false);
   const [customEvents, setCustomEvents] = useState<ScanEvent[]>([]);
@@ -319,10 +327,13 @@ export default function QRScanner() {
   };
 
   const baselinePurposes = [
-    { key: 'dinner', label: 'Dinner', icon: Moon, activeColor: 'bg-nirmaan-purple text-white', closed: false },
-    { key: 'coffee', label: 'Coffee', icon: Coffee, activeColor: 'bg-nirmaan-blue text-white', closed: false },
-    { key: 'lunch', label: 'Lunch (Closed)', icon: Utensils, activeColor: 'bg-nirmaan-black/20 text-nirmaan-black/40', closed: true },
-    { key: 'registration', label: 'Registration (Closed)', icon: Shield, activeColor: 'bg-nirmaan-black/20 text-nirmaan-black/40', closed: true },
+    // Open first — always visible without scrolling
+    { key: 'breakfast',    label: 'Breakfast',    icon: Sun,      activeColor: 'bg-nirmaan-amber text-nirmaan-black' },
+    { key: 'coffee',       label: 'Coffee',       icon: Coffee,   activeColor: 'bg-nirmaan-blue text-white' },
+    // Locked — shown with CLOSED badge
+    { key: 'lunch',        label: 'Lunch',        icon: Utensils, activeColor: 'bg-nirmaan-orange text-white' },
+    { key: 'dinner',       label: 'Dinner',       icon: Moon,     activeColor: 'bg-nirmaan-purple text-white' },
+    { key: 'registration', label: 'Registration', icon: Shield,   activeColor: 'bg-nirmaan-green-bright text-nirmaan-black' },
   ];
 
   const customPurposes = customEvents.map((evt) => ({
@@ -330,7 +341,6 @@ export default function QRScanner() {
     label: evt.title,
     icon: (evt.icon && ICON_MAP[evt.icon]) || Sparkles,
     activeColor: `${evt.color} ${evt.text_color || 'text-white'}`,
-    closed: false,
   }));
 
   const allPurposes = [...baselinePurposes, ...customPurposes];
@@ -347,28 +357,37 @@ export default function QRScanner() {
           {allPurposes.map((p) => {
             const Icon = p.icon;
             const isSelected = purpose === p.key;
-            const isClosed = (p as any).closed;
+            const isLocked =
+              (REGISTRATION_LOCKED && p.key === 'registration') ||
+              (LUNCH_LOCKED        && p.key === 'lunch') ||
+              (DINNER_LOCKED       && p.key === 'dinner');
 
             return (
               <button
                 key={p.key}
                 type="button"
-                disabled={isClosed}
+                disabled={isLocked}
                 onClick={() => {
-                  if (isClosed) return;
+                  if (isLocked) return;
                   setPurpose(p.key);
                   setErrorMsg(null);
                 }}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all flex-shrink-0 ${
-                  isClosed
-                    ? 'bg-nirmaan-black/5 text-nirmaan-black/35 border border-nirmaan-black/10 cursor-not-allowed opacity-60'
+                title={isLocked ? `${p.label} is closed — entries are locked` : undefined}
+                className={`relative inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all flex-shrink-0 ${
+                  isLocked
+                    ? 'bg-nirmaan-black/10 text-nirmaan-black/35 border-2 border-nirmaan-black/10 cursor-not-allowed opacity-60'
                     : isSelected
                     ? `${p.activeColor} border-2 border-nirmaan-black shadow-sm scale-105 cursor-pointer`
                     : 'bg-white text-nirmaan-black/75 hover:bg-nirmaan-cream border-2 border-nirmaan-black/15 shadow-xs cursor-pointer'
                 }`}
               >
-                <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                {isLocked ? <Lock className="w-3.5 h-3.5 flex-shrink-0" /> : <Icon className="w-3.5 h-3.5 flex-shrink-0" />}
                 <span>{p.label}</span>
+                {isLocked && (
+                  <span className="absolute -top-1.5 -right-1 bg-nirmaan-red text-white text-[8px] font-black px-1 py-0.5 rounded-full leading-none tracking-tight">
+                    CLOSED
+                  </span>
+                )}
               </button>
             );
           })}

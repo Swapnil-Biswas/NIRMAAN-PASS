@@ -1,8 +1,14 @@
 'use client';
 
 import React from 'react';
-import { Utensils, Sun, Moon, CheckCircle2, AlertTriangle, X, ShieldAlert } from 'lucide-react';
+import { Utensils, Sun, Moon, CheckCircle2, AlertTriangle, X, ShieldAlert, Lock } from 'lucide-react';
 import { Team, Member, MealType } from '@/types/database';
+
+// ─── MEAL LOCKS ───────────────────────────────────────────────────────────────
+// Keep in sync with ScannerModal.tsx. Set to true to block serving.
+// Only BREAKFAST and COFFEE are open.
+const LUNCH_LOCKED  = true;
+const DINNER_LOCKED = true;
 
 interface MealServeModalProps {
   team: Team;
@@ -30,8 +36,12 @@ export default function MealServeModal({
       : team.dinner_count;
 
   const isCheckedIn = team.checked_in;
-  const isLimitReached = isCheckedIn && presentCount > 0 && currentCount >= presentCount;
-  const isZeroPresent = isCheckedIn && presentCount === 0;
+  const isMealLocked =
+    (LUNCH_LOCKED  && mealType === 'lunch') ||
+    (DINNER_LOCKED && mealType === 'dinner');
+  const isLimitReached = !isMealLocked && isCheckedIn && presentCount > 0 && currentCount >= presentCount;
+  const isZeroPresent  = !isMealLocked && isCheckedIn && presentCount === 0;
+  const lockedMealName = mealType === 'lunch' ? 'LUNCH' : 'DINNER';
 
   const getMealTheme = () => {
     switch (mealType) {
@@ -73,7 +83,17 @@ export default function MealServeModal({
         </div>
 
         {/* State Validation Card */}
-        {!isCheckedIn ? (
+        {isMealLocked ? (
+          <div className="bg-nirmaan-purple/10 border-2 border-nirmaan-purple p-4 rounded-2xl mb-6">
+            <div className="flex items-center gap-2 text-nirmaan-purple font-bold text-sm mb-1">
+              <Lock className="w-5 h-5" />
+              {lockedMealName} CLOSED
+            </div>
+            <p className="text-xs text-nirmaan-black font-medium leading-relaxed">
+              {lockedMealName === 'LUNCH' ? 'Lunch' : 'Dinner'} service has ended. No further entries are allowed.
+            </p>
+          </div>
+        ) : !isCheckedIn ? (
           <div className="bg-nirmaan-red/10 border-2 border-nirmaan-red p-4 rounded-2xl mb-6">
             <div className="flex items-center gap-2 text-nirmaan-red font-bold text-sm mb-1">
               <ShieldAlert className="w-5 h-5" />
@@ -132,7 +152,7 @@ export default function MealServeModal({
             CANCEL
           </button>
 
-          {!isCheckedIn || isLimitReached || isZeroPresent ? (
+          {isMealLocked || !isCheckedIn || isLimitReached || isZeroPresent ? (
             <button
               onClick={onCancel}
               className="nirmaan-btn nirmaan-btn-dark w-2/3 text-xs py-3.5 font-extrabold"
