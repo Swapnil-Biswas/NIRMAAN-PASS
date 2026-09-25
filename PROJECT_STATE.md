@@ -67,37 +67,36 @@
 - **Database & In-Memory Store**: Added Supabase migration `20260105000000_custom_scan_events.sql` and full standalone mock DB support with atomic record tracking.
 - **Automated Test Coverage**: 71/71 tests passing across 9 test suites including `tests/custom-events.test.ts`.
 
-### 📋 2.6 Pre-Loaded Official Roster & Direct Leader Email Login
-- **Database Ingestion**: Fed all 50 hackathon teams and 184 participants from `Nirmaan_Hackathon_Teams.xlsx` into `lib/data/seeded_teams.json` and store.
-- **Approval System Removal**: Removed registration gating and approval workflows. All official teams have immediately active digital QR passes.
+### 📋 2.6 Official 50 Teams Dataset & Direct Leader Email Access
+- **Official 50 Teams Cleanup**: Cleaned `lib/data/seeded_teams.json` to strictly contain the 50 official hackathon teams and 184 registered participants (matching `supabase/seed_50_teams.sql`), purging all leftover test fixture teams.
+- **Test Persistence Hardening**: Hardened `persistLocalDataset()` in `lib/data/store.ts` with `NODE_ENV === 'test'` checks to prevent test runs from writing mock entities to the official seed file on disk.
 - **Leader Email Authentication**: Team leaders enter their registered email at `/login` or via the homepage pass lookup to instantly access, download, and share their team's Digital QR Pass.
 - **Streamlined Admin Console**: Upgraded `TeamsTable.tsx` to focus on On-Desk physical attendance, member roster, meal consumption metrics, CSV exports, and individual team pass inspection.
 
+### 🔍 2.7 Case-Insensitive Search & Robust Team Lookup
+- **Original Casing Preserved**: Team names in table rows and digital passes maintain their exact original casing and branding (e.g. `AERONEX`, `Byte_me`, `CLASHERS`, `Ctrl+Care`, `Embedded Minds`, `FLEETMIND`).
+- **Flexible Case-Insensitive Matching**: Upgraded `TeamsTable.tsx` search filtering with trimmed, case-insensitive matching across team name, college name, and all individual team members (name, email, and phone number).
 
+### 🛡️ 2.8 Safety Controls: Removal of "Reset Test Scans" Button
+- **Accidental Reset Prevention**: Removed the `RESET TEST SCANS` button and associated UI states from `TeamsTable.tsx` to eliminate any risk of accidental operational data wipeouts during live hackathon check-ins and meal distributions.
 
-### 🔒 2.5 Full Production Security Hardening & Audit Complete
+### 🔒 2.9 Full Production Security Hardening & Audit Complete
 - **HMAC-SHA256 Cryptographic Session Tokens**: Replaced plaintext JSON cookies with tamper-proof HMAC-SHA256 signed session tokens (`v1.<payload>.<sig>`) for both `nirmaan_team_session` and `nirmaan_admin_session`. Enforced constant-time signature verification with `crypto.timingSafeEqual`.
 - **IDOR Elimination**: Hardened `/api/team/update` to strictly require verified session `teamId` matching the target team, preventing unauthorized edits across teams.
 - **Account Takeover Prevention**: Secured `/api/activate/link` against duplicate claim attempts on already activated teams.
 - **Sliding-Window In-Memory Rate Limiting**: Deployed rate limiters on `/api/auth/login`, `/api/admin/auth`, `/api/admin/scan`, `/api/register`, and `/api/activate/link`.
 - **Defense-In-Depth Security Headers**: Configured HSTS, CSP, X-Content-Type-Options (`nosniff`), X-Frame-Options (`SAMEORIGIN`), X-XSS-Protection, Referrer-Policy, and Permissions-Policy across `next.config.js` and `middleware.ts`.
-- **Automated Security Test Suite**: Added `tests/security-audit.test.ts` bringing the test suite to **66 passing tests** across 8 test suites. Zero build or TypeScript errors.
 
-### ⚡ 2.7 High-Speed Navigation & Performance Optimizations
+### ⚡ 2.10 High-Speed Navigation & Performance Optimizations
 - **Singleton Supabase Client Caching**: Memoized the Supabase admin client (`lib/supabase/admin.ts`) to avoid recreating connection pools and SSL negotiations on every query.
 - **AbortController Fast-Timeout Protection**: Added a 4000ms fetch timeout controller in server and admin clients so slow or stalled network requests immediately fallback and never freeze SSR page rendering or navigation.
 - **Parallel Query Execution**: Optimized `getAllTeams()` in `lib/data/store.ts` using `Promise.all` to query `teams` and `members` simultaneously, halving database fetch latency.
 - **Navbar Redundant Fetch Elimination**: Eliminated blocking `fetch('/api/auth/session')` requests on every route change in `Navbar.tsx`; now evaluates on initial mount and visibility focus events.
 - **Optimized Live Polling**: Tuned `LiveRefresh` in `/dashboard` and `/pass` to poll only when the tab is actively visible with a relaxed 15s interval, eliminating CPU/network contention during user page transitions.
 
-### 🗑️ 2.8 Team Data Cleanup & Administrative Purge
-- **Admin Delete Endpoints**: Added `DELETE /api/admin/teams?id=<teamId>` and `DELETE /api/admin/teams?all=true` with constant-time admin authorization.
-- **UI Data Controls**: Added "Delete" action button on every team row and in the registration review modal, plus a "Clear All Teams" batch reset button in `TeamsTable.tsx`.
-- **Standalone CLI Reset Utility**: Created `scripts/clear_teams.mjs` and npm script `npm run clear-teams` to purge test data cleanly from Supabase and the local mock store.
-- **Admin Access Code Standardized**: Set default access code to `nirmaan2026_admin` across configuration and backend auth.
-
-### 🧹 2.9 Codebase Optimization & Clean Test Suite
-- **100% Test Pass Rate**: Verified all 66 tests passing across 8 test suites (`npm test`) with zero TypeScript typecheck errors (`npm run lint`).
+### 🧹 2.11 Codebase Optimization & Clean Test Suite
+- **100% Test Pass Rate**: 78 passing tests across all 10 test suites (`npm test`) with zero TypeScript typecheck errors (`npm run lint`).
+- **Production Build Clean**: Next.js 14 production build compiles with 0 errors across all static and dynamic endpoints.
 
 ---
 
