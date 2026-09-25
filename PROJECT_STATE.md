@@ -80,21 +80,30 @@
 ### 🛡️ 2.8 Safety Controls: Removal of "Reset Test Scans" Button
 - **Accidental Reset Prevention**: Removed the `RESET TEST SCANS` button and associated UI states from `TeamsTable.tsx` to eliminate any risk of accidental operational data wipeouts during live hackathon check-ins and meal distributions.
 
-### 🔒 2.9 Full Production Security Hardening & Audit Complete
+### 🔒 2.9 Event-Day Mode Closures (Registration & Lunch Finalized)
+- **Closed Scan Modes**: Marked **Registration** and **Lunch** (along with Breakfast) as permanently closed for scanning in both [`ScannerModal.tsx`](file:///Users/arnavpaniya/NIRMAAN-PASS/components/QRScanner/ScannerModal.tsx) and [`/api/admin/scan`](file:///Users/arnavpaniya/NIRMAAN-PASS/app/api/admin/scan/route.ts).
+- **Active Operational Queue**: Default scanner mode transitioned to **Dinner**, with **Coffee** and dynamic **Custom Events** ready for evening hackathon operations. Closed pills are disabled in the UI to prevent volunteer error.
+
+### 📊 2.10 Custom Scan Events Integration in Stats, Table & Excel Export
+- **Live Event Stats Cards**: [`StatsOverview.tsx`](file:///Users/arnavpaniya/NIRMAAN-PASS/components/Admin/StatsOverview.tsx) dynamically renders real-time metric cards for all active custom scan events created by organizers, showing total scan count, unique teams checked in, and rule limit progress.
+- **Teams Table Columns**: [`TeamsTable.tsx`](file:///Users/arnavpaniya/NIRMAAN-PASS/components/Admin/TeamsTable.tsx) dynamically generates dedicated column headers and badges for each active custom event with color-coded progress (`Done` vs `0/1` for single check-ins, `X/Present` for headcount-capped events).
+- **Export to CSV / Excel**: [`exportToExcel`](file:///Users/arnavpaniya/NIRMAAN-PASS/components/Admin/TeamsTable.tsx) appends all custom scan events as individual columns alongside absent/present member details, exporting full end-to-end hackathon data in one click.
+
+### 🔒 2.11 Full Production Security Hardening & Audit Complete
 - **HMAC-SHA256 Cryptographic Session Tokens**: Replaced plaintext JSON cookies with tamper-proof HMAC-SHA256 signed session tokens (`v1.<payload>.<sig>`) for both `nirmaan_team_session` and `nirmaan_admin_session`. Enforced constant-time signature verification with `crypto.timingSafeEqual`.
 - **IDOR Elimination**: Hardened `/api/team/update` to strictly require verified session `teamId` matching the target team, preventing unauthorized edits across teams.
 - **Account Takeover Prevention**: Secured `/api/activate/link` against duplicate claim attempts on already activated teams.
 - **Sliding-Window In-Memory Rate Limiting**: Deployed rate limiters on `/api/auth/login`, `/api/admin/auth`, `/api/admin/scan`, `/api/register`, and `/api/activate/link`.
 - **Defense-In-Depth Security Headers**: Configured HSTS, CSP, X-Content-Type-Options (`nosniff`), X-Frame-Options (`SAMEORIGIN`), X-XSS-Protection, Referrer-Policy, and Permissions-Policy across `next.config.js` and `middleware.ts`.
 
-### ⚡ 2.10 High-Speed Navigation & Performance Optimizations
+### ⚡ 2.12 High-Speed Navigation & Performance Optimizations
 - **Singleton Supabase Client Caching**: Memoized the Supabase admin client (`lib/supabase/admin.ts`) to avoid recreating connection pools and SSL negotiations on every query.
 - **AbortController Fast-Timeout Protection**: Added a 4000ms fetch timeout controller in server and admin clients so slow or stalled network requests immediately fallback and never freeze SSR page rendering or navigation.
 - **Parallel Query Execution**: Optimized `getAllTeams()` in `lib/data/store.ts` using `Promise.all` to query `teams` and `members` simultaneously, halving database fetch latency.
 - **Navbar Redundant Fetch Elimination**: Eliminated blocking `fetch('/api/auth/session')` requests on every route change in `Navbar.tsx`; now evaluates on initial mount and visibility focus events.
 - **Optimized Live Polling**: Tuned `LiveRefresh` in `/dashboard` and `/pass` to poll only when the tab is actively visible with a relaxed 15s interval, eliminating CPU/network contention during user page transitions.
 
-### 🧹 2.11 Codebase Optimization & Clean Test Suite
+### 🧹 2.13 Codebase Optimization & Clean Test Suite
 - **100% Test Pass Rate**: 78 passing tests across all 10 test suites (`npm test`) with zero TypeScript typecheck errors (`npm run lint`).
 - **Production Build Clean**: Next.js 14 production build compiles with 0 errors across all static and dynamic endpoints.
 

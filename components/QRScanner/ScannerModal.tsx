@@ -40,7 +40,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export default function QRScanner() {
-  const [purpose, setPurpose] = useState<ScanPurpose>('registration');
+  const [purpose, setPurpose] = useState<ScanPurpose>('dinner');
   const [scanning, setScanning] = useState(false);
   const [loading, setLoading] = useState(false);
   const [customEvents, setCustomEvents] = useState<ScanEvent[]>([]);
@@ -319,11 +319,10 @@ export default function QRScanner() {
   };
 
   const baselinePurposes = [
-    { key: 'registration', label: 'Registration', icon: Shield, activeColor: 'bg-nirmaan-green-bright text-nirmaan-black' },
-    { key: 'breakfast', label: 'Breakfast', icon: Sun, activeColor: 'bg-nirmaan-amber text-nirmaan-black' },
-    { key: 'lunch', label: 'Lunch', icon: Utensils, activeColor: 'bg-nirmaan-orange text-white' },
-    { key: 'dinner', label: 'Dinner', icon: Moon, activeColor: 'bg-nirmaan-purple text-white' },
-    { key: 'coffee', label: 'Coffee', icon: Coffee, activeColor: 'bg-nirmaan-blue text-white' },
+    { key: 'dinner', label: 'Dinner', icon: Moon, activeColor: 'bg-nirmaan-purple text-white', closed: false },
+    { key: 'coffee', label: 'Coffee', icon: Coffee, activeColor: 'bg-nirmaan-blue text-white', closed: false },
+    { key: 'lunch', label: 'Lunch (Closed)', icon: Utensils, activeColor: 'bg-nirmaan-black/20 text-nirmaan-black/40', closed: true },
+    { key: 'registration', label: 'Registration (Closed)', icon: Shield, activeColor: 'bg-nirmaan-black/20 text-nirmaan-black/40', closed: true },
   ];
 
   const customPurposes = customEvents.map((evt) => ({
@@ -331,6 +330,7 @@ export default function QRScanner() {
     label: evt.title,
     icon: (evt.icon && ICON_MAP[evt.icon]) || Sparkles,
     activeColor: `${evt.color} ${evt.text_color || 'text-white'}`,
+    closed: false,
   }));
 
   const allPurposes = [...baselinePurposes, ...customPurposes];
@@ -347,19 +347,24 @@ export default function QRScanner() {
           {allPurposes.map((p) => {
             const Icon = p.icon;
             const isSelected = purpose === p.key;
+            const isClosed = (p as any).closed;
 
             return (
               <button
                 key={p.key}
                 type="button"
+                disabled={isClosed}
                 onClick={() => {
+                  if (isClosed) return;
                   setPurpose(p.key);
                   setErrorMsg(null);
                 }}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer ${
-                  isSelected
-                    ? `${p.activeColor} border-2 border-nirmaan-black shadow-sm scale-105`
-                    : 'bg-white text-nirmaan-black/75 hover:bg-nirmaan-cream border-2 border-nirmaan-black/15 shadow-xs'
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all flex-shrink-0 ${
+                  isClosed
+                    ? 'bg-nirmaan-black/5 text-nirmaan-black/35 border border-nirmaan-black/10 cursor-not-allowed opacity-60'
+                    : isSelected
+                    ? `${p.activeColor} border-2 border-nirmaan-black shadow-sm scale-105 cursor-pointer`
+                    : 'bg-white text-nirmaan-black/75 hover:bg-nirmaan-cream border-2 border-nirmaan-black/15 shadow-xs cursor-pointer'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5 flex-shrink-0" />
