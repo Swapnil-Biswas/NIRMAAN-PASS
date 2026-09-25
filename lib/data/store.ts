@@ -34,7 +34,12 @@ export interface NewTeamInput {
   duplicateMatchTeamId?: string | null;
 }
 
-function loadInitialDiskData(): { teams: Team[]; members: Member[] } {
+function loadInitialDiskData(): {
+  teams: Team[];
+  members: Member[];
+  custom_events?: ScanEvent[];
+  custom_records?: ScanEventRecord[];
+} {
   try {
     const p = path.join(process.cwd(), 'lib', 'data', 'seeded_teams.json');
     if (fs.existsSync(p)) {
@@ -44,7 +49,12 @@ function loadInitialDiskData(): { teams: Team[]; members: Member[] } {
       }
     }
   } catch {}
-  return seededDataset as { teams: Team[]; members: Member[] };
+  return seededDataset as {
+    teams: Team[];
+    members: Member[];
+    custom_events?: ScanEvent[];
+    custom_records?: ScanEventRecord[];
+  };
 }
 
 const initialDataset = loadInitialDiskData();
@@ -73,8 +83,8 @@ const mockDb: MockDatabase = {
     },
   ],
   schedule: JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)) as ScheduleItem[],
-  custom_events: [],
-  custom_records: [],
+  custom_events: (initialDataset.custom_events ? JSON.parse(JSON.stringify(initialDataset.custom_events)) : []) as ScanEvent[],
+  custom_records: (initialDataset.custom_records ? JSON.parse(JSON.stringify(initialDataset.custom_records)) : []) as ScanEventRecord[],
 };
 
 export function persistLocalDataset() {
@@ -87,6 +97,8 @@ export function persistLocalDataset() {
         {
           teams: mockDb.teams,
           members: mockDb.members,
+          custom_events: mockDb.custom_events,
+          custom_records: mockDb.custom_records,
         },
         null,
         2
@@ -1667,6 +1679,8 @@ export async function createCustomScanEvent(
   }
 
   mockDb.custom_events.push(newEvent);
+  invalidateEventsCache();
+  persistLocalDataset();
   return newEvent;
 }
 
@@ -1687,6 +1701,7 @@ export async function deleteCustomScanEvent(id: string): Promise<boolean> {
   mockDb.custom_records = mockDb.custom_records.filter((r) => r.event_id !== id);
   const initialCount = mockDb.custom_events.length;
   mockDb.custom_events = mockDb.custom_events.filter((e) => e.id !== id);
+  persistLocalDataset();
   return mockDb.custom_events.length < initialCount;
 }
 
@@ -1812,6 +1827,7 @@ export async function processCustomScan(
     };
 
     mockDb.custom_records.push(record);
+    persistLocalDataset();
 
     return {
       success: true,
@@ -1891,6 +1907,7 @@ export async function processCustomScan(
     };
 
     mockDb.custom_records.push(record);
+    persistLocalDataset();
 
     return {
       success: true,
@@ -1927,6 +1944,7 @@ export async function processCustomScan(
   };
 
   mockDb.custom_records.push(record);
+  persistLocalDataset();
 
   return {
     success: true,
