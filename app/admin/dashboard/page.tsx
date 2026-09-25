@@ -1,18 +1,20 @@
 import React from 'react';
 import StatsOverview from '@/components/Admin/StatsOverview';
 import TeamsTable from '@/components/Admin/TeamsTable';
-import { getEventStatistics, getAllTeams } from '@/lib/data/store';
+import { getEventStatistics, getAllTeams, getCustomScanEvents, getCustomScanRecords } from '@/lib/data/store';
 import Link from 'next/link';
-import { QrCode, Megaphone, Calendar } from 'lucide-react';
+import { QrCode, Megaphone, Calendar, Layers } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 
 export default async function AdminDashboardPage() {
-  const [stats, teams] = await Promise.all([
+  const [stats, teams, customEvents, customRecords] = await Promise.all([
     getEventStatistics(),
     getAllTeams(),
+    getCustomScanEvents(),
+    getCustomScanRecords(),
   ]);
 
   return (
@@ -42,6 +44,13 @@ export default async function AdminDashboardPage() {
             OPEN SCANNER
           </Link>
           <Link
+            href="/admin/events"
+            className="nirmaan-btn bg-nirmaan-purple text-white hover:opacity-90 text-xs py-2 px-3.5 sm:py-2.5 sm:px-4 font-black shadow-sm"
+          >
+            <Layers className="w-4 h-4 text-nirmaan-amber" />
+            CUSTOM EVENTS
+          </Link>
+          <Link
             href="/admin/announcements"
             className="nirmaan-btn nirmaan-btn-dark text-xs py-2 px-3.5 sm:py-2.5 sm:px-4 font-black shadow-sm"
           >
@@ -58,8 +67,8 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* 8 Metric Statistics Overview */}
-      <StatsOverview stats={stats} />
+      {/* Statistics Overview (Baseline + Custom Events) */}
+      <StatsOverview stats={stats} customEvents={customEvents} customRecords={customRecords} />
 
       {/* Teams Table Section */}
       <div className="space-y-4">
@@ -69,7 +78,7 @@ export default async function AdminDashboardPage() {
           </h2>
         </div>
 
-        <TeamsTable teams={teams} />
+        <TeamsTable teams={teams} customEvents={customEvents} customRecords={customRecords} />
       </div>
     </main>
   );

@@ -17,7 +17,7 @@ import {
   Phone,
   Mail,
 } from 'lucide-react';
-import { Team, Member } from '@/types/database';
+import { Team, Member, ScanEvent, ScanEventRecord } from '@/types/database';
 import Link from 'next/link';
 import RegistrationModal from '@/components/Admin/RegistrationModal';
 
@@ -29,12 +29,20 @@ interface TeamRowData extends Team {
 
 interface TeamsTableProps {
   teams: TeamRowData[];
+  customEvents?: ScanEvent[];
+  customRecords?: ScanEventRecord[];
   onSelectTeam?: (team: TeamRowData) => void;
 }
 
-export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsTableProps) {
+export default function TeamsTable({
+  teams: initialTeams,
+  customEvents = [],
+  customRecords = [],
+  onSelectTeam,
+}: TeamsTableProps) {
   const router = useRouter();
   const [teams, setTeams] = useState<TeamRowData[]>(initialTeams);
+  const activeCustomEvents = customEvents.filter((e) => e.active);
   const [search, setSearch] = useState('');
   const [pageSize, setPageSize] = useState<number>(25);
   const [page, setPage] = useState<number>(1);
@@ -174,19 +182,44 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
       'Leader Name',
       'Leader Email',
       'Leader Phone',
-      'Status',
+      'Check-In Status',
       'Total Members',
       'Present Count',
-      'Member Names & Phones',
+      'Absent Count',
+      'Present Members',
+      'Absent Members',
+      'All Members (Name & Phone)',
       'Breakfast Served',
       'Lunch Served',
       'Dinner Served',
       'Coffee / Tea Served',
+      ...activeCustomEvents.map((e) => `Event: ${e.title}`),
       'Notes',
     ];
 
     const rows = filteredTeams.map((team) => {
       const leader = team.members.find((m) => m.is_leader) || team.members[0];
+      const presentMembers = team.members.filter((m) => m.present);
+      const absentMembers = team.checked_in
+        ? team.members.filter((m) => !m.present)
+        : team.members;
+      const absentCount = team.checked_in
+        ? team.total_members - team.present_count
+        : team.total_members;
+
+      const customEventValues = activeCustomEvents.map((evt) => {
+        const records = customRecords.filter((r) => r.event_id === evt.id && r.team_id === team.id);
+        const count = records.reduce((acc, r) => acc + r.count, 0);
+        if (evt.limit_rule === 'once_per_team') {
+          return count > 0 ? 'Completed (1/1)' : 'Pending (0/1)';
+        }
+        if (evt.limit_rule === 'per_present_member') {
+          const limit = team.checked_in ? team.present_count : team.total_members;
+          return `${count}/${limit}`;
+        }
+        return String(count);
+      });
+
       return [
         escapeCSV(team.team_name),
         escapeCSV(team.college),
@@ -197,11 +230,15 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
         team.checked_in ? 'Checked In' : 'Not Checked In',
         String(team.total_members),
         String(team.present_count),
+        String(absentCount),
+        escapeCSV(presentMembers.map((m) => m.name).join('; ')),
+        escapeCSV(absentMembers.map((m) => m.name).join('; ')),
         escapeCSV(team.members.map((m) => `${m.name} (${m.phone})`).join('; ')),
         String(team.breakfast_count),
         String(team.lunch_count),
         String(team.dinner_count),
         String(team.coffee_count),
+        ...customEventValues.map((val) => escapeCSV(val)),
         escapeCSV(team.duplicate_notes || ''),
       ];
     });
@@ -354,13 +391,27 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                 <th className="p-3.5 text-center">Lunch</th>
                 <th className="p-3.5 text-center">Dinner</th>
                 <th className="p-3.5 text-center">Coffee</th>
+                {activeCustomEvents.map((evt) => (
+                  <th key={evt.id} className="p-3.5 text-center whitespace-nowrap">
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${evt.color} ${
+                        evt.text_color ||
+                        (evt.color?.includes('blue') || evt.color?.includes('purple') || evt.color?.includes('dark') || evt.color?.includes('red')
+                          ? 'text-white'
+                          : 'text-nirmaan-black')
+                      }`}
+                    >
+                      {evt.title}
+                    </span>
+                  </th>
+                ))}
                 <th className="p-3.5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-nirmaan-black/5 font-medium">
               {filteredTeams.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="p-10 text-center text-nirmaan-black/50 font-bold space-y-1">
+                  <td colSpan={9 + activeCustomEvents.length} className="p-10 text-center text-nirmaan-black/50 font-bold space-y-1">
                     <p className="text-sm text-nirmaan-black/70 font-black uppercase">
                       {search ? `No teams found matching "${search}"` : 'No teams found'}
                     </p>
@@ -459,6 +510,38 @@ export default function TeamsTable({ teams: initialTeams, onSelectTeam }: TeamsT
                       <td className="p-3.5 text-center font-bold text-nirmaan-blue">
                         {team.coffee_count}
                       </td>
+
+                      {/* Custom Scan Events */}
+                      {activeCustomEvents.map((evt) => {
+                        const records = customRecords.filter(
+                          (r) => r.event_id === evt.id && r.team_id === team.id
+                        );
+                        const count = records.reduce((acc, r) => acc + r.count, 0);
+
+                        return (
+                          <td key={evt.id} className="p-3.5 text-center">
+                            {evt.limit_rule === 'once_per_team' ? (
+                              count > 0 ? (
+                                <span className="inline-flex items-center gap-1 bg-nirmaan-green-bright/20 text-nirmaan-green-dark border border-nirmaan-green-dark/30 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  <span>Done</span>
+                                </span>
+                              ) : (
+                                <span className="text-nirmaan-black/40 text-[10px] font-bold">0/1</span>
+                              )
+                            ) : evt.limit_rule === 'per_present_member' ? (
+                              <span className="text-xs">
+                                <span className="font-bold">{count}</span>
+                                <span className="text-nirmaan-black/40 text-[10px]">
+                                  /{team.checked_in ? team.present_count : team.total_members}
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="font-bold text-xs">{count}</span>
+                            )}
+                          </td>
+                        );
+                      })}
 
                       {/* Actions */}
                       <td className="p-3.5 text-right space-x-1.5 whitespace-nowrap">

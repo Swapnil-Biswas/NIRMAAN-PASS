@@ -143,13 +143,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(result, { status: result.success ? 200 : 400 });
     }
 
-    if (effectivePurpose === 'registration') {
+    if (effectivePurpose === 'registration' || effectivePurpose === 'attendance') {
       const memberIds = Array.isArray(present_member_ids) ? present_member_ids : [];
       const result = await processRegistration(cleanToken, memberIds);
 
       logEvent({
         route: '/api/admin/scan',
-        operation: 'registration',
+        operation: 'attendance_update',
         success: result.success,
         durationMs: performance.now() - startTime,
         teamId: result.team_id,
@@ -162,13 +162,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(result, { status: result.success ? 200 : 400 });
     }
 
-    if (effectivePurpose === 'breakfast' || effectivePurpose === 'lunch' || effectivePurpose === 'dinner') {
-      const result = await processMealScan(cleanToken, effectivePurpose as MealType);
-
+    if (effectivePurpose === 'lunch' || effectivePurpose === 'breakfast') {
       logEvent({
         route: '/api/admin/scan',
         operation: 'meal_scan',
         mealType: effectivePurpose,
+        success: false,
+        durationMs: performance.now() - startTime,
+        errorCode: 'MEAL_CLOSED',
+        message: `${effectivePurpose.toUpperCase()} service is closed. No further scans are accepted.`,
+        ip,
+      });
+
+      return NextResponse.json(
+        {
+          success: false,
+          error_code: 'MEAL_CLOSED',
+          message: `${effectivePurpose.toUpperCase()} service is closed. No further scans are accepted.`,
+        },
+        { status: 400 }
+      );
+    }
+
+    if (effectivePurpose === 'dinner') {
+      const result = await processMealScan(cleanToken, 'dinner');
+
+      logEvent({
+        route: '/api/admin/scan',
+        operation: 'meal_scan',
+        mealType: 'dinner',
         success: result.success,
         durationMs: performance.now() - startTime,
         teamId: result.team_id,
