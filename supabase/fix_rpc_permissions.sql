@@ -12,6 +12,9 @@ GRANT EXECUTE ON FUNCTION public.process_meal_scan(TEXT, TEXT) TO anon, authenti
 GRANT EXECUTE ON FUNCTION public.process_coffee_scan(TEXT) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.process_registration(TEXT, TEXT[]) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.get_event_statistics() TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.process_custom_scan(TEXT, TEXT, INTEGER, TEXT[]) TO anon, authenticated;
+GRANT ALL ON TABLE public.custom_scan_events  TO anon, authenticated;
+GRANT ALL ON TABLE public.custom_scan_records TO anon, authenticated;
 
 -- Verify the grants were applied
 SELECT
