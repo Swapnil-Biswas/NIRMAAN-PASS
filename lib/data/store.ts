@@ -566,28 +566,39 @@ export async function getAllTeams(): Promise<EnrichedTeam[]> {
 // Live Scan Operations (Atomic Server Execution)
 // -----------------------------------------------------------------------------
 
-export async function processMealScan(rawToken: string, mealType: MealType): Promise<ScanResult> {
+export async function processMealScan(rawToken: string, mealType: MealType, count = 1): Promise<ScanResult> {
   invalidateTeamsCache();
   const token = sanitizeQRToken(rawToken);
+  const servings = Math.max(1, count);
 
   if (hasSupabaseConfig()) {
     try {
       const { createAdminClient } = await import('../supabase/admin');
       const supabase = createAdminClient();
-      const { data, error } = await supabase.rpc('process_meal_scan', {
-        p_qr_token: token,
-        p_meal_type: mealType,
-      });
 
-      if (error) {
-        console.error('[Supabase] process_meal_scan error:', error.message, error.code, error.details);
-        return {
-          success: false,
-          error_code: 'SERVER_ERROR',
-          message: `Database error: ${error.message}`,
-        };
+      // Call RPC once per serving (each call is atomic +1 with quota check)
+      let lastResult: ScanResult | null = null;
+      for (let i = 0; i < servings; i++) {
+        const { data, error } = await supabase.rpc('process_meal_scan', {
+          p_qr_token: token,
+          p_meal_type: mealType,
+        });
+
+        if (error) {
+          console.error('[Supabase] process_meal_scan error:', error.message, error.code, error.details);
+          return {
+            success: false,
+            error_code: 'SERVER_ERROR',
+            message: `Database error: ${error.message}`,
+          };
+        }
+        if (data) {
+          lastResult = data as ScanResult;
+          // Stop if quota hit mid-loop
+          if (!lastResult?.success) return lastResult;
+        }
       }
-      if (data) return data as ScanResult;
+      if (lastResult) return lastResult;
     } catch (e: any) {
       console.error('[Supabase] process_meal_scan exception:', e);
       return {
@@ -647,10 +658,13 @@ export async function processMealScan(rawToken: string, mealType: MealType): Pro
     };
   }
 
-  // Increment atomically
-  if (mealType === 'breakfast') team.breakfast_count += 1;
-  if (mealType === 'lunch') team.lunch_count += 1;
-  if (mealType === 'dinner') team.dinner_count += 1;
+  // Increment atomically by requested count (capped at remaining)
+  const validation2 = validateMealEligibility(team, members, mealType);
+  const remaining = validation2.eligible ? Math.max(0, (validation2.presentCount ?? 0) - (validation2.currentCount ?? 0)) : 0;
+  const toAdd = Math.min(servings, remaining);
+  if (mealType === 'breakfast') team.breakfast_count += toAdd;
+  if (mealType === 'lunch') team.lunch_count += toAdd;
+  if (mealType === 'dinner') team.dinner_count += toAdd;
   team.updated_at = new Date().toISOString();
   persistLocalDataset();
 

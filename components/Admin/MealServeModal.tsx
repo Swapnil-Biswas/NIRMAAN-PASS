@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Utensils, Sun, Moon, CheckCircle2, AlertTriangle, X, ShieldAlert, Lock } from 'lucide-react';
+import React, { useState } from 'react';
+import { Utensils, Sun, Moon, CheckCircle2, X, ShieldAlert, Lock, Check } from 'lucide-react';
 import { Team, Member, MealType } from '@/types/database';
 
 // ─── MEAL LOCKS ───────────────────────────────────────────────────────────────
@@ -14,7 +14,7 @@ interface MealServeModalProps {
   team: Team;
   members: Member[];
   mealType: MealType;
-  onConfirmServe: () => Promise<void>;
+  onConfirmServe: (count: number) => Promise<void>;
   onCancel: () => void;
   loading: boolean;
 }
@@ -27,7 +27,9 @@ export default function MealServeModal({
   onCancel,
   loading,
 }: MealServeModalProps) {
-  const presentCount = members.filter((m) => m.present).length;
+  const presentMembers = members.filter((m) => m.present);
+  const presentCount   = presentMembers.length;
+
   const currentCount =
     mealType === 'breakfast'
       ? team.breakfast_count
@@ -35,31 +37,49 @@ export default function MealServeModal({
       ? team.lunch_count
       : team.dinner_count;
 
-  const isCheckedIn = team.checked_in;
+  const isCheckedIn  = team.checked_in;
   const isMealLocked =
     (LUNCH_LOCKED  && mealType === 'lunch') ||
     (DINNER_LOCKED && mealType === 'dinner');
-  const isLimitReached = !isMealLocked && isCheckedIn && presentCount > 0 && currentCount >= presentCount;
-  const isZeroPresent  = !isMealLocked && isCheckedIn && presentCount === 0;
+
   const lockedMealName = mealType === 'lunch' ? 'LUNCH' : 'DINNER';
+
+  // Member picker state — pre-select members who haven't had this meal yet
+  const [selectedIds, setSelectedIds] = useState<string[]>(() =>
+    presentMembers.map((m) => m.id)
+  );
+
+  const toggleMember = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const selectAll  = () => setSelectedIds(presentMembers.map((m) => m.id));
+  const clearAll   = () => setSelectedIds([]);
 
   const getMealTheme = () => {
     switch (mealType) {
       case 'breakfast':
-        return { name: 'BREAKFAST', bg: 'bg-nirmaan-amber', icon: Sun, text: 'text-nirmaan-black' };
+        return { name: 'BREAKFAST', bg: 'bg-nirmaan-amber', icon: Sun,      text: 'text-nirmaan-black' };
       case 'lunch':
-        return { name: 'LUNCH', bg: 'bg-nirmaan-orange', icon: Utensils, text: 'text-white' };
+        return { name: 'LUNCH',     bg: 'bg-nirmaan-orange', icon: Utensils, text: 'text-white' };
       case 'dinner':
-        return { name: 'DINNER', bg: 'bg-nirmaan-purple', icon: Moon, text: 'text-white' };
+        return { name: 'DINNER',    bg: 'bg-nirmaan-purple', icon: Moon,     text: 'text-white' };
     }
   };
 
   const theme = getMealTheme();
-  const Icon = theme.icon;
+  const Icon  = theme.icon;
+
+  const remaining        = Math.max(0, presentCount - currentCount);
+  const serveCount       = selectedIds.length;
+  const canServe         = !isMealLocked && isCheckedIn && presentCount > 0 && remaining > 0 && serveCount > 0;
 
   return (
     <div className="fixed inset-0 z-50 bg-nirmaan-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
       <div className="bg-nirmaan-cream-card rounded-2xl border-2 border-nirmaan-black max-w-md w-full p-4 sm:p-8 shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[92vh] overflow-y-auto">
+
         {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
@@ -82,7 +102,7 @@ export default function MealServeModal({
           </button>
         </div>
 
-        {/* State Validation Card */}
+        {/* ── LOCKED STATE ── */}
         {isMealLocked ? (
           <div className="bg-nirmaan-purple/10 border-2 border-nirmaan-purple p-4 rounded-2xl mb-6">
             <div className="flex items-center gap-2 text-nirmaan-purple font-bold text-sm mb-1">
@@ -94,52 +114,105 @@ export default function MealServeModal({
             </p>
           </div>
         ) : !isCheckedIn ? (
+          /* ── NOT CHECKED IN ── */
           <div className="bg-nirmaan-red/10 border-2 border-nirmaan-red p-4 rounded-2xl mb-6">
             <div className="flex items-center gap-2 text-nirmaan-red font-bold text-sm mb-1">
               <ShieldAlert className="w-5 h-5" />
               REGISTRATION REQUIRED
             </div>
             <p className="text-xs text-nirmaan-black font-medium leading-relaxed">
-              Team has not completed On-Desk Registration. Please direct the team to the Registration Desk before serving food.
+              Team has not completed On-Desk Registration. Please direct them to the Registration Desk before serving food.
             </p>
           </div>
-        ) : isZeroPresent ? (
+        ) : presentCount === 0 ? (
+          /* ── NO PRESENT MEMBERS ── */
           <div className="bg-nirmaan-amber/15 border-2 border-nirmaan-amber p-4 rounded-2xl mb-6">
             <div className="flex items-center gap-2 text-nirmaan-black font-bold text-sm mb-1">
-              <AlertTriangle className="w-5 h-5 text-nirmaan-orange" />
+              <ShieldAlert className="w-5 h-5 text-nirmaan-orange" />
               NO PRESENT MEMBERS
             </div>
             <p className="text-xs text-nirmaan-black font-medium">
-              0 members marked present. Please have attendance updated at the registration desk.
+              0 members marked present. Please update attendance at the Registration Desk.
             </p>
           </div>
-        ) : isLimitReached ? (
+        ) : remaining === 0 ? (
+          /* ── ALL SERVED ── */
           <div className="bg-nirmaan-red/10 border-2 border-nirmaan-red p-4 rounded-2xl mb-6">
             <div className="flex items-center gap-2 text-nirmaan-red font-bold text-sm mb-1">
-              <AlertTriangle className="w-5 h-5" />
+              <CheckCircle2 className="w-5 h-5" />
               MEAL LIMIT REACHED
             </div>
             <p className="text-sm font-black text-nirmaan-black">
               {currentCount} / {presentCount} servings already claimed.
             </p>
             <p className="text-xs text-nirmaan-black/70 mt-1">
-              All present team members have received their meal.
+              All present members have received their meal.
             </p>
           </div>
         ) : (
-          <div className="bg-nirmaan-cream p-5 rounded-2xl border border-nirmaan-black/10 mb-6 text-center">
-            <p className="text-xs font-bold uppercase text-nirmaan-black/60 tracking-wider">
-              CURRENT ENTITLEMENT
-            </p>
-            <div className="my-2 font-display text-4xl font-black text-nirmaan-black flex items-center justify-center gap-2">
-              <span className="text-nirmaan-green-dark">{currentCount}</span>
-              <span className="text-nirmaan-black/30">/</span>
-              <span>{presentCount}</span>
+          /* ── MEMBER PICKER ── */
+          <>
+            {/* Summary bar */}
+            <div className="bg-nirmaan-cream p-4 rounded-2xl border border-nirmaan-black/10 mb-4 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase text-nirmaan-black/60">SERVING NOW</p>
+                <p className="font-display text-2xl font-black text-nirmaan-black">
+                  {serveCount} <span className="text-sm font-bold text-nirmaan-black/50">of {remaining} remaining</span>
+                </p>
+                <p className="text-[11px] text-nirmaan-black/50 font-medium">
+                  {currentCount}/{presentCount} already served
+                </p>
+              </div>
+              <div className="flex flex-col gap-1 items-end">
+                <button
+                  onClick={selectAll}
+                  type="button"
+                  className="text-xs font-bold text-nirmaan-blue hover:underline"
+                >
+                  All Present
+                </button>
+                <button
+                  onClick={clearAll}
+                  type="button"
+                  className="text-xs font-bold text-nirmaan-red hover:underline"
+                >
+                  Clear
+                </button>
+              </div>
             </div>
-            <p className="text-xs font-bold uppercase text-nirmaan-black/70 bg-white inline-block px-3 py-1 rounded-full border border-nirmaan-black/10">
-              {presentCount - currentCount} serving(s) remaining
-            </p>
-          </div>
+
+            {/* Member checklist — only present members shown */}
+            <div className="mb-5 max-h-52 overflow-y-auto space-y-2 pr-1">
+              {presentMembers.map((member) => {
+                const isSelected = selectedIds.includes(member.id);
+                return (
+                  <div
+                    key={member.id}
+                    onClick={() => toggleMember(member.id)}
+                    className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                      isSelected
+                        ? 'bg-white border-nirmaan-black shadow-sm'
+                        : 'bg-nirmaan-cream/50 border-nirmaan-black/10 opacity-60'
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1 mr-2">
+                      <p className="font-bold text-sm text-nirmaan-black truncate">{member.name}</p>
+                      <p className="text-xs text-nirmaan-black/60 truncate">{member.phone}</p>
+                    </div>
+                    <div
+                      className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors flex-shrink-0 ${
+                        isSelected
+                          ? 'bg-nirmaan-green-bright border-nirmaan-black text-nirmaan-black'
+                          : 'border-nirmaan-black/30 bg-white'
+                      }`}
+                    >
+                      {isSelected && <Check className="w-4 h-4 stroke-[3]" />}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
 
         {/* Action Buttons */}
@@ -152,28 +225,27 @@ export default function MealServeModal({
             CANCEL
           </button>
 
-          {isMealLocked || !isCheckedIn || isLimitReached || isZeroPresent ? (
+          {canServe ? (
             <button
-              onClick={onCancel}
-              className="nirmaan-btn nirmaan-btn-dark w-2/3 text-xs py-3.5 font-extrabold"
-            >
-              DISMISS
-            </button>
-          ) : (
-            <button
-              onClick={onConfirmServe}
-              disabled={loading}
-              className={`nirmaan-btn ${theme.bg} ${theme.text} w-2/3 text-xs py-3.5 font-black shadow-lg hover:brightness-95`}
+              onClick={() => onConfirmServe(serveCount)}
+              disabled={loading || serveCount === 0}
+              className={`nirmaan-btn ${theme.bg} ${theme.text} w-2/3 text-xs py-3.5 font-black shadow-lg hover:brightness-95 disabled:opacity-50`}
             >
               {loading ? (
                 'RECORDING...'
               ) : (
                 <>
                   <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                  <span className="sm:hidden">SERVE (+1)</span>
-                  <span className="hidden sm:inline">SERVE {theme.name} (+1)</span>
+                  <span>SERVE {serveCount} {serveCount === 1 ? 'PERSON' : 'PEOPLE'}</span>
                 </>
               )}
+            </button>
+          ) : (
+            <button
+              onClick={onCancel}
+              className="nirmaan-btn nirmaan-btn-dark w-2/3 text-xs py-3.5 font-extrabold"
+            >
+              DISMISS
             </button>
           )}
         </div>

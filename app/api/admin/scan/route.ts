@@ -164,7 +164,8 @@ export async function POST(req: NextRequest) {
 
     // ── BREAKFAST: OPEN ──────────────────────────────────────────────────────
     if (effectivePurpose === 'breakfast') {
-      const result = await processMealScan(cleanToken, 'breakfast');
+      const servingCount = typeof count === 'number' && count > 0 ? count : 1;
+      const result = await processMealScan(cleanToken, 'breakfast', servingCount);
 
       logEvent({
         route: '/api/admin/scan',

@@ -228,7 +228,7 @@ export default function QRScanner() {
     }
   };
 
-  const handleConfirmMeal = async () => {
+  const handleConfirmMeal = async (count: number) => {
     if (!activeToken) return;
     setLoading(true);
     try {
@@ -238,6 +238,7 @@ export default function QRScanner() {
         body: JSON.stringify({
           qr_token: activeToken,
           purpose,
+          count,
         }),
       });
 
@@ -255,6 +256,7 @@ export default function QRScanner() {
       setLoading(false);
     }
   };
+
 
   const handleConfirmCoffee = async () => {
     if (!activeToken) return;
