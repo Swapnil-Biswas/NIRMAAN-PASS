@@ -162,35 +162,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(result, { status: result.success ? 200 : 400 });
     }
 
-    if (effectivePurpose === 'lunch' || effectivePurpose === 'breakfast') {
-      logEvent({
-        route: '/api/admin/scan',
-        operation: 'meal_scan',
-        mealType: effectivePurpose,
-        success: false,
-        durationMs: performance.now() - startTime,
-        errorCode: 'MEAL_CLOSED',
-        message: `${effectivePurpose.toUpperCase()} service is closed. No further scans are accepted.`,
-        ip,
-      });
-
-      return NextResponse.json(
-        {
-          success: false,
-          error_code: 'MEAL_CLOSED',
-          message: `${effectivePurpose.toUpperCase()} service is closed. No further scans are accepted.`,
-        },
-        { status: 400 }
-      );
-    }
-
-    if (effectivePurpose === 'dinner') {
-      const result = await processMealScan(cleanToken, 'dinner');
+    // ── BREAKFAST: OPEN ──────────────────────────────────────────────────────
+    if (effectivePurpose === 'breakfast') {
+      const result = await processMealScan(cleanToken, 'breakfast');
 
       logEvent({
         route: '/api/admin/scan',
         operation: 'meal_scan',
-        mealType: 'dinner',
+        mealType: 'breakfast',
         success: result.success,
         durationMs: performance.now() - startTime,
         teamId: result.team_id,
@@ -202,6 +181,45 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json(result, { status: result.success ? 200 : 400 });
     }
+
+    // ── LUNCH: CLOSED ─────────────────────────────────────────────────────────
+    if (effectivePurpose === 'lunch') {
+      logEvent({
+        route: '/api/admin/scan',
+        operation: 'meal_scan',
+        mealType: 'lunch',
+        success: false,
+        durationMs: performance.now() - startTime,
+        errorCode: 'MEAL_CLOSED',
+        message: 'LUNCH service is closed. No further scans are accepted.',
+        ip,
+      });
+
+      return NextResponse.json(
+        { success: false, error_code: 'MEAL_CLOSED', message: 'LUNCH service is closed. No further scans are accepted.' },
+        { status: 400 }
+      );
+    }
+
+    // ── DINNER: CLOSED ────────────────────────────────────────────────────────
+    if (effectivePurpose === 'dinner') {
+      logEvent({
+        route: '/api/admin/scan',
+        operation: 'meal_scan',
+        mealType: 'dinner',
+        success: false,
+        durationMs: performance.now() - startTime,
+        errorCode: 'MEAL_CLOSED',
+        message: 'DINNER service is closed. No further scans are accepted.',
+        ip,
+      });
+
+      return NextResponse.json(
+        { success: false, error_code: 'MEAL_CLOSED', message: 'DINNER service is closed. No further scans are accepted.' },
+        { status: 400 }
+      );
+    }
+
 
     if (effectivePurpose === 'coffee') {
       const result = await processCoffeeScan(cleanToken);
